@@ -1,0 +1,87 @@
+/* ============================================================
+   WOFI — Cyberpunk 2077 Theme
+   Palette originale (reference — DO NOT DELETE):
+   #f9f002 yellow | #0abdc6 cyan | #ea00d9 magenta
+   #ff003c red    | #00060e void
+   ============================================================ */
+
+/* --- Wallust generated palette --- */
+@define-color wl-bg      {{background}};
+@define-color wl-yellow  {{color3}};
+@define-color wl-cyan    {{color6}};
+@define-color wl-red     {{color1}};
+@define-color wl-magenta {{color13}};
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    font-size:   14px;
+}
+
+window {
+    background-color: alpha(@wl-bg, 0.92);
+    border:           1px solid alpha(@wl-cyan, 0.5);
+    border-radius:    0px;
+}
+
+/* ── Search input ────────────────────────────────────────── */
+#input {
+    background-color: transparent;
+    border:           none;
+    border-bottom:    1px solid alpha(@wl-cyan, 0.4);
+    border-radius:    0px;
+    color:            @wl-cyan;
+    padding:          10px 14px;
+    margin:           0px;
+    caret-color:      @wl-magenta;
+}
+
+#input:focus {
+    border-bottom-color: @wl-cyan;
+    box-shadow: none;
+    outline: none;
+}
+
+/* placeholder text colore tenue */
+#input placeholder {
+    color: alpha(@wl-cyan, 0.35);
+}
+
+/* ── Results container ───────────────────────────────────── */
+#scroll {
+    margin: 4px 0px;
+}
+
+#inner-box {
+    background-color: transparent;
+}
+
+#outer-box {
+    background-color: transparent;
+    padding: 6px;
+}
+
+/* ── Individual entries ──────────────────────────────────── */
+#entry {
+    background-color: transparent;
+    border:           1px solid transparent;
+    border-radius:    0px;
+    padding:          7px 12px;
+    margin:           2px 0px;
+    color:            alpha(@wl-cyan, 0.75);
+}
+
+#entry:selected {
+    background-color: alpha(@wl-cyan, 0.10);
+    border-color:     alpha(@wl-cyan, 0.55);
+    color:            @wl-yellow;
+}
+
+#entry:hover {
+    background-color: alpha(@wl-cyan, 0.07);
+    border-color:     alpha(@wl-cyan, 0.30);
+    color:            @wl-cyan;
+}
+
+#text {
+    color: inherit;
+}

@@ -1,0 +1,7 @@
+background      = 0xFF{{background | strip}}
+base            = 0xFF{{color0 | strip}}
+alternate_base  = 0xFF{{color8 | strip}}
+accent          = 0xFF{{color6 | strip}}
+accent_secondary = 0xFF{{color4 | strip}}
+text            = 0xFF{{foreground | strip}}
+bright_text     = 0xFF{{color15 | strip}}

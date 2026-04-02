@@ -1,0 +1,401 @@
+/*
+ * SWAYNC — CYBERPUNK 2077 HUD THEME
+ * Coerente con la palette waybar
+ */
+
+/* ── Colori originali (reference — DO NOT DELETE) ──────────
+@define-color cc-bg           rgba(0, 6, 14, 0.96);
+@define-color noti-bg         rgba(9, 24, 51, 0.93);
+@define-color noti-bg-opaque  rgb(9, 24, 51);
+@define-color noti-bg-darker  rgb(4, 12, 26);
+@define-color noti-bg-hover   rgba(15, 38, 72, 0.97);
+@define-color noti-bg-focus   rgba(20, 48, 88, 0.7);
+@define-color noti-close-bg   rgba(255, 0, 60, 0.15);
+@define-color noti-close-bg-hover rgba(255, 0, 60, 0.45);
+@define-color noti-border-color rgba(10, 189, 198, 0.25);
+@define-color text-color      rgb(200, 210, 220);
+@define-color text-color-disabled rgb(50, 75, 85);
+@define-color bg-selected     rgb(10, 189, 198);
+@define-color yellow  #f9f002;
+@define-color cyan    #0abdc6;
+@define-color magenta #ea00d9;
+@define-color red     #ff003c;
+@define-color green   #00ff9d;
+── */
+
+/* ── Wallust generated palette ── */
+@define-color yellow  {{color3}};
+@define-color cyan    {{color6}};
+@define-color red     {{color1}};
+@define-color green   {{color2}};
+@define-color magenta {{color13}};
+
+@define-color cc-bg               alpha({{background}}, 0.96);
+@define-color noti-bg             alpha({{background}}, 0.93);
+@define-color noti-bg-opaque      {{background}};
+@define-color noti-bg-darker      {{background}};
+@define-color noti-bg-hover       alpha({{color4}}, 0.20);
+@define-color noti-bg-focus       alpha({{color4}}, 0.15);
+@define-color noti-close-bg       alpha({{color1}}, 0.15);
+@define-color noti-close-bg-hover alpha({{color1}}, 0.45);
+@define-color noti-border-color   alpha({{color6}}, 0.25);
+@define-color text-color          {{foreground}};
+@define-color text-color-disabled alpha({{foreground}}, 0.25);
+@define-color bg-selected         {{color6}};
+
+/* ── Base ────────────────────────────────────── */
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    border-radius: 0;
+    transition: background 0.15s ease-in-out;
+}
+
+/* ── Finestre ─────────────────────────────────── */
+notificationwindow,
+blankwindow {
+    background: transparent;
+}
+
+.blank-window {
+    background: transparent;
+}
+
+.floating-notifications {
+    background: transparent;
+}
+
+/* ── Close button ────────────────────────────── */
+.close-button {
+    background: @noti-close-bg;
+    color: @red;
+    border: 1px solid alpha(@red, 0.35);
+    border-radius: 0;
+    padding: 0;
+    margin-top: 6px;
+    margin-right: 6px;
+    min-width: 22px;
+    min-height: 22px;
+}
+
+.close-button:hover {
+    background: @noti-close-bg-hover;
+    border-color: @red;
+}
+
+/* ── Notification row ────────────────────────── */
+.notification-row {
+    background: none;
+    outline: none;
+}
+
+.notification-row:focus {
+    background: @noti-bg-focus;
+}
+
+.notification-row .notification-background {
+    padding: 4px 10px;
+    background: transparent;
+}
+
+/* La notifica vera e propria */
+.notification-row .notification-background .notification {
+    border-radius: 0;
+    border: 1px solid @noti-border-color;
+    border-left: 3px solid @cyan;
+    background: @noti-bg;
+    box-shadow: -3px 0 12px alpha(@cyan, 0.18),
+                0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Priorità bassa → bordo cyan */
+.notification-row .notification-background .notification.low {
+    border-left-color: @cyan;
+    box-shadow: -3px 0 10px alpha(@cyan, 0.18),
+                0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Priorità normale → bordo giallo */
+.notification-row .notification-background .notification.normal {
+    border-left-color: @yellow;
+    box-shadow: -3px 0 10px alpha(@yellow, 0.20),
+                0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Priorità critica → bordo rosso pulsante */
+.notification-row .notification-background .notification.critical {
+    border-left-color: @red;
+    box-shadow: -3px 0 18px alpha(@red, 0.50),
+                0 2px 10px rgba(0, 0, 0, 0.7);
+    animation: critical-pulse 1.2s ease-in-out infinite;
+}
+
+/* ── Contenuto notifica ──────────────────────── */
+.notification-row .notification-background .notification .notification-default-action {
+    padding: 4px;
+    background: transparent;
+    border: none;
+    color: @text-color;
+    border-radius: 0;
+}
+
+.notification-row .notification-background .notification .notification-default-action:hover {
+    background: @noti-bg-hover;
+}
+
+.notification-row .notification-background .notification .notification-default-action:not(:only-child) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Titolo */
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
+    font-size: 14px;
+    font-weight: bold;
+    color: @yellow;
+}
+
+/* Timestamp */
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time {
+    font-size: 11px;
+    font-weight: normal;
+    color: @cyan;
+    margin-right: 28px;
+}
+
+/* Corpo */
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .body {
+    font-size: 13px;
+    font-weight: normal;
+    color: @text-color;
+}
+
+/* Azioni alternative */
+.notification-row .notification-background .notification .notification-alt-actions {
+    background: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding: 4px;
+}
+
+.notification-row .notification-background .notification .notification-action > button {
+    border-radius: 0;
+    color: @cyan;
+    background: transparent;
+    border: 1px solid alpha(@cyan, 0.3);
+    margin: 4px;
+}
+
+.notification-row .notification-background .notification .notification-action > button:hover {
+    background: alpha(@cyan, 0.15);
+}
+
+/* ── Gruppi ──────────────────────────────────── */
+.notification-group {
+    transition: opacity 200ms ease-in-out;
+}
+
+.notification-group:focus {
+    background: @noti-bg-focus;
+}
+
+.notification-group .notification-group-buttons,
+.notification-group .notification-group-headers {
+    margin: 0 16px;
+    color: @text-color;
+}
+
+.notification-group .notification-group-headers .notification-group-icon {
+    color: @cyan;
+}
+
+.notification-group .notification-group-headers .notification-group-header {
+    color: @cyan;
+    font-weight: bold;
+}
+
+.notification-group.collapsed.not-expanded {
+    opacity: 0.4;
+}
+
+.notification-group.collapsed .notification-row .notification {
+    background-color: @noti-bg-opaque;
+}
+
+/* ── Control Center ──────────────────────────── */
+.control-center {
+    background: @cc-bg;
+    border: 1px solid alpha(@cyan, 0.35);
+    border-right: none;
+    border-top: none;
+    border-radius: 0;
+    box-shadow: -6px 6px 28px alpha(@cyan, 0.12);
+}
+
+.control-center .control-center-list-placeholder {
+    opacity: 1;
+    color: @text-color-disabled;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.control-center .control-center-list {
+    background: transparent;
+}
+
+.control-center .control-center-list .notification {
+    box-shadow: -3px 0 12px alpha(@cyan, 0.15),
+                0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Widget base ─────────────────────────────── */
+.widget {
+    margin: 4px 6px;
+    padding: 8px 12px;
+    border-radius: 0;
+}
+
+/* ── Widget: Title ───────────────────────────── */
+.widget-title {
+    border-bottom: 1px solid alpha(@cyan, 0.3);
+    margin-bottom: 2px;
+}
+
+.widget-title > label {
+    font-size: 12px;
+    font-weight: bold;
+    color: @cyan;
+    letter-spacing: 3px;
+}
+
+.widget-title > button {
+    border-radius: 0;
+    background: transparent;
+    color: @red;
+    border: 1px solid alpha(@red, 0.4);
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    margin-left: 8px;
+}
+
+.widget-title > button:hover {
+    background: alpha(@red, 0.15);
+    border-color: @red;
+}
+
+/* ── Widget: DND ─────────────────────────────── */
+.widget-dnd {
+    border-bottom: 1px solid alpha(@cyan, 0.15);
+}
+
+.widget-dnd label {
+    color: @text-color;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.widget-dnd switch {
+    border-radius: 0;
+    background: @noti-bg-opaque;
+    border: 1px solid alpha(@cyan, 0.4);
+}
+
+.widget-dnd switch:checked {
+    background: alpha(@magenta, 0.2);
+    border-color: @magenta;
+}
+
+.widget-dnd switch slider {
+    border-radius: 0;
+    background: @cyan;
+    min-width: 16px;
+    min-height: 16px;
+}
+
+.widget-dnd switch:checked slider {
+    background: @magenta;
+}
+
+/* ── Widget: MPRIS ───────────────────────────── */
+.widget-mpris {
+    padding: 0;
+    border-bottom: 1px solid alpha(@cyan, 0.15);
+}
+
+.widget-mpris .widget-mpris-player {
+    margin: 6px 10px;
+    border-radius: 0;
+    border: 1px solid alpha(@cyan, 0.25);
+    border-left: 3px solid @magenta;
+    box-shadow: -3px 0 10px alpha(@magenta, 0.2);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay {
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.65);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
+    font-weight: bold;
+    font-size: 13px;
+    color: @yellow;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
+    font-size: 11px;
+    color: @cyan;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+    background: alpha(@cyan, 0.2);
+}
+
+/* ── Widget: Inhibitors ──────────────────────── */
+.widget-inhibitors > label {
+    font-size: 12px;
+    font-weight: bold;
+    color: @yellow;
+    letter-spacing: 2px;
+}
+
+.widget-inhibitors > button {
+    border-radius: 0;
+    background: transparent;
+    color: @red;
+    border: 1px solid alpha(@red, 0.4);
+}
+
+.widget-inhibitors > button:hover {
+    background: alpha(@red, 0.15);
+}
+
+/* ── Tooltip ─────────────────────────────────── */
+tooltip {
+    background: @cc-bg;
+    border: 1px solid @cyan;
+    color: @text-color;
+}
+
+tooltip label {
+    color: @text-color;
+}
+
+/* ── Animazioni ──────────────────────────────── */
+@keyframes critical-pulse {
+    from {
+        box-shadow: -3px 0 10px alpha(@red, 0.4),
+                    0 2px 10px rgba(0, 0, 0, 0.7);
+    }
+    50% {
+        box-shadow: -3px 0 24px alpha(@red, 0.9),
+                    0 2px 10px rgba(0, 0, 0, 0.7);
+    }
+    to {
+        box-shadow: -3px 0 10px alpha(@red, 0.4),
+                    0 2px 10px rgba(0, 0, 0, 0.7);
+    }
+}

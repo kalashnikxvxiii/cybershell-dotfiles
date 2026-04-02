@@ -1,0 +1,10 @@
+[color]
+horizontal_gradient = 1
+horizontal_gradient_color_1 = '{{color1}}'
+horizontal_gradient_color_2 = '{{color2}}'
+horizontal_gradient_color_3 = '{{color3}}'
+horizontal_gradient_color_4 = '{{color4}}'
+horizontal_gradient_color_5 = '{{color5}}'
+horizontal_gradient_color_6 = '{{color6}}'
+horizontal_gradient_color_7 = '{{color7}}'
+horizontal_gradient_color_8 = '{{color8}}'
