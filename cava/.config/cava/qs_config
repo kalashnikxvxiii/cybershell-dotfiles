@@ -1,0 +1,12 @@
+[general]
+live-config = 1
+bars = 120
+
+[input]
+method = pipewire
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+ascii_max_range = 7
