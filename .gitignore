@@ -34,3 +34,6 @@ Themes/
 *.swp
 *.swo
 *~
+
+# Build artifacts
+build/
