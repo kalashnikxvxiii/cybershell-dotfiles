@@ -6,9 +6,11 @@ import "../../common"
 Item {
     id: root
     implicitHeight: 44
+    implicitWidth: layout.implicitWidth + 24
 
     readonly property alias resultsModel: wallpaperSearch.resultsModel
     readonly property alias searchExpanded: wallpaperSearch.expanded
+    readonly property alias searchInputFocused: wallpaperSearch.inputFocused
     
     signal searchResultClicked(string thumbPath, string fullUrl)
     signal searchFirstResult()
@@ -33,6 +35,7 @@ Item {
     }
 
     RowLayout {
+        id: layout
         anchors.fill: parent
         anchors.leftMargin: 12
         anchors.rightMargin: 12
@@ -203,7 +206,5 @@ Item {
             Layout.preferredHeight: 32
             onFirstResultReady: root.searchFirstResult()
         }
-
-        Item { Layout.fillWidth: true }
     }
 }

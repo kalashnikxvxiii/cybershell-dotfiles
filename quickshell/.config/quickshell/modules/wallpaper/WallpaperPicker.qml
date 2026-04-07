@@ -1,26 +1,34 @@
-import Quickshell
+import "../../common/Colors.js" as CP
+import "../../common/effects"
+import "../../common"
 import Quickshell.Wayland
 import Quickshell.Io
-import QtQuick
+import Quickshell
 import QtQuick.Layouts
 import QtQuick.Effects
-import "../../common/Colors.js" as CP
-import "../../common"
+import QtQuick
 
 Scope {
     id: root
-    required property var screen
 
-    readonly property bool isActiveScreen:
-        WallpaperState.pickerOpen && screen.name === WallpaperState.activeScreen
     readonly property string scriptsDir: "/home/kalashnikxv/.config/quickshell/scripts"
     readonly property string themerDir: "/home/kalashnikxv/.config/hypr/scripts"
+    readonly property bool isActiveScreen:
+        WallpaperState.pickerOpen && screen.name === WallpaperState.activeScreen
+    
+    required property var screen
 
-    property var allEntries: []
-    property string originalWallpaper: ""
-    property bool previewShown: false
-    property bool wpePreviewActive: false
-    property var searchResultsModel: null
+    property string originalWallpaper:  ""
+    property string downloadingUrl:     ""
+    property bool   wpePreviewActive:   false
+    property bool   deleteDialogOpen:   false
+    property bool   previewShown:       false
+    property bool   downloading:        false
+    property bool   _skipInit:          false
+    property real   downloadProgress:   0
+    property var    searchResultsModel: null
+    property var    localBasenames:     ({})
+    property var    allEntries:         []    
 
     ListModel { id: wallpaperModel }
 
@@ -34,6 +42,10 @@ Scope {
                     var entry = JSON.parse(data)
                     root.allEntries.push(entry)
                     wallpaperModel.append(entry)
+                    var bn = entry.path.substring(entry.path.lastIndexOf("/") + 1)
+                    var lb = root.localBasenames
+                    lb[bn] = true
+                    root.localBasenames = lb
                 } catch(e) {}
             }
         }
@@ -69,9 +81,6 @@ Scope {
         // If search preview is active, download and add to carousel
         if (carousel.searchFocused && carousel.selectedSearchUrl !== "") {
             downloadAndAdd(carousel.selectedSearchUrl, "")
-            carousel.searchFocused = false
-            carousel.selectedSearchIdx = -1
-            carousel.selectedSearchUrl = ""
             return
         }
 
@@ -104,11 +113,14 @@ Scope {
         running: false
         stdout: SplitParser {
             onRead: data => {
-                if (data.startsWith("SAVED:")) {
+                if (data.startsWith("PROGRESS:")) {
+                    root.downloadProgress = parseInt(data.substring(9)) / 100
+                } else if (data.startsWith("SAVED:")) {
                     var savedPath = data.substring(6)
                     // Add to catalog and carousel
                     var fname = savedPath.substring(savedPath.lastIndexOf("/") + 1)
                     var title = fname.substring(0, fname.lastIndexOf("."))
+                    root._skipInit = true
                     wallpaperModel.append({
                         path: savedPath,
                         thumb: savedPath,
@@ -118,19 +130,82 @@ Scope {
                         color: "#888888",
                         videoFile: ""
                     })
-                    carousel.currentIndex = wallpaperModel.count - 1
+                    root._skipInit = false
                     carousel.updateCards()
+                    var bn = savedPath.substring(savedPath.lastIndexOf("/") + 1)
+                    var lb = root.localBasenames
+                    lb[bn] = true
+                    root.localBasenames = lb
+                    root.downloading = false
+                    completionGlitch.start()
+                    root.downloadProgress = 0
+                    root.downloadingUrl = ""
                 }
             }
         }
     }
 
     function downloadAndAdd(url, thumbPath) {
-        downlaodProc.command = ["bash", "-c",
-            "DEST=\"$HOME/Pictures/wallpapers/$(basename '" + url + "')\" && " +
-            "curl -sL --max-time 30 -o \"$DEST\" '" + url + "' && " +
-            "echo \"SAVED:$DEST\""]
+        root.downloading        = true
+        root.downloadProgress   = 0
+        root.downloadingUrl    = url
+        downloadProc.command    = ["bash", "-c",
+            "URL='" + url + "'; " +
+            "DEST=\"$HOME/Pictures/wallpapers/$(basename \"$URL\")\"; " +
+            "SIZE=$(curl -sI -L --max-time 10 \"$URL\" | grep -i content-length | tail -1 | awk '{print $2}' | tr -d '\\r'); " +
+            "curl -sL --max-time 30 -o \"$DEST\" \"$URL\" & PID=$!; " +
+            "while kill -0 $PID 2>/dev/null; do "+
+            "  if [ -f \"$DEST\" ] && [ -n \"$SIZE\" ] && [ \"$SIZE\" -gt 0 ]; then " +
+            "    CUR=$(stat -c%s \"$DEST\" 2>/dev/null || echo 0); " +
+            "    echo \"PROGRESS:$((CUR * 100 / SIZE))\"; " +
+            "  fi; " +
+            "  sleep 0.2; " +
+            "done; " +
+            "wait $PID && echo \"SAVED:$DEST\""]
         downloadProc.running = true
+    }
+
+    Process {
+        id: deleteProc
+        command: ["true"]
+        running: false
+    }
+
+    function deleteCurrentWallpaper() {
+        var idx = carousel.currentIndex
+        if (idx < 0 || idx >= wallpaperModel.count) return
+        var entry = wallpaperModel.get(idx)
+        var path = entry.path
+
+        // Remove file
+        deleteProc.command = ["rm", "-f", path]
+        deleteProc.running = true
+
+        // Remove from model
+        root._skipInit = true
+        wallpaperModel.remove(idx)
+        root._skipInit = false
+        
+        // Remove from localBasenames
+        var bn = path.substring(path.lastIndexOf("/") + 1)
+        var lb = root.localBasenames
+        delete lb[bn]
+        root.localBasenames = lb
+
+        // Snap index
+        if (carousel.currentIndex >= wallpaperModel.count)
+            carousel.currentIndex = wallpaperModel.count - 1
+        carousel.updateCards()
+
+        root.deleteDialogOpen = false
+    }
+
+    function currentVisiblePosition() {
+        var pos = 0
+        for (var i = 0; i <= carousel.currentIndex && i < wallpaperModel.count; i++) {
+            if (WallpaperState.matchesFilter(wallpaperModel.get(i))) pos++
+        }
+        return pos
     }
 
     function nextVisible() {
@@ -158,6 +233,17 @@ Scope {
                 carousel.updateCards()
                 return
             }
+        }
+    }
+
+    function updateSearchPreview(thumbPath, fullUrl) {
+        var isGif = fullUrl.toLowerCase().endsWith(".gif")
+        if (isGif) {
+            searchPreviewImage.source = ""
+            searchPreviewGif.source = fullUrl
+        } else {
+            searchPreviewGif.source = ""
+            searchPreviewImage.source = thumbPath ? fullUrl : ""
         }
     }
 
@@ -216,7 +302,7 @@ Scope {
                 anchors.top: parent.top
                 anchors.topMargin: root.isActiveScreen ? 230 : -100
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: Math.min(parent.width - 80, 780)
+                width: Math.min(implicitWidth, parent.width - 80)
 
                 Behavior on anchors.topMargin {
                     NumberAnimation { duration: 600; easing.type: Easing.OutExpo }
@@ -482,9 +568,14 @@ Scope {
                 }
 
                 function refilterCards() {
+                    // Reset to first visible card
                     for (var i = 0; i < repeater.count; i++) {
                         var item = repeater.itemAt(i)
                         if (item) item.animEnabled = false
+                        if (item && item.isVisible) {
+                            currentIndex = i
+                            break
+                        }
                     }
                     updateCards()
                     for (var i = 0; i < repeater.count; i++) {
@@ -540,7 +631,7 @@ Scope {
                         if (filterBar.resultsModel.count > 0) {
                             var sr = filterBar.resultsModel.get(0)
                             if (sr) {
-                                searchPreviewImage.source = sr.thumbPath ? "file://" + sr.thumbPath : ""
+                                root.updateSearchPreview(sr.thumbPath, sr.fullUrl)
                                 carousel.selectedSearchUrl = sr.fullUrl
                             }
                         }
@@ -550,7 +641,7 @@ Scope {
                 Repeater {
                     id: repeater
                     model: wallpaperModel
-                    onItemAdded: initTimer.restart()
+                    onItemAdded: { if (!root._skipInit) initTimer.restart() }
 
                     delegate: WallpaperCard {
                         y: 0
@@ -634,6 +725,15 @@ Scope {
                     asynchronous: true
                 }
 
+                AnimatedImage {
+                    id: searchPreviewGif
+                    anchors.fill: parent
+                    source: ""
+                    fillMode: Image.PreserveAspectCrop
+                    playing: true
+                    visible: source !== ""
+                }
+
                 CutShape {
                     anchors.fill: parent
                     fillColor: "transparent"
@@ -642,6 +742,106 @@ Scope {
                     inset: 1
                     cutTopLeft: 32
                     cutBottomRight: 32
+                }
+
+                // ── Download overalay (preview) ───────────────────────────────────
+                Item {
+                    id: previewDownloadOverlay
+                    anchors.fill: parent
+                    visible: root.downloading
+                    z: 10
+
+                    // Darken
+                    Rectangle {
+                        anchors.fill: parent
+                        color: CP.alpha("#000000", 0.45)
+                        opacity: root.downloading ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: 300 } }
+                    }
+
+                    // Scanlines
+                    ScanlineOverlay { opacity: 0.1 }
+
+                    // Center column: icon + text + percentage
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 6
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "\uf019"
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 28
+                            color: CP.cyan
+                            PulseAnim on opacity { running: root.downloading; minOpacity: 0.3; duration: 400 }
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "DOWNLOADING"
+                            font.family: "Oxanium"
+                            font.pixelSize: 10
+                            font.letterSpacing: 3
+                            color: CP.cyan
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: Math.floor(root.downloadProgress * 100) + "%"
+                            font.family: "Oxanium"
+                            font.pixelSize: 14
+                            color: CP.yellow
+                        }
+                    }
+
+                    // Progress Bar
+                    Item {
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 4
+
+                        Rectangle {
+                            anchors.fill: parent
+                            color: CP.alpha(CP.cyan, 0.15)
+                        }
+
+                        Rectangle {
+                            id: previewProgressBar
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            width: parent.width * root.downloadProgress
+                            color: CP.cyan
+
+                            SequentialAnimation on color {
+                                loops: Animation.Infinite
+                                running: root.downloading
+                                ColorAnimation { to: CP.cyan; duration: 500 }
+                                ColorAnimation { to: CP.magenta; duration: 60 }
+                                ColorAnimation { to: CP.yellow; duration: 60 }
+                                ColorAnimation { to: CP.cyan; duration: 60 }
+                            }
+                        }
+                    }
+                }
+
+                // ── Completion glitch burst ───────────────────────────────
+                Rectangle {
+                    id: completionFlash
+                    anchors.fill: parent
+                    color: CP.magenta
+                    opacity: 0
+                    z: 11
+
+                    SequentialAnimation {
+                        id: completionGlitch
+                        PropertyAction { target: completionFlash; property: "color"; value: CP.magenta }
+                        NumberAnimation { target: completionFlash; property: "opacity"; to: 0.4; duration: 60 }
+                        PropertyAction { target: completionFlash; property: "color"; value: CP.cyan }
+                        NumberAnimation { target: completionFlash; property: "opacity"; to: 0.2; duration: 60 }
+                        NumberAnimation { target: completionFlash; property: "opacity"; to: 0; duration: 180 }
+                    }
                 }
 
                 CutShape {
@@ -683,6 +883,9 @@ Scope {
                     Text {
                         Layout.fillWidth: true
                         text: {
+                            if (carousel.searchFocused && filterBar.resultsModel && carousel.selectedSearchIdx >= 0
+                                && carousel.selectedSearchIdx < filterBar.resultsModel.count)
+                                return filterBar.resultsModel.get(carousel.selectedSearchIdx).fname.toUpperCase()
                             if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count)
                                 return ""
                             return wallpaperModel.get(carousel.currentIndex).title.toUpperCase()
@@ -696,6 +899,9 @@ Scope {
 
                     Text {
                         text: {
+                            if (carousel.searchFocused && carousel.selectedSearchIdx >= 0
+                                && carousel.selectedSearchIdx < filterBar.resultsModel.count)
+                                return filterBar.resultsModel.get(carousel.selectedSearchIdx).source.toUpperCase()
                             if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count)
                                 return ""
                             var e = wallpaperModel.get(carousel.currentIndex)
@@ -708,7 +914,9 @@ Scope {
                     }
 
                     Text {
-                        text: (carousel.currentIndex + 1) + " / " + wallpaperModel.count
+                        text: carousel.searchFocused && filterBar.resultsModel
+                            ? (carousel.selectedSearchIdx + 1) + " / " + filterBar.resultsModel.count
+                            : root.currentVisiblePosition() + " / " + carousel.visibleCount
                         font.family: "Oxanium"
                         font.pixelSize: 10
                         color: Colours.textMuted
@@ -788,6 +996,7 @@ Scope {
                         required property string thumbPath
                         required property string fullUrl
                         required property int index
+                        required property string source
 
                         // Masked content (image clipped to cut shape)
                         Item {
@@ -806,6 +1015,149 @@ Scope {
                                 source: thumbPath ? "file://" + thumbPath : ""
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
+                            }
+                        }
+
+                        // Source badge
+                        CutShape {
+                            id: sourceBadge
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.topMargin: 2
+                            width: badgeText.implicitWidth + 8
+                            height: 22
+                            fillColor: CP.alpha("#000000", 0.6)
+                            cutBottomLeft: typeBadge.visible ? 0 : 4
+
+                            Text {
+                                id: badgeText
+                                anchors.centerIn: parent
+                                text: {
+                                    switch (parent.parent.source) {
+                                        case "r":  return "\uf281"
+                                        case "rg": return "\uf281"
+                                        case "a":  return "A"
+                                        case "ag": return "AG"
+                                        default:   return parent.parent.source.toUpperCase()
+                                    }
+                                }
+                                font.family: parent.parent.source === "r" || parent.parent.source === "rg"
+                                    ? "JetBrainsMono Nerd Font" : "Oxanium"
+                                font.pixelSize: 12
+                                font.letterSpacing: parent.parent.source === "r" || parent.parent.source === "rg" ? 0 : 1
+                                color: {
+                                    switch (parent.parent.source) {
+                                        case "wh": return CP.cyan
+                                        case "a":  return CP.yellow
+                                        case "ag": return CP.yellow
+                                        case "r":  return CP.magenta
+                                        case "rg": return CP.magenta
+                                        default:   return CP.cyan
+                                    }
+                                }
+                            }
+                        }
+
+                        // Type badge (gif/img)
+                        CutShape {
+                            id: typeBadge
+                            anchors.top: sourceBadge.bottom
+                            anchors.right: parent.right
+                            width: sourceBadge.implicitWidth
+                            height: 14
+                            fillColor: CP.alpha("#000000", 0.6)
+                            cutBottomLeft: 4
+                            z: 5
+                            visible: parent.fullUrl.toLowerCase().endsWith(".gif")
+
+                            Text {
+                                id: typeText
+                                anchors.centerIn: parent
+                                text: "GIF"
+                                font.family: "Oxanium"
+                                font.pixelSize: 9
+                                font.letterSpacing: 1
+                                color: Colours.accentOk
+                            }
+                        }
+
+                        // Downloaded indicator
+                        CutShape {
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            width: 24
+                            height: 20
+                            fillColor: CP.alpha("#000000", 0.6)
+                            cutTopRight: 8
+                            visible: {
+                                var bn = parent.fullUrl.substring(parent.fullUrl.lastIndexOf("/") + 1)
+                                return root.localBasenames[bn] === true
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "\u2713"
+                                font.pixelSize: 18
+                                color: Colours.accentOk
+                            }
+                        }
+
+                        // ── Download overlay ───────────────────────────────────────────
+                        Item {
+                            anchors.fill: parent
+                            visible: root.downloading && root.downloadingUrl === parent.fullUrl
+                            z: 6
+
+                            // Darken
+                            Rectangle {
+                                anchors.fill: parent
+                                color: CP.alpha("#000000", 0.5)
+                                opacity: root.downloading && root.downloadingUrl === parent.fullUrl ? 1 : 0
+                                Behavior on opacity { NumberAnimation { duration: 200 } }
+                            }
+
+                            // Scanlines
+                            ScanlineOverlay { opacity: 0.12 }
+
+                            // Download icon
+                            Text {
+                                anchors.centerIn: parent
+                                text: "\uf019"
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 16
+                                color: CP.cyan
+                                PulseAnim on opacity { running: true; minOpacity: 0.3; duration: 400 }
+                            }
+
+                            // Progress Bar
+                            Item {
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                height: 3
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: CP.alpha(CP.cyan, 0.15)
+                                }
+
+                                Rectangle {
+                                    id: smallProgressBar
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    width: parent.width * root.downloadProgress
+                                    color: CP.cyan
+
+                                    SequentialAnimation on color {
+                                        loops: Animation.Infinite
+                                        running: root.downloading
+                                        ColorAnimation { to: CP.cyan; duration: 500 }
+                                        ColorAnimation { to: CP.magenta; duration: 60 }
+                                        ColorAnimation { to: CP.yellow; duration: 60 }
+                                        ColorAnimation { to: CP.cyan; duration: 60 }
+                                    }
+                                }
                             }
                         }
 
@@ -839,7 +1191,7 @@ Scope {
                             onClicked: {
                                 carousel.selectedSearchIdx = index
                                 carousel.searchFocused = true
-                                searchPreviewImage.source = thumbPath ? "file://" + thumbPath : ""
+                                root.updateSearchPreview(thumbPath, fullUrl)
                                 carousel.selectedSearchUrl = fullUrl
                             }
                         }
@@ -857,10 +1209,140 @@ Scope {
                 }
             }
 
+            // ── Delete confirmation dialog ──────────────────────────────────
+            Item {
+                id: deleteDialog
+                anchors.centerIn: parent
+                width: 340
+                height: 120
+                z: 300
+                visible: root.deleteDialogOpen
+                opacity: root.deleteDialogOpen ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+
+                CutShape {
+                    anchors.fill: parent
+                    fillColor: CP.moduleBg
+                    strokeColor: CP.alpha(CP.red, 0.6)
+                    strokeWidth: 2
+                    inset: 1
+                    cutTopLeft: 16
+                    cutBottomRight: 16
+                }
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 12
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "DELETE WALLPAPER?"
+                        font.family: "Oxanium"
+                        font.pixelSize: 13
+                        font.letterSpacing: 3
+                        color: Colours.accentDanger
+                    }
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: {
+                            if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count)
+                                return ""
+                            return wallpaperModel.get(carousel.currentIndex).title.toUpperCase()
+                        }
+                        font.family: "Oxanium"
+                        font.pixelSize: 10
+                        font.letterSpacing: 1
+                        color: Colours.textMuted
+                        elide: Text.ElideRight
+                        width: 300
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 16
+
+                        // Confirm
+                        Item {
+                            width: confirmText.implicitWidth + 24
+                            height: 28
+
+                            CutShape {
+                                anchors.fill: parent
+                                fillColor: CP.alpha(CP.red, 0.2)
+                                strokeColor: Colours.accentDanger
+                                strokeWidth: 1
+                                inset: 0.5
+                                cutTopLeft: 4
+                                cutBottomRight: 4
+                            }
+
+                            Text {
+                                id: confirmText
+                                anchors.centerIn: parent
+                                text: "ENTER - DELETE"
+                                font.family: "Oxanium"
+                                font.pixelSize: 10
+                                font.letterSpacing: 1
+                                color: Colours.accentDanger
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.deleteCurrentWallpaper()
+                            }
+                        }
+
+                        // Cancel
+                        Item {
+                            width: cancelText.implicitWidth + 24
+                            height: 28
+
+                            CutShape {
+                                anchors.fill: parent
+                                fillColor: "transparent"
+                                strokeColor: CP.alpha(CP.cyan, 0.3)
+                                strokeWidth: 1
+                                inset: 0.5
+                                cutTopLeft: 4
+                                cutBottomRight: 4
+                            }
+
+                            Text {
+                                id: cancelText
+                                anchors.centerIn: parent
+                                text: "ESC - CANCEL"
+                                font.family: "Oxanium"
+                                font.pixelSize: 10
+                                font.letterSpacing: 1
+                                color: Colours.textMuted
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.delegateDialogOpen = false
+                            }
+                        }
+                    }
+                }
+            }
+
             Keys.onPressed: event => {
                 switch (event.key) {
+                    case Qt.Key_R:
+                        if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
+                            if (carousel.currentIndex >= 0 && carousel.currentIndex < wallpaperModel.count) {
+                                root.deleteDialogOpen = true
+                            }
+                        }
+                        event.accepted = true
+                        break
                     case Qt.Key_Left:
                     case Qt.Key_Right:
+                        if (filterBar.searchInputFocused || root.deleteDialogOpen) break
                         if (carousel.searchFocused && filterBar.resultsModel && filterBar.resultsModel.count > 0) {
                             // Navigate search results
                             if (event.key === Qt.Key_Right)
@@ -870,7 +1352,7 @@ Scope {
                             // Update preview in dedicated card
                             var sr = filterBar.resultsModel.get(carousel.selectedSearchIdx)
                             if (sr) {
-                                searchPreviewImage.source = sr.thumbPath ? "file://" + sr.thumbPath : ""
+                                root.updateSearchPreview(sr.thumbPath, sr.fullUrl)
                                 carousel.selectedSearchUrl = sr.fullUrl
                             }
                         } else {
@@ -897,12 +1379,19 @@ Scope {
                         break
                     case Qt.Key_Return:
                     case Qt.Key_Enter:
-                        if (!filterBar.searchExpanded) {
+                        if (root.deleteDialogOpen) {
+                            root.deleteCurrentWallpaper()
+                        } else if (!filterBar.searchInputFocused) {
                             root.applyWallpaper()
                         }
                         event.accepted = true
                         break
                     case Qt.Key_Escape:
+                        if (root.deleteDialogOpen) {
+                            root.deleteDialogOpen = false
+                            event.accepted = true
+                            break
+                        }
                         if (carousel.searchFocused) {
                             carousel.searchFocused = false
                             // Clear search preview from current card
@@ -987,7 +1476,7 @@ Scope {
                         event.accepted = true
                         break
                     case Qt.Key_M:
-                        if (!filterBar.searchExpanded) {
+                        if (!filterBar.searchInputFocused) {
                             var mCard = repeater.itemAt(carousel.currentIndex)
                             if (mCard && mCard.videoPlaying) {
                                 carousel.audioEnabled = !carousel.audioEnabled
