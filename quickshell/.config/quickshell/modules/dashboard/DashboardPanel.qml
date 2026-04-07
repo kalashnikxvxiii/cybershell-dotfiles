@@ -1,4 +1,4 @@
-// DashboardPanel.qml — pannello della dashboard con effetti di bordo e scanline
+// DashboardPanel.qml — dashboard panel with border effects and scanlines
 
 import QtQuick
 import QtQuick.Effects
@@ -17,7 +17,7 @@ Item {
     property int    panelHeight:    dashContent.implicitHeight
 
     readonly property int inputHeight: drawerState.dashboardOpen ? panelHeight : 0
-    // Extent del lyrics drawer (per interactions hit area)
+    // Lyrics drawer extent (for interactions hit area)
     readonly property real lyricsDrawerExtent: lyricsDrawer.visible ? -lyricsDrawer.x : 0
     readonly property real lyricsDrawerRelY: lyricsDrawer.y
     readonly property real lyricsDrawerRelH: lyricsDrawer.height
@@ -56,7 +56,7 @@ Item {
         }
     ]
 
-    // Contenuto mascherato (sfondo + scanlines + dashboard)
+    // Masked content (background + scanlines + dashboard)
     Item {
         id: panelContent
         anchors.fill: parent
@@ -67,14 +67,14 @@ Item {
             maskSource: shapeMask
         }
 
-        // Sfondo
+        // Background
         CutShape {
             anchors.fill: parent
             fillColor: Colours.moduleBg
             cutTopRight: 32; cutBottomLeft: 32
         }
 
-        // Contenuto
+        // Content
         DashboardContent {
             id: dashContent
             anchors.fill: parent
@@ -126,12 +126,12 @@ Item {
                 running: root.drawerState.dashboardOpen
                 loops: Animation.Infinite
 
-                // Passata 1: scorrimento liscio, nessun glitch
+                // Pass 1: smooth scroll, no glitch
                 PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
                 NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 3200; easing.type: Easing.Linear }
                 PauseAnimation  { duration: 480 }
 
-                // Passata 2: salto in avanti a metà corsa
+                // Pass 2: forward jump mid-run
                 PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
                 NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.38; duration: 1900; easing.type: Easing.Linear }
                 ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.65 }
@@ -139,7 +139,7 @@ Item {
                 NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 1100; easing.type: Easing.Linear }
                 PauseAnimation  { duration: 350 }
 
-                // Passata 3: salto all'indietro (artefatto tracking VHS)
+                // Pass 3: backward jump (VHS tracking artifact)
                 PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
                 NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.52; duration: 2100; easing.type: Easing.Linear }
                 ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.18 }
@@ -147,7 +147,7 @@ Item {
                 NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 2400; easing.type: Easing.Linear }
                 PauseAnimation  { duration: 420 }
 
-                // Passata 4: doppio micro-salto in avanti
+                // Pass 4: double micro-jump forward
                 PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
                 NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.27; duration: 1400; easing.type: Easing.Linear }
                 ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.46 }
@@ -160,7 +160,7 @@ Item {
             }
         }
 
-        // Mask (stesso poligono riempito bianco, invisibile)
+        // Mask (same polygon filled white, invisible)
         CutShape {
             id: shapeMask
             layer.enabled: true
@@ -172,7 +172,7 @@ Item {
         }
     }
 
-    // Bordo (fuori dalla mask — stroke completo, non clippato)
+    // Border (outside the mask — full stroke, not clipped)
     CutShape {
         anchors.fill: parent
         strokeColor: CP.yellow
@@ -181,7 +181,7 @@ Item {
         cutTopRight: 32; cutBottomLeft: 32
     }
 
-    // CornerAccents — solo agli angoli NON tagliati (top-left e bottom-right)
+    // CornerAccents — only on the NON-cut corners (top-left and bottom-right)
     CornerAccents {
         anchors.fill: parent
         accentColor:     CP.yellow
@@ -193,7 +193,7 @@ Item {
         opacity:         0.75
     }
 
-    // Lyrics drawer - scivola a sinistra dal bordo del pannello
+    // Lyrics drawer - slides left from the panel edge
     Item {
         id: lyricsDrawer
 
@@ -242,7 +242,7 @@ Item {
                 Behavior on x { NumberAnimation { duration: 350; easing.type: Easing.OutBounce } }
             }
 
-            // Contenuto ancorato a sinistra -> slide emerge dal bordo destro (dell'edge del pannello)
+            // Content anchored left -> slide emerges from the right edge (of the panel border)
             Item {
                 anchors.left: parent.left
                 anchors.top: parent.top
@@ -277,7 +277,7 @@ Item {
                     shadowVerticalOffset: 15
                 }
             }
-            // Lyrics content (fuori dal layer/MultiEffect per non glowmare il testo)
+            // Lyrics content (outside layer/MultiEffect so text doesn't get the glow treatment)
             DashLyricsView {
                 id: lyricsView
                 anchors.left: parent.left
@@ -312,7 +312,7 @@ Item {
             }
         }
 
-        // Handle clickable - apre il drawer
+        // Clickable handle - opens the drawer
         MouseArea {
             id: openHandle
             visible: !lyricsDrawer.lyricsOpen
@@ -356,7 +356,7 @@ Item {
             }
         }
 
-        // Handle clickabile - chiude il drawer
+        // Clickable handle - closes the drawer
         MouseArea {
             visible: lyricsDrawer.lyricsOpen
             anchors.right: parent.right

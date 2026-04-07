@@ -1,4 +1,4 @@
-// GpuModule.qml — GPU usage % via gpu-waybar.sh, intervallo 2s
+// GpuModule.qml — GPU usage % via gpu-waybar.sh, 2s interval
 
 import QtQuick
 import "../../common/Colors.js" as CP

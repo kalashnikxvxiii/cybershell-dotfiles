@@ -1,4 +1,4 @@
-// WallustColors.qml — legge wallust-colors.css e aggiorna i colori
+// WallustColors.qml — reads wallust-colors.css and updates the colors
 
 import QtQuick
 import Quickshell.Io

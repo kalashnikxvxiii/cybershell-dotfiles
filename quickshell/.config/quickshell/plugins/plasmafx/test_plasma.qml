@@ -13,7 +13,7 @@ Rectangle {
         power: powerAnim.value
     }
 
-    // Ciclo continuo: 0 → 1 → 0 in 10 secondi
+    // Continuous loop: 0 → 1 → 0 over 10 seconds
     SequentialAnimation {
         id: powerAnim
         property real value: 0.0
@@ -30,7 +30,7 @@ Rectangle {
         }
     }
 
-    // Indicatore power attuale
+    // Current power readout
     Text {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter

@@ -1,4 +1,4 @@
-// MemoryModule.qml — RAM usage % via /proc/meminfo, intervallo 5s
+// MemoryModule.qml — RAM usage % via /proc/meminfo, 5s interval
 
 import Quickshell.Io
 import QtQuick

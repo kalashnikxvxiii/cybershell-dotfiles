@@ -8,7 +8,7 @@ import "../../common/Colors.js" as CP
 CyberpunkModule {
     id: root
 
-    // PwObjectTracker è necessario per rendere accessibili le proprietà audio
+    // PwObjectTracker is required to make audio properties accessible — trust me on this one
     PwObjectTracker {
         objects: [Pipewire.preferredDefaultAudioSink]
     }

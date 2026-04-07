@@ -11,7 +11,7 @@ Item {
     implicitHeight: 24
     implicitWidth: innerRow.implicitWidth
 
-    // ── Sfondo con angolo tagliato + glow MultiEffect ─────────────────────
+    // ── Background with diagonal cut + MultiEffect glow ────────────────────
     Item {
         id: bgItem
         anchors.fill: parent

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Risolve path icona per appId / WM class / titolo (Hyprland)
-Supporto: GTK theme, .desktop, Steam (appmanifest + library cache), Unreal Engine.
-Cache su disco velocizzare lookup ripetuti.
+Resolve icon path for appId / WM class / window title (Hyprland).
+Supports: GTK theme, .desktop, Steam (appmanifest + library cache), Unreal Engine.
+On-disk cache to speed up repeated lookups.
 """
 import gi
 import json
@@ -18,9 +18,9 @@ from gi.repository import Gtk, Gio
 
 theme = Gtk.IconTheme.get_default()
 
-# ── Configurazione ──────────────────────────────────
+# ── Configuration ──────────────────────────────────
 CACHE_PATH = Path.home() / ".cache" / "icon-lookup.json"
-CACHE_TTL = 120 # secondi
+CACHE_TTL = 120 # seconds
 
 DESKTOP_DIRS = [
     Path.home() / ".local/share/applications",
@@ -48,7 +48,7 @@ ACF_RE = {
     "name": re.compile(r'"name"\s+"([^"]*)"'),
 }
 
-# ── Cache disco ────────────────────────────────────────────────────────
+# ── Disk cache ────────────────────────────────────────────────────────
 def load_cache():
     if not CACHE_PATH.exists():
         return {}
@@ -68,7 +68,7 @@ def save_cache(cache):
     except OSError:
         pass
 
-# ── Utilita' stringhe ────────────────────────────────────────────────────
+# ── String utilities ────────────────────────────────────────────────────
 
 def norm(s):
     return "".join(c.lower() for c in s if c.isalnum())
@@ -118,7 +118,7 @@ def try_variants(name):
                 return r
     return None
 
-# ── Desktop entries (parsate una volta) ──────────────────────────────────────────
+# ── Desktop entries (parsed once, then cached) ──────────────────────────────────
 
 _desktop_cache = None
 
@@ -311,7 +311,7 @@ def steam_resolve(key_norms):
                         return r
     return None
 
-# ── Raccolta chiavi da argomenti ────────────────────────────────────────────
+# ── Collect lookup keys from arguments ──────────────────────────────────────
 
 def collect_keys():
     keys = []

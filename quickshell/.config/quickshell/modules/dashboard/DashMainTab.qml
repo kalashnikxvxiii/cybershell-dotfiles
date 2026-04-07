@@ -1,5 +1,5 @@
-// Struttura:
-// 6 colonne, 2 righe
+// Layout:
+// 6 columns, 2 rows
 //   Row 0: [App Launcher: 0-1] [User: 2-4] [Media: 5, rowSpan 2]
 //   Row 1: [Clock: 0] [Calendar: 1-3] [Resources: 4] [Media span]
 
@@ -16,22 +16,22 @@ Item {
 
     required property PersistentProperties dashState
 
-    // Dimensioni celle:
+    // Cell sizes:
     readonly property int appLauncherCellWidth: 180
     readonly property int clockCellWidth: clock.implicitWidth
     readonly property int resourcesCellWidth: 92
     readonly property int mediaCellWidth: 250
     readonly property int userCellWidth: 360
     readonly property int topRowHeight: 172
-    // bottomRowHeight e' guidato da calendar.implicitHeight
+    // bottomRowHeight is driven by calendar.implicitHeight
 
     implicitWidth: 830
-    // implicitHeight dinamico: segue l'altezza reale della griglia (dipende da calendar.implicitHeight)
+    // Dynamic implicitHeight: follows the grid's actual height (depends on calendar.implicitHeight)
     implicitHeight: grid.implicitHeight + grid.anchors.margins * 2
 
     GridLayout {
         id: grid
-        // Solo top/left/right ancorati — la griglia determina liberamente la propria altezza
+        // Only top/left/right anchored — the grid freely determines its own height
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right

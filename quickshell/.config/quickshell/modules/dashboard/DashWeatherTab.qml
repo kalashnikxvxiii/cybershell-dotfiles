@@ -5,9 +5,9 @@ import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
 
-// Tab Meteo: icona + temperatura + 5-day forecast
-// Adattato da Caelestia modules/dashboard/Weather.qml
-// Usa wttr.in JSON API (nessun API key necessario)
+// Weather Tab: icon + temperature + 5-day forecast
+// Adapted from Caelestia modules/dashboard/Weather.qml
+// Uses wttr.in JSON API (no API key needed)
 
 Item {
     id: root
@@ -69,7 +69,7 @@ Item {
                     root.humidity  = cur.humidity + "%"
                     root.windSpeed = cur.windspeedKmph + " km/h"
 
-                    // Icona meteo semplificata
+                    // Simplified weather icon
                     const code = parseInt(cur.weatherCode)
                     if (code === 113)         root.weatherIcon = "☀"
                     else if (code <= 116)     root.weatherIcon = "⛅"
@@ -79,12 +79,12 @@ Item {
                     else if (code <= 395)     root.weatherIcon = "❄"
                     else                      root.weatherIcon = "⛈"
 
-                    // Sunrise/Sunset dal primo giorno
+                    // Sunrise/Sunset from the first day
                     const w0 = data.weather[0]
                     root.sunrise = w0.astronomy[0].sunrise
                     root.sunset  = w0.astronomy[0].sunset
 
-                    // Forecast 5 giorni
+                    // 5-day forecast
                     root.forecast = data.weather.slice(0, 5).map((d, i) => ({
                         date: new Date(d.date),
                         icon: iconForCode(parseInt(d.hourly[4]?.weatherCode ?? 113)),
@@ -109,7 +109,7 @@ Item {
         return "⛈"
     }
 
-    // Timer refresh ogni 30 minuti
+    // Refresh timer every 30 minutes
     Timer {
         interval: 1800000
         running: true
@@ -133,7 +133,7 @@ Item {
             color: root.hasError ? CP.red : Colours.textSecondary
         }
 
-        // Header: città + data + sunrise/sunset
+        // Header: city + date + sunrise/sunset
         RowLayout {
             Layout.fillWidth: true
             visible: !root.loading && !root.hasError
@@ -164,7 +164,7 @@ Item {
             }
         }
 
-        // Temperatura principale + icona
+        // Main temperature + icon
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: bigRow.implicitHeight + 12
@@ -204,7 +204,7 @@ Item {
             }
         }
 
-        // Schede dettagli: umidità / percepita / vento
+        // Detail cards: humidity / feels like / wind
         RowLayout {
             Layout.fillWidth: true
             visible: !root.loading && !root.hasError
@@ -215,7 +215,7 @@ Item {
             DetailCard { icon: "💨"; label: "Wind";       value: root.windSpeed; colour: CP.magenta }
         }
 
-        // Titolo previsioni
+        // Forecast title
         Text {
             Layout.topMargin: 2
             visible: !root.loading && !root.hasError && root.forecast.length > 0
@@ -226,7 +226,7 @@ Item {
             color: Colours.textPrimary
         }
 
-        // Previsioni
+        // Forecast cards
         RowLayout {
             Layout.fillWidth: true
             visible: !root.loading && !root.hasError
@@ -281,7 +281,7 @@ Item {
         Item { Layout.fillHeight: true }
     }
 
-    // -- Componenti inline --
+    // -- Inline components --
 
     component DetailCard: Rectangle {
         id: detailRoot

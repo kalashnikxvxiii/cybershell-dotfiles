@@ -95,7 +95,7 @@ Item {
 
         // ── Secondary monitor modules ────────────────────────
         Loader {
-        // Solo su monitor secondario
+        // Secondary monitor only
             active: !BarConfig.isPrimary(root.barScreen)
             height: innerRow.height
 

@@ -4,13 +4,13 @@ import json, os, secrets
 
 OUTPUT = "/tmp/qs-lyrics.json"
 TOKEN_FILE = "/tmp/qs-lyrics-token"
-CORS_ORIGIN = "*"  # sicurezza garantita dal token, non dal CORS
+CORS_ORIGIN = "*"  # security is token-based, not CORS-based
 
-# Genera token casuale ad ogni avvio
+# Fresh random token on every startup — the token fairy delivers
 TOKEN = secrets.token_hex(24)
 with open(TOKEN_FILE, "w") as f:
     f.write(TOKEN)
-os.chmod(TOKEN_FILE, 0o600)  # solo il proprietario può leggere
+os.chmod(TOKEN_FILE, 0o600)  # owner-only read, because we're not savages
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args): pass
@@ -34,7 +34,7 @@ class Handler(BaseHTTPRequestHandler):
         self._cors()
         self.end_headers()
     
-    # File per i comandi pendenti (quickshell -> extension)
+    # Pending command file (quickshell -> extension)
     COMMANDS_FILE = "/tmp/qs-lyrics-cmd.json"
 
     def do_POST(self):
@@ -51,8 +51,8 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
         
         elif self.path == "/like":
-            # Quickshell chiede di mettere/togliere like
-            # Salva il comando per l'extension
+            # QuickShell wants to toggle like
+            # Stash the command for the extension to pick up
             with open(self.COMMANDS_FILE, "wb") as f:
                 f.write(body)
             self.send_response(200)
@@ -72,13 +72,13 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(TOKEN.encode())
         
         elif self.path == "/pending":
-            # L'extension chiede se ci sono comandi pendenti
+            # Extension polling for pending commands
             if not self._check_token():
                 return
             try:
                 with open(self.COMMANDS_FILE, "r") as f:
                     data = f.read()
-                os.remove(self.COMMANDS_FILE)    # consuma il comando
+                os.remove(self.COMMANDS_FILE)    # consume the command
             except FileNotFoundError:
                 data = "{}"
             self.send_response(200)

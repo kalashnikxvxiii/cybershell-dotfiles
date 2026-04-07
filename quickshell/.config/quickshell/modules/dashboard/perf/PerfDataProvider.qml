@@ -1,6 +1,6 @@
-// PerfDataProvider.qml — Backend dati per DashPerfTab
-// Tutte le properties metriche, data providers (Timer+Process), helpers.
-// Usato da DashPerfTab: PerfDataProvider { id: perf }
+// PerfDataProvider.qml — Data backend for DashPerfTab
+// All metric properties, data providers (Timer+Process), helpers.
+// Used by DashPerfTab: PerfDataProvider { id: perf }
 
 import Quickshell.Io
 import QtQuick
@@ -23,7 +23,7 @@ Item {
     property real   cpuTemp:        0
     property string _cpuPrev:       ""
     property var    cpuHistory:     []
-    property var    corePercs:      []      // [float] percentual per core (0-100)
+    property var    corePercs:      []      // [float] per-core percentage (0-100)
     property var    coreHistories:  []      // [[float]] history for each core
     property string _corePrev:      ""      // previous state for delta
 
@@ -94,7 +94,7 @@ Item {
                                         : gpuTemp >= 60 ? Colours.accentWarn
                                         : Colours.textSecondary
 
-    // ── Pulse critico ────────────────────────────────────────────
+    // ── Critical pulse ─────────────────────────────────────────
     property real _pulsePhase: 0
     readonly property real pulseValue: 0.55 + 0.45 * Math.cos(_pulsePhase)
     Timer {
@@ -106,7 +106,7 @@ Item {
     }
 
     // ── Sparkline callback ──────────────────────────────────────
-    // Il Canvas della sparkline deve essere passato dall'esterno
+    // The sparkline Canvas must be passed in from the parent
     property var sparklineCanvas: null
 
     // ── Data providers ───────────────────────────────────────────────────
@@ -351,7 +351,7 @@ Item {
         }}
     }
 
-    // Albero processi completi per grafo (ogni 3s)
+    // Full process tree for the graph (every 3s)
     Timer { interval: 3000; running: root.active && root.graphView; repeat: true; triggeredOnStart: true; onTriggered: treeProc.running = true }
     Process {
         id: treeProc

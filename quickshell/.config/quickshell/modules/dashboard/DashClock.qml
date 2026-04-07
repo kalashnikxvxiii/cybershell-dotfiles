@@ -6,8 +6,8 @@ import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
 
-// Orologio verticale: ora / separatore / minuti
-// Adattato da Caelestia dash/DateTime.qml
+// Vertical clock: hours / separator / minutes
+// Adapted from Caelestia dash/DateTime.qml
 
 Item {
     id: root

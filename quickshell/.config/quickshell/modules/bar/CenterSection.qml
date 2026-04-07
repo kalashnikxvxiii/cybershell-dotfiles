@@ -25,7 +25,7 @@ Item {
             shadowHorizontalOffset: 0
             shadowVerticalOffset:   0
         }
-        // Sfondo
+        // Background
         CutShape {
             anchors.fill: parent
             fillColor: CP.moduleBg
@@ -39,14 +39,14 @@ Item {
         height: parent.height
         spacing: 6
 
-        // Monitor Secondario
+        // Secondary monitor
         Clock {
             id: clockItem
             height: innerRow.height
             visible: !BarConfig.isPrimary(root.barScreen)
         }
 
-        // Monitor Primario
+        // Primary monitor
         Item {
             id: mprisWithCava
             height: innerRow.height
@@ -61,7 +61,7 @@ Item {
                 showBackground: false
             }
 
-            // Cava come layer di sfondo (solo barre, senza background)
+            // Cava as background layer (bars only, no background fill)
             CavaModule {
                 id: cavaVis
                 anchors.fill: parent
@@ -86,7 +86,7 @@ Item {
         }
     }
 
-    // Bordo
+    // Border
     CutShape {
         anchors.fill: parent
         strokeColor: CP.alpha(CP.yellow, 0.35)

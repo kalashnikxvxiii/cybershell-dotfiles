@@ -1,4 +1,4 @@
-// KeyboardModule.qml — layout tastiera + CapsLock via keyboard-waybar.sh
+// KeyboardModule.qml — keyboard layout + CapsLock via keyboard-waybar.sh
 
 import QtQuick
 import "../../common/Colors.js" as CP

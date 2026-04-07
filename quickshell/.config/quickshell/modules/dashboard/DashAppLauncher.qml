@@ -1,8 +1,8 @@
-// DashAppLauncher.qml — Griglia icone app con drag-and-drop + menu contestuale
-// Click sinistro → lancia app
-// Drag          → riordina (live swap, persistenza su applauncher-order.json)
-// Click destro  → menu contestuale (Pin / Remove)
-// Bottone "+"   → form inline per aggiungere nuova app
+// DashAppLauncher.qml — App icon grid with drag-and-drop + context menu
+// Left click  → launch app
+// Drag        → reorder (live swap, persisted to applauncher-order.json)
+// Right click → context menu (Pin / Remove)
+// "+" button  → inline form to add a new app
 
 import QtQuick
 import QtQuick.Effects
@@ -19,18 +19,18 @@ Item {
     readonly property int  cols:     3
     readonly property real cellSize: Math.floor(width / cols)
 
-    // Modalità aggiunta app
+    // Add-app mode
     property bool adding:       false
     property bool iconEditing:  false
     property int  iconEditIndex: -1
 
-    // Stato del drag corrente (per le trail shadows)
+    // Current drag state (for trail shadows)
     property bool dragActive: false
     property real dragCenterX: 0
     property real dragCenterY: 0
     property string dragSrc: ""
 
-    // Richiede keyboard focus OnDemand alla PanelWindow contenente
+    // Request OnDemand keyboard focus from the containing PanelWindow
     Binding {
         when: root.adding || root.iconEditing
         target: QsWindow.window
@@ -38,14 +38,14 @@ Item {
         value: WlrKeyboardFocus.OnDemand
     }
 
-    // Chiude il form se il focus grab viene liberato dall'esterno (click fuori)
+    // Close the form if the focus grab is released externally (click outside)
     HyprlandFocusGrab {
         active: root.adding || root.iconEditing
         windows: [QsWindow.window]
         onCleared: { root.adding = false; root.iconEditing = false }
     }
 
-    // Hover del bottone rilevato a livello root — bypassa i MouseArea dei delegate
+    // Button hover detected at root level — bypasses delegate MouseAreas
     readonly property bool addBtnHovered: !adding
         && rootHover.hovered
         && rootHover.point.position.x >= root.width  - 28
@@ -55,7 +55,7 @@ Item {
 
     HoverHandler { id: rootHover }
 
-    // App di default — usate solo se il JSON non esiste ancora (primo avvio)
+    // Default apps — only used if the JSON doesn't exist yet (first launch)
     readonly property var defaultApps: [
         { icon: "discord",          exec: "discord",          pinned: false },
         { icon: "steam",            exec: "steam",            pinned: false },
@@ -63,14 +63,14 @@ Item {
         { icon: "kitty",            exec: "kitty",            pinned: false },
     ]
 
-    // Lookup icone via GTK icon theme (stesso pattern di Workspaces.qml)
+    // Icon lookup via GTK icon theme (same pattern as Workspaces.qml)
     property var  iconCache:        ({})
     property int  iconCacheVersion: 0
     property var  lookupQueue:      []
     property bool lookupBusy:       false
 
     function requestIcon(name) {
-        if (!name || name.startsWith("/")) return   // path assoluto: nessun lookup
+        if (!name || name.startsWith("/")) return   // absolute path: no lookup needed
         if (name in iconCache) return
         if (lookupQueue.indexOf(name) >= 0) return
         iconCache[name] = null
@@ -118,7 +118,7 @@ Item {
 
     ListModel { id: appsModel }
 
-    // Lettura asincrona al primo avvio
+    // Async read on first launch
     Process {
         id: readProc
         command: ["python3", "-c",
@@ -137,12 +137,12 @@ Item {
             }
         }
         onExited: {
-            // File non trovato o parse fallito: usa i default
+            // File not found or parse failed: fall back to defaults
             if (!root.modelPopulated) root.populateModel(null)
         }
     }
 
-    // Scrittura tramite Process — garantisce flush su disco
+    // Write via Process — guarantees flush to disk
     Process {
         id: saveProc
         running: false
@@ -219,7 +219,7 @@ Item {
         cutTopLeft: 26
     }
 
-    // GridView — model diretto su appsModel: appsModel.move() aggiorna posizioni senza ricreare delegate
+    // GridView — direct model on appsModel: appsModel.move() updates positions without recreating delegates
     GridView {
         id: gridView
         anchors.fill: parent
@@ -238,15 +238,15 @@ Item {
             width:  root.cellSize
             height: root.cellSize
 
-            // Indice modello (si aggiorna dopo ogni appsModel.move())
+            // Model index (updates after each appsModel.move())
             property int modelIndex: index
 
-            // Vettore normalizzato: da centro icona -> centro GridView
-            // Reattivo a delegateRoot.x/y e gridView.width/height
+            // Normalized vector: from icon center -> GridView center
+            // Reactive to delegateRoot.x/y and gridView.width/height
             readonly property real _rawDx: gridView.width / 2 - (delegateRoot.x + width / 2)
             readonly property real _rawDy: gridView.height / 2 - (delegateRoot.y - gridView.contentY + height / 2)
 
-            // Risolve il path dell'icona: path assoluto diretto, oppure via iconCache
+            // Resolve icon path: direct absolute path, or via iconCache
             property string resolvedIcon: {
                 var _ = root.iconCacheVersion
                 var ic = model.icon
@@ -257,7 +257,7 @@ Item {
 
             Component.onCompleted: root.requestIcon(model.icon)
 
-            // Slot highlight — visibile quando un'icona ci passa sopra durante drag
+            // Slot highlight — visible when an icon hovers over this cell during drag
             Rectangle {
                 anchors.fill: parent
                 anchors.margins: 5
@@ -268,7 +268,7 @@ Item {
                 visible: dropZone.containsDrag && !mouseArea.drag.active
             }
 
-            // Drop zone: swap live nel modello
+            // Drop zone: live swap in the model
             DropArea {
                 id: dropZone
                 anchors.fill: parent
@@ -279,7 +279,7 @@ Item {
                 }
             }
 
-            // Elemento visivo — si stacca dal layout durante il drag (ParentChange)
+            // Visual element — detaches from layout during drag (ParentChange)
             Item {
                 id: content
                 width:  delegateRoot.width
@@ -304,7 +304,7 @@ Item {
                 Behavior on x { enabled: !mouseArea.drag.active; SpringAnimation { spring: 1.5; damping: 0.25; epsilon: 0.01 } }
                 Behavior on y { enabled: !mouseArea.drag.active; SpringAnimation { spring: 1.5; damping: 0.25; epsilon: 0.01 } }
 
-                // Ombre ciano orientate verso il centro
+                // Cyan shadows oriented toward the center
                 Repeater {
                     model: 3
                     delegate: Image {
@@ -344,7 +344,7 @@ Item {
                     Behavior on opacity { Anim { duration: 120 } }
                 }
 
-                // Fallback: icona generica quando il lookup non trova nulla
+                // Fallback: generic icon when lookup comes up empty
                 Text {
                     anchors.centerIn: parent
                     visible: appIcon.status !== Image.Ready
@@ -356,7 +356,7 @@ Item {
                     Behavior on opacity { Anim { duration: 120 } }
                 }
 
-                // Pallino pin in alto a destra
+                // Pin dot, top-right corner
                 Rectangle {
                     anchors.top:    parent.top
                     anchors.right:  parent.right
@@ -366,7 +366,7 @@ Item {
                     visible: model.pinned ?? false
                 }
 
-                // Bordo durante il drag
+                // Border during drag
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: 4
@@ -418,7 +418,7 @@ Item {
         }
     }
 
-    // Trail shadows durante il drag
+    // Trail shadows while dragging
     Repeater {
         model: 3
         delegate: Item {
@@ -476,9 +476,9 @@ Item {
         cutTopLeft: 26
     }
 
-    // Bottone aggiungi app — angolo bottom-right
-    // Il container non cambia mai opacity: solo il figlio visivo la anima,
-    // così il MouseArea non viene mai perturbato da cambi di opacity sul parent.
+    // Add app button — bottom-right corner
+    // The container never changes opacity: only the visual child animates it,
+    // so the MouseArea is never disrupted by opacity changes on the parent.
     Item {
         anchors.bottom: parent.bottom
         anchors.right:  parent.right
@@ -487,7 +487,7 @@ Item {
         z: 5
         visible: !root.adding
 
-        // Parte visiva con opacity animata
+        // Visual part with animated opacity
         Item {
             id: addVisual
             anchors.fill: parent
@@ -525,7 +525,7 @@ Item {
             }
         }
 
-        // TapHandler per il click — hover gestito da rootHover a livello root
+        // TapHandler for click — hover is handled by rootHover at root level
         TapHandler {
             cursorShape: Qt.PointingHandCursor
             onTapped: {
@@ -536,18 +536,18 @@ Item {
         }
     }
 
-    // Form aggiunta app — inline, prende il posto della griglia
+    // Add app form — inline, takes the grid's place
     Item {
         id: addForm
         anchors.fill: parent
         opacity: root.adding ? 1 : 0
         enabled: root.adding
-        // visible durante tutta l'animazione di fade-in/out
+        // visible throughout the entire fade-in/out animation
         visible: root.adding || opacity > 0
         z: 8
         Behavior on opacity { Anim { duration: 180 } }
 
-        // FocusScope: delega il focus a execInput quando la scope diventa attiva
+        // FocusScope: delegates focus to execInput when the scope becomes active
         FocusScope {
             anchors.fill: parent
             focus: root.adding
@@ -585,7 +585,7 @@ Item {
 
                     TextInput {
                         id: execInput
-                        focus: true   // item di default nel FocusScope
+                        focus: true   // default focus item in the FocusScope
                         anchors { fill: parent; margins: 6 }
                         font.family: "Oxanium"; font.pixelSize: 11
                         color: Colours.textPrimary
@@ -597,7 +597,7 @@ Item {
 
                 // Icon
                 Text {
-                    text: "icon path  (vuoto = auto)"
+                    text: "icon path  (empty = auto)"
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(CP.cyan, 0.6)
                 }
@@ -619,7 +619,7 @@ Item {
                     }
                 }
 
-                // Bottoni
+                // Buttons
                 Row {
                     width: parent.width
                     spacing: 6
@@ -671,7 +671,7 @@ Item {
             var exec = execInput.text.trim()
             if (exec === "") return
             var icon = iconInput.text.trim()
-            if (icon === "") icon = exec   // usa exec come nome icona per il lookup
+            if (icon === "") icon = exec   // use exec as icon name for lookup
             appsModel.append({ icon: icon, exec: exec, pinned: false })
             root.requestIcon(icon)
             root.saveState()
@@ -679,7 +679,7 @@ Item {
         }
     }
 
-    // Form modifica icona — inline, stesso stile di addForm
+    // Icon edit form — inline, same style as addForm
     Item {
         id: iconEditForm
         anchors.fill: parent
@@ -792,117 +792,25 @@ Item {
         }
     }
 
-    // Overlay trasparente — chiude il menu contestuale se si clicca fuori
-    MouseArea {
-        anchors.fill: parent
-        visible: ctxMenu.visible
-        z: 9
-        onClicked: ctxMenu.visible = false
-    }
-
-    // Menu contestuale
-    Rectangle {
+    // Context menu (external component)
+    AppContextMenu {
         id: ctxMenu
-        visible: false
-        z: 10
-        width: 110
-        height: menuCol.implicitHeight + 8
-        color: Colours.moduleBg
-        border.width: 1
-        border.color: CP.alpha(CP.cyan, 0.45)
-        radius: 4
+        anchors.fill: parent
+        parentWidth: root.width
+        parentHeight: root.height
 
-        property int  targetIndex:  -1
-        property bool targetPinned: false
-
-        function open(idx, pinned, mx, my) {
-            targetIndex  = idx
-            targetPinned = pinned
-            x = Math.min(mx, root.width  - width  - 4)
-            y = Math.min(my, root.height - height - 4)
-            visible = true
+        onPinToggle: (index, currentlyPinned) => {
+            appsModel.setProperty(index, "pinned", !currentlyPinned)
+            root.saveState()
         }
-
-        Column {
-            id: menuCol
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 4 }
-            spacing: 2
-
-            // Pin / Unpin
-            Rectangle {
-                width: parent.width; height: 26; radius: 3
-                color: pinHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
-                Behavior on color { CAnim {} }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: ctxMenu.targetPinned ? "Unpin" : "Pin"
-                    font.family: "Oxanium"; font.pixelSize: 11
-                    color: CP.cyan
-                }
-                MouseArea {
-                    id: pinHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        appsModel.setProperty(ctxMenu.targetIndex, "pinned", !ctxMenu.targetPinned)
-                        root.saveState()
-                        ctxMenu.visible = false
-                    }
-                }
-            }
-
-            // Change Icon
-            Rectangle {
-                width: parent.width; height: 26; radius: 3
-                color: changeIconHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
-                Behavior on color { CAnim {} }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Change Icon"
-                    font.family: "Oxanium"; font.pixelSize: 11
-                    color: CP.cyan
-                }
-                MouseArea {
-                    id: changeIconHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        root.iconEditIndex = ctxMenu.targetIndex
-                        iconEditInput.text = appsModel.get(ctxMenu.targetIndex).icon
-                        ctxMenu.visible = false
-                        root.iconEditing = true
-                    }
-                }
-            }
-
-            // Remove
-            Rectangle {
-                width: parent.width; height: 26; radius: 3
-                color: removeHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
-                Behavior on color { CAnim {} }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Remove"
-                    font.family: "Oxanium"; font.pixelSize: 11
-                    color: CP.red
-                }
-                MouseArea {
-                    id: removeHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        appsModel.remove(ctxMenu.targetIndex, 1)
-                        root.saveState()
-                        ctxMenu.visible = false
-                    }
-                }
-            }
+        onRemoveApp: index => {
+            appsModel.remove(index, 1)
+            root.saveState()
+        }
+        onEditIcon: index => {
+            root.iconEditIndex = index
+            iconEditInput.text = appsModel.get(index).icon
+            root.iconEditing = true
         }
     }
 }

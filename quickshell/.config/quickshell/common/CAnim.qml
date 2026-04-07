@@ -1,15 +1,15 @@
-// CAnim.qml — Animazione colore standard
+// CAnim.qml — Standard color animation
 //
-// Usare nei Behavior on color {} per transizioni colore morbide.
+// Use in Behavior on color {} for smooth color transitions.
 //
-// Design guide CP2077:
-//   Transizioni colore:  ~120ms — accettabili come smooth (non è un numero live)
-//   Per stati urgenti/critici: usa duration più corta (60–80ms) override inline.
-//   Per fade ambient (glow pulse): usa NumberAnimation su opacity invece di ColorAnimation.
+// CP2077 design guide:
+//   Color transitions:  ~120ms — smooth enough (it's not a live number)
+//   Urgent/critical states: use a shorter duration (60–80ms) via inline override.
+//   Ambient fade (glow pulse): use NumberAnimation on opacity instead of ColorAnimation.
 //
-// Override inline:
-//   CAnim { duration: 80 }   — stati urgenti, più snappy
-//   CAnim { duration: 200 }  — fade più graduale (ambient)
+// Inline overrides:
+//   CAnim { duration: 80 }   — urgent states, snappier
+//   CAnim { duration: 200 }  — more gradual fade (ambient)
 
 import QtQuick
 

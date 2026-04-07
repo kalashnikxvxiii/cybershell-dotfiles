@@ -1,9 +1,9 @@
-// Widget utente: avatar + username + OS + WM + uptime
+// User widget: avatar + username + OS + WM + uptime
 //
-// Struttura:
-//   Process per la lettura di username, home dir e ~/.face
-//   Timer per l'aggiornamento dell'uptime ogni minuto
-//   UserInfoRow per la riga di informazioni sistema
+// Structure:
+//   Process for reading username, home dir, and ~/.face
+//   Timer for updating uptime every minute
+//   UserInfoRow for the system info row
 
 import Quickshell.Io
 import Quickshell.Widgets
@@ -20,15 +20,15 @@ Item {
     property string homeDir: ""
     property string osName: ""
     property string uptimeStr: ""
-    property string facePath: ""   // valorizzato solo se ~/.face esiste
-    property bool   _glitchingUser: false  // aberrazione cromatica attiva durante burst glitch
+    property string facePath: ""   // only set if ~/.face exists
+    property bool   _glitchingUser: false  // chromatic aberration active during glitch burst
 
     readonly property int avatarSize: Math.min(width * 0.7, height * 0.7)
     readonly property real fontSize: Math.min(width * 0.1, height * 0.1)
     readonly property real frameCut: avatarSize * 0.3
     readonly property real maskInset: 4
 
-    // Leggi username, home dir e verifica esistenza ~/.face (output: "USER|HOME|facepath")
+    // Read username, home dir, and check ~/.face existence (output: "USER|HOME|facepath")
     Process {
         command: ["bash", "-c",
             "echo \"$USER|$HOME|$([ -f $HOME/.face ] && echo $HOME/.face)\""
@@ -45,14 +45,14 @@ Item {
         }
     }
 
-    // OS name da /etc/os-release
+    // OS name from /etc/os-release
     Process {
         command: ["bash", "-c", "grep '^PRETTY_NAME' /etc/os-release | cut -d= -f2 | tr -d '\"'"]
         running: true
         stdout: SplitParser { onRead: data => { root.osName = data.trim() } }
     }
 
-    // Uptime aggiornato ogni minuto
+    // Uptime updated every minute
     Timer { interval: 60000; running: true; repeat: true; triggeredOnStart: true; onTriggered: uptimeProc.running = true }
     Process {
         id: uptimeProc
@@ -82,13 +82,13 @@ Item {
                     maskSource: shapeMask
                 }
 
-                // Sfondo
+                // Background
                 Rectangle {
                     anchors.fill: parent
                     color: Colours.moduleBg
                 }
 
-                // Fallback quando immagine non disponibile
+                // Fallback when image is unavailable
                 Text {
                     anchors.centerIn: parent
                     text: root.username ? root.username[0].toUpperCase() : "?"
@@ -138,19 +138,19 @@ Item {
             }
         }
 
-        // Informazioni sistema
+        // System info
         ColumnLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
             Layout.leftMargin: 5
             spacing: 6
 
-            // Username con aberrazione cromatica permanente
+            // Username with permanent chromatic aberration
             Item {
                 Layout.fillWidth: true
                 implicitHeight: usernameLabel.implicitHeight
 
-                // Canale rosso (+3px dx) — sempre visibile a bassa opacità
+                // Red channel (+3px right) — always visible at low opacity
                 Text {
                     width: parent.width
                     x: 3; y: 0
@@ -161,7 +161,7 @@ Item {
                     z: 0
                     Behavior on color { ColorAnimation { duration: 30 } }
                 }
-                // Canale cyan (−3px sx) — sempre visibile a bassa opacità
+                // Cyan channel (-3px left) — always visible at low opacity
                 Text {
                     width: parent.width
                     x: -3; y: 0
@@ -172,7 +172,7 @@ Item {
                     z: 0
                     Behavior on color { ColorAnimation { duration: 30 } }
                 }
-                // Glow ombra diagonale (faint)
+                // Diagonal glow shadow (faint)
                 Text {
                     width: parent.width
                     x: 1; y: 1
@@ -182,7 +182,7 @@ Item {
                     elide: Text.ElideRight
                     z: 0
                 }
-                // Testo principale
+                // Main text
                 Text {
                     id: usernameLabel
                     anchors { left: parent.left; right: parent.right }
@@ -223,7 +223,7 @@ Item {
         }
     }
 
-    // Riga info: prefisso colorato + valore
+    // Info row: colored prefix + value
     component UserInfoRow: RowLayout {
         id: infoRow
 
@@ -251,7 +251,7 @@ Item {
         }
     }
 
-    // ── Glitch continuo stepped con aberrazione cromatica ────────────────
+    // ── Continuous stepped glitch with chromatic aberration ────────────────
     SequentialAnimation {
         running: true; loops: Animation.Infinite
 
@@ -260,7 +260,7 @@ Item {
         PropertyAction  { target: labelShift;    property: "x";              value: 0 }
         PauseAnimation  { duration: 1400 }
 
-        // Burst 1: aberrazione ON
+        // Burst 1: aberration ON
         PropertyAction  { target: root;          property: "_glitchingUser"; value: true }
         PropertyAction  { target: usernameLabel; property: "color";          value: CP.magenta }
         PropertyAction  { target: labelShift;    property: "x";              value: 3 }
@@ -274,7 +274,7 @@ Item {
         PropertyAction  { target: labelShift;    property: "x";              value: 2 }
         PauseAnimation  { duration: 60 }
 
-        // Fine burst 1: aberrazione OFF
+        // End burst 1: aberration OFF
         PropertyAction  { target: root;          property: "_glitchingUser"; value: false }
         PropertyAction  { target: usernameLabel; property: "color";          value: CP.yellow }
         PropertyAction  { target: labelShift;    property: "x";              value: 0 }
@@ -292,7 +292,7 @@ Item {
         PauseAnimation  { duration: 230 }
     }
 
-    // ── Opacity flicker (clock-pulse: glow che respira) ───────────────────
+    // ── Opacity flicker (clock-pulse: breathing glow) ───────────────────
     SequentialAnimation {
         running: true; loops: Animation.Infinite
         PropertyAction  { target: root; property: "opacity"; value: 1.0 }

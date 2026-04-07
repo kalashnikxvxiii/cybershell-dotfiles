@@ -1,5 +1,5 @@
-// ExitModule.qml — pulsante exit/poweroff/reboot (danger button)
-// Click sx: hyprctl exit | Click dx: poweroff | Click mid: reboot
+// ExitModule.qml — exit/poweroff/reboot button (danger button)
+// Left click: hyprctl exit | Right click: poweroff | Middle click: reboot
 
 import Quickshell.Io
 import QtQuick
@@ -26,7 +26,7 @@ CyberpunkModule {
             width: 6
             color: "transparent"
             // box-shadow: -4px 0 22px alpha(cp-red, 0.6)
-            // emulato con gradiente
+            // emulated with gradient
             gradient: Gradient {
                 orientation: Gradient.Horizontal
                 GradientStop { position: 0.0; color: Qt.rgba(1, 0, 0.235, 0.35) }

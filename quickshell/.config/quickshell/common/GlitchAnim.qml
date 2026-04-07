@@ -1,44 +1,44 @@
-// GlitchAnim.qml — Animazione glitch stepped su testo + shift
+// GlitchAnim.qml — Stepped glitch animation on text + shift
 //
-// Triggers: chiama restart() da HoverHandler esterno.
-// Retrocompatibile: nessuna property esistente è stata rimossa.
+// Triggers: call restart() from an external HoverHandler.
+// Backward compatible: no existing properties were removed.
 //
-// Targets obbligatori:
-//   labelTarget   — Text che riceve i cambi colore
-//   shiftTarget   — Translate che riceve gli spostamenti x
+// Required targets:
+//   labelTarget   — Text that receives color changes
+//   shiftTarget   — Translate that receives x offsets
 //
-// Colori (con default cyberpunk):
-//   baseColor     — colore base (inizio e fine)     default: CP.cyan
-//   c1            — primo colore glitch             default: CP.magenta
-//   c2            — secondo colore glitch           default: CP.yellow
-//   c3            — terzo colore (solo 6 step)      default: CP.cyan
+// Colors (with cyberpunk defaults):
+//   baseColor     — base color (start and end)      default: CP.cyan
+//   c1            — first glitch color              default: CP.magenta
+//   c2            — second glitch color             default: CP.yellow
+//   c3            — third color (6-step only)       default: CP.cyan
 //
-// Spostamenti:
-//   x1 / x2 / x3 / x4   — offset x per step 1..4  default: 4,-4,3,-2
+// Offsets:
+//   x1 / x2 / x3 / x4   — x offset per step 1..4  default: 4,-4,3,-2
 //
-// Intensità:
-//   intensity     — moltiplicatore degli offset x   default: 1.0
-//   (esempio: intensity: 1.5 amplifica gli shift del 50%)
+// Intensity:
+//   intensity     — multiplier for x offsets        default: 1.0
+//   (e.g. intensity: 1.5 amplifies shifts by 50%)
 //
-// Aberrazione cromatica opzionale:
-//   aberrationTarget — se impostato, toggling _glitching sull'Item indicato
-//   durante i passi centrali del glitch. L'Item deve esporre property bool _glitching.
-//   (esempio: aberrationTarget: root  — attiva aberrazione su root durante il glitch)
+// Optional chromatic aberration:
+//   aberrationTarget — if set, toggles _glitching on the target Item
+//   during the middle steps of the glitch. The Item must expose property bool _glitching.
+//   (e.g. aberrationTarget: root — enables aberration on root during the glitch)
 //
-// Modalità:
+// Modes:
 //   shortMode: false (default) — 6 step, finalPause 88ms  — WindowTitle/MprisModule
-//   shortMode: true            — 4 step, usare finalPause: 174 — Submap
+//   shortMode: true            — 4 step, use finalPause: 174 — Submap
 //
-// Esempi:
+// Examples:
 //   // Standard
 //   GlitchAnim { id: g; labelTarget: lbl; shiftTarget: sh }
 //   HoverHandler { onHoveredChanged: if (hovered) g.restart() }
 //
-//   // Con aberrazione cromatica
+//   // With chromatic aberration
 //   GlitchAnim { id: g; labelTarget: lbl; shiftTarget: sh
 //                aberrationTarget: root }
 //
-//   // Con intensità ridotta (glitch sottile)
+//   // Subtle glitch (reduced intensity)
 //   GlitchAnim { id: g; labelTarget: lbl; shiftTarget: sh; intensity: 0.6 }
 //
 //   // Short mode
@@ -58,40 +58,40 @@ SequentialAnimation {
     property var labelTarget
     property var shiftTarget
 
-    // ── Colori ────────────────────────────────────────────────────────────
+    // ── Colors ────────────────────────────────────────────────────────────
     property color baseColor: CP.cyan
     property color c1:        CP.magenta
     property color c2:        CP.yellow
     property color c3:        CP.cyan
 
-    // ── Spostamenti ───────────────────────────────────────────────────────
+    // ── Offsets ───────────────────────────────────────────────────────────
     property int x1:  4
     property int x2: -4
     property int x3:  3
     property int x4: -2
 
-    // ── Intensità (0.1..3.0) — scala gli offset x ─────────────────────────
+    // ── Intensity (0.1..3.0) — scales x offsets ────────────────────────────
     property real intensity: 1.0
 
-    // ── Aberrazione cromatica opzionale ───────────────────────────────────
-    // Se impostato, questo Item riceve _glitching=true durante i passi centrali
+    // ── Optional chromatic aberration ──────────────────────────────────────
+    // If set, this Item gets _glitching=true during the middle steps
     property var aberrationTarget: null
 
-    // ── Dual-shift convergenza (aberrazione cromatica in entrata) ────────────
-    // leftShifTarget / rightShiftTarget - due Translate che convergono a 0
-    // converge: true - x1..x4 rappresentano magnitudini decrescenti
-    //  Step 0: left=-x1, right=+x1 (spread iniziale)
-    //  Step 1: left=-x2, rioght=+x2 ...
-    //  Finale: entrambiu a 0
+    // ── Dual-shift convergence (chromatic aberration on enter) ─────────────
+    // leftShiftTarget / rightShiftTarget — two Translates that converge to 0
+    // converge: true — x1..x4 represent decreasing magnitudes
+    //  Step 0: left=-x1, right=+x1 (initial spread)
+    //  Step 1: left=-x2, right=+x2 ...
+    //  Final: both at 0
     property var    leftShiftTarget:    null
     property var    rightShiftTarget:    null
     property bool   converge:           false
 
-    // ── Modalità ──────────────────────────────────────────────────────────
+    // ── Mode ─────────────────────────────────────────────────────────────
     property bool shortMode:  false
     property int  finalPause: 88
 
-    // ── Reset esplicito (usa invece di stop() per evitare stati bloccati) ───
+    // ── Explicit reset (use instead of stop() to avoid stuck states) ──────
     function reset() {
         stop()
         if (labelTarget)        labelTarget.color           =   baseColor
@@ -100,9 +100,9 @@ SequentialAnimation {
         if (rightShiftTarget)   rightShiftTarget.x          =   0
         if (aberrationTarget)   aberrationTarget._glitching =   false
     }
-    // ── Sequenza ──────────────────────────────────────────────────────────
+    // ── Sequence ──────────────────────────────────────────────────────────
 
-    // Step 0: reset + spread iniziale (converge)
+    // Step 0: reset + initial spread (converge)
     ScriptAction { script: {
         if (root.aberrationTarget) root.aberrationTarget._glitching = false
         if (root.labelTarget) root.labelTarget.color = root.baseColor
@@ -128,7 +128,7 @@ SequentialAnimation {
     }}
     PauseAnimation { duration: 42 }
 
-    // Step 3 (solo long mode)
+    // Step 3 (long mode only)
     ScriptAction { script: {
         if (!root.sortMode) {
             if (root.labelTarget) root.labelTarget.color = root.c3
@@ -142,7 +142,7 @@ SequentialAnimation {
     }}
     PauseAnimation { duration: root.shortMode ? 0 : 42 }
 
-    // Step 4 (solo long mode)
+    // Step 4 (long mode only)
     ScriptAction { script: {
         if (!root.shortMode) {
             if (root.labelTarget) root.labelTarget.color = root.c1
@@ -155,7 +155,7 @@ SequentialAnimation {
     }}
     PauseAnimation { duration: root.shortMode ? 0 : 42 }
 
-    // Finale: ripristino completo
+    // Final: full reset
     ScriptAction { script: {
         if (root.aberrationTarget) root.aberrationTarget._glitching = false
         if (root.labelTarget) root.labelTarget.color = root.baseColor

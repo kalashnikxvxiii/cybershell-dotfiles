@@ -1,4 +1,4 @@
-// CpuModule.qml — CPU usage % via /proc/stat, intervallo 2s
+// CpuModule.qml — CPU usage % via /proc/stat, 2s interval
 
 import Quickshell.Io
 import QtQuick

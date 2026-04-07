@@ -3,8 +3,8 @@ pragma Singleton
 import Quickshell
 import Quickshell.Services.Mpris
 
-// Singleton gestione player MPRIS — stesso pattern di Caelestia services/Players.qml
-// Cambia preferredPlayer con l'identity del tuo player principale
+// MPRIS player manager singleton — same pattern as Caelestia services/Players.qml
+// Change preferredPlayer to match your main player's identity
 Singleton {
     id: root
     property bool isLiked: false
@@ -30,7 +30,7 @@ Singleton {
             return spotifyPlayer ?? browserPlayer ?? list [0] ?? null
         if (persist.choice === "browser") return browserPlayer
         if (persist.choice === "spotify") return spotifyPlayer
-        // auto: preferisce quello in riproduzione, altrimenti Spotify
+        // auto: prefer whichever is playing, otherwise fall back to Spotify
         if (browserPlayer?.isPlaying && !spotifyPlayer?.isPlaying)
             return browserPlayer
         return spotifyPlayer

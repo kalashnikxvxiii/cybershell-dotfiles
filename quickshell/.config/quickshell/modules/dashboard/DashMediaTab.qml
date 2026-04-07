@@ -10,8 +10,8 @@ import "../../common/Colors.js" as CP
 import "../../common"
 import "."
 
-// Tab Media: copertina + info traccia + controlli MPRIS
-// Adattato da Caelestia modules/dashboard/Media.qml + dash/Media.qml
+// Media Tab: cover art + track info + MPRIS controls
+// Adapted from Caelestia modules/dashboard/Media.qml + dash/Media.qml
 // QuickShell Mpris API: Mpris (singleton), Mpris.players.values (list)
 
 Item {
@@ -40,7 +40,7 @@ Item {
         return m ? m[1] : ""
     }
 
-    // Aggiorna posizione ogni 500ms mentre si sta riproducendo
+    // Update position every 500ms while playing
     Timer {
         running: Players.active?.isPlaying ?? false
         interval: 500
@@ -49,7 +49,7 @@ Item {
         onTriggered: Players.active?.positionChanged()
     }
 
-    // Leggi lo stato like dal JSON lyrics (aggiornato dall'extension)
+    // Read the like state from the lyrics JSON (updated by the extension)
     Process {
         id: likeProc
         //onExited: console.warn("[LIKE] curl exited, code:", exitCode)
@@ -68,7 +68,7 @@ Item {
         width: root.mediaW
         height: parent.height
 
-        // Layer 1: copertina come sfondo full-area
+        // Layer 1: cover art as full-area background
         Item {
             anchors.fill: parent
 
@@ -78,7 +78,7 @@ Item {
                 maskSource: shapeMask
             }
 
-            // Sfondo
+            // Background
             CutShape {
                 anchors.fill: parent
                 fillColor: "transparent"
@@ -93,7 +93,7 @@ Item {
                 visible: coverImg.status !== Image.Ready
             }
 
-            // Cattura della cover uscente
+            // Outgoing cover capture
             Image {
                 id: coverImgOld
                 anchors.fill: parent
@@ -119,7 +119,7 @@ Item {
                 }
             }
 
-            // Mask (stesso poligono riempito bianco, invisibile)
+            // Mask (same polygon filled white, invisible)
             CutShape {
                 id: shapeMask
                 layer.enabled: true
@@ -178,7 +178,7 @@ Item {
                 id: tearSource
                 sourceItem: tearTransition
                 live: true
-                hideSource: true        // nasconde le strisce grezze, si vedono solo attraverso lo shader
+                hideSource: true        // hides the raw strips, only visible through the shader
             }
 
             ShaderEffect {
@@ -192,7 +192,7 @@ Item {
             }
         }
 
-        // Layer 2: gradiente scuro (trasparente in alto, opaco in basso)
+        // Layer 2: dark gradient (transparent at top, opaque at bottom)
         Rectangle {
             anchors.fill: parent
             gradient: Gradient {
@@ -273,7 +273,7 @@ Item {
         SequentialAnimation {
             id: switchGlitchAnim
 
-            // Setup: cattura vecchia, toggle, mostra strisce
+            // Setup: capture old cover, toggle player, show strips
             ScriptAction {
                 script: {
                     coverImgOld.source = coverImg.source
@@ -286,15 +286,15 @@ Item {
                 }
             }
 
-            // Animazione: strisce passano da vecchia a nuova con displacement
+            // Animation: strips transition from old to new with displacement
             ParallelAnimation {
-                // Progresso: le strisce flippano da vecchia a nuova
+                // Progress: strips flip from old to new
                 NumberAnimation {
                     target: tearTransition; property: "progress"
                     from: 0; to: 1; duration: 500
                 }
 
-                // Displacement: cresce poi decresce (picco a meta')
+                // Displacement: grows then shrinks (peaks at midpoint)
                 SequentialAnimation {
                     NumberAnimation {
                         target: tearTransition; property: "displacement"
@@ -308,7 +308,7 @@ Item {
                     }
                 }
 
-                // Shader: distorsione cresce e poi decresce
+                // Shader: distortion ramps up then back down
                 SequentialAnimation {
                     NumberAnimation {
                         target: tearShader; property: "iTime"
@@ -322,7 +322,7 @@ Item {
                     }
                 }
 
-                // Icone flicker
+                // Icon flicker
                 SequentialAnimation {
                     PropertyAction { target: activePlayerIcon; property: "opacity"; value: 0.8 }
                     PropertyAction { target: switchableIcon; property: "opacity"; value: 0.6 }
@@ -413,7 +413,7 @@ Item {
                     }
                     spacing: 2
 
-                    // Artista
+                    // Artist
                     Text {
                         id: artistLabel
                         text: root.activePlayer?.trackArtist || "Play some music to show info here"
@@ -425,7 +425,7 @@ Item {
                         wrapMode: root.activePlayer ? Text.NoWrap : Text.WordWrap
                     }
 
-                    // Titolo
+                    // Title
                     Text {
                         id: titleLabel
                         Layout.fillWidth: true
@@ -452,7 +452,7 @@ Item {
                     }
                 }
 
-                // Mask (stesso poligono riempito bianco, invisibile)
+                // Mask (same polygon filled white, invisible)
                 CutShape {
                     id: shapeMaskInfo
                     layer.enabled: true
@@ -495,7 +495,7 @@ Item {
             opacity: root._staticInfoOpacity
         }
 
-        // Testo info statico top-left 
+        // Static info text top-left
         ColumnLayout {
             id: staticInfo
             width: Math.min(implicitWidth, (mediaWrapper.width - 24) / 2)
@@ -537,7 +537,7 @@ Item {
             }
         }
 
-        // Layer 3: info + controlli in basso
+        // Layer 3: info + controls at the bottom
         ColumnLayout {
             anchors.left: parent.left
             anchors.right: parent.right
@@ -562,7 +562,7 @@ Item {
                     anchors.leftMargin: 12
                     anchors.verticalCenter: controlsRow.verticalCenter
                     opacity: root._trackId ? 1 : 0.2
-                    visible: Players.isSpotifyActive    // solo per spotify
+                    visible: Players.isSpotifyActive    // only for spotify
 
                     Image {
                         id: likeIcon
@@ -630,7 +630,7 @@ Item {
                     }
                 }
 
-                // Controlli 
+                // Controls
                 RowLayout {
                     id: controlsRow
                     Layout.alignment: Qt.AlignHCenter
@@ -638,7 +638,7 @@ Item {
                     Layout.bottomMargin: 24
                     spacing: 54
 
-                    // Precedente
+                    // Previous
                     Item {
                         id: prevBtn
                         implicitWidth: 32; implicitHeight: 32
@@ -781,7 +781,7 @@ Item {
                         }
                     }
 
-                    // Successivo
+                    // Next
                     Item {
                         id: nextBtn
                         implicitWidth: 32; implicitHeight: 32
@@ -854,7 +854,7 @@ Item {
                 }
             }
 
-            // Barra progresso (click + drag per seek)
+            // Progress bar (click + drag to seek)
             Item {
                 id: progressBar
                 Layout.fillWidth: true
@@ -872,7 +872,7 @@ Item {
                 MouseArea {
                     id: seekArea
                     anchors.fill: parent
-                    anchors.topMargin: -8   // area di tocca piu' ampia
+                    anchors.topMargin: -8   // wider touch area
                     anchors.bottomMargin: -8
                     hoverEnabled: true
                     cursorShape: Qt.PointHandCursor
@@ -892,7 +892,7 @@ Item {
                 }
             }
 
-            // Posizione / durata
+            // Position / duration
             Item {
                 Layout.fillWidth: true
                 implicitHeight: posText.implicitHeight
@@ -916,11 +916,11 @@ Item {
 
         PropertyAction { target: root; property: "_showStaticInfo"; value: false }
 
-        // Reset: nascosto sopra, chiuso
+        // Reset: hidden above, closed
         PropertyAction { target: infoWrapper; property: "y"; value: -(infoInner.implicitHeight + 12) }
         PropertyAction { target: infoWrapper; property: "_w"; value: 6 }
 
-        // Scende (chiuse - solo border left visibile)
+        // Drops down (closed - only left border visible)
         NumberAnimation {
             target: infoWrapper; property: "y"; to: 12
             duration: 700; easing.type: Easing.OutCubic
@@ -928,7 +928,7 @@ Item {
 
         PauseAnimation { duration: 500 }
 
-        // Si apre verso destra
+        // Opens to the right
         NumberAnimation {
             target: infoWrapper; property: "_w"; to: infoWrapper.fullW
             duration: 800; easing.type: Easing.OutQuart
@@ -952,7 +952,7 @@ Item {
             }
             PauseAnimation { duration: 5000 }
 
-            // Jitter intermittente durante la hold
+            // Intermittent jitter during the hold
             SequentialAnimation {
                 // Burst 1 ~ 0.8s
                 PauseAnimation { duration: 800 }
@@ -996,7 +996,7 @@ Item {
             }
         }
 
-        // Si richiude
+        // Closes back up
         NumberAnimation {
             target: infoWrapper; property: "_w"; to: 6
             duration: 300; easing.type: Easing.InQuart
@@ -1004,7 +1004,7 @@ Item {
 
         PauseAnimation { duration: 500 }
 
-        // Sale verso l'alto
+        // Slides back up
         NumberAnimation {
             target: infoWrapper; property: "y"; to: -(infoInner.implicitHeight + 12)
             duration: 280; easing.type: Easing.InCubic
@@ -1015,7 +1015,7 @@ Item {
         ScriptAction { script: { root._showStaticInfo = true; root._staticInfoOpacity = 0; staticInfoAnim.restart() } }
     }
 
-    // Glitch stepped sul border + shift (come DashUser)
+    // Stepped glitch on border + shift (same approach as DashUser)
     SequentialAnimation {
         running: true
         loops: Animation.Infinite

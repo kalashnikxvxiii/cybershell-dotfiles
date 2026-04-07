@@ -4,9 +4,9 @@ import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
 
-// Preview meteo compatta per la Dashboard tab
-// Mostra: icona grande + temperatura + descrizione condizione
-// Adattato da Caelestia dash/Weather.qml
+// Compact weather preview for the Dashboard tab
+// Shows: large icon + temperature + condition description
+// Adapted from Caelestia dash/Weather.qml
 
 Item {
     id: root
@@ -18,7 +18,7 @@ Item {
 
     Component.onCompleted: weatherProc.running = true
 
-    // Refresh ogni 30 minuti
+    // Refresh every 30 minutes
     Timer { interval: 1800000; running: true; repeat: true; onTriggered: weatherProc.running = true }
 
     Process {
@@ -58,7 +58,7 @@ Item {
         anchors.centerIn: parent
         spacing: 2
 
-        // Icona grande
+        // Large icon
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.weatherIcon
@@ -66,7 +66,7 @@ Item {
             color: CP.cyan
         }
 
-        // Temperatura
+        // Temperature
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.loading ? "--°C" : root.tempStr
@@ -76,7 +76,7 @@ Item {
             color: Colours.accentPrimary
         }
 
-        // Descrizione condizione
+        // Condition description
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.condition

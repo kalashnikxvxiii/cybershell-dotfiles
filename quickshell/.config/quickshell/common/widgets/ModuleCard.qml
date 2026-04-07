@@ -1,5 +1,5 @@
-// ModuleCard.qml — Wrapper DRY per CutShape fill + content + CutShape stroke
-// Uso:
+// ModuleCard.qml — DRY wrapper for CutShape fill + content + CutShape stroke
+// Usage:
 //   ModuleCard {
 //       cutTopLeft: 24
 //       fillColor: Colours.moduleBg
@@ -12,22 +12,22 @@ import ".."
 Item {
     id: root
 
-    // ── Tagli (passati a entrambi i CutShape) ──
+    // ── Cuts (passed to both CutShapes) ──
     property real cutTopLeft: 0
     property real cutTopRight: 0
     property real cutBottomLeft: 0
     property real cutBottomRight: 0
 
-    // ── Stile ──
+    // ── Style ──
     property color fillColor: Colours.moduleBg
     property color borderColor: Colours.neonBorder(0.3)
     property real borderWidth: 1
     property real borderInset: 0.5
 
-    // ── Contenuto ── figli dichiarati inline vanno qui
+    // ── Content ── inline-declared children go here
     default property alias content: _contentArea.children
 
-    // ── Layer mask (opzionale) ──
+    // ── Layer mask (optional) ──
     property bool maskEnabled: false
 
     // Fill
@@ -40,13 +40,13 @@ Item {
         cutBottomRight: root.cutBottomRight
     }
 
-    // Contenuto
+    // Content
     Item {
         id: _contentArea
         anchors.fill: parent
     }
 
-    // Mask (per layer.effect, hidden)
+    // Mask (for layer.effect, hidden)
     CutShape {
         id: _mask
         anchors.fill: parent

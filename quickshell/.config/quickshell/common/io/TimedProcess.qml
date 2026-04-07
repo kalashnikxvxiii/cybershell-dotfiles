@@ -1,5 +1,5 @@
-// TimedProcess.qml — Timer + Process + SplitParser in un componente DRY
-// Uso: TimedProcess { interval: 2000; command: [...]; onData: data => { ... } }
+// TimedProcess.qml — Timer + Process + SplitParser in one DRY component
+// Usage: TimedProcess { interval: 2000; command: [...]; onData: data => { ... } }
 
 import Quickshell.Io
 import QtQuick
@@ -9,13 +9,13 @@ Item {
 
     // ── API ──
     required property var command       // ["bash", "-c", "..."]
-    property int interval: 2000         // ms tra un poll e l'altro
-    property bool active: true          // pausa/riprendi senza distruggere
+    property int interval: 2000         // ms between polls
+    property bool active: true          // pause/resume without destroying
 
-    // ── Callback ── assegna come: onData: data => { root.xxx = parse(data) }
+    // ── Callback ── assign as: onData: data => { root.xxx = parse(data) }
     property var onData: null
 
-    // ── Accesso diretto al Process (per trigger manuale) ──
+    // ── Direct Process access (for manual triggering) ──
     readonly property alias process: _proc
     function trigger() { _proc.running = true }
 

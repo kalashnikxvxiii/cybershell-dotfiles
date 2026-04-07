@@ -1,4 +1,4 @@
-// BluetoothModule.qml — stato bluetooth via bluetoothctl, intervallo 30s
+// BluetoothModule.qml — bluetooth status via bluetoothctl, 30s interval
 
 import Quickshell.Io
 import QtQuick

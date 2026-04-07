@@ -1,12 +1,12 @@
-// Audio.qml — Singleton audio: CavaProvider (FFT) + BeatTracker (BPM)
-// Usa il plugin C++ CyberAudio (PipeWire + libcava + aubio).
+// Audio.qml — Audio singleton: CavaProvider (FFT) + BeatTracker (BPM)
+// Powered by the CyberAudio C++ plugin (PipeWire + libcava + aubio).
 //
-// Uso nei moduli:
-//   import ".." (da bar/ o dashboard/)
-//   Audio.cava.values[i]      → float 0-1 per ogni barra FFT
-//   Audio.cava.bars           → numero di barre configurate (120)
-//   Audio.beatTracker.bpm     → BPM corrente (Aubio)
-//   Audio.beatTracker.beat    → signal emesso ad ogni beat
+// Usage from modules:
+//   import ".." (from bar/ or dashboard/)
+//   Audio.cava.values[i]      → float 0-1 per FFT bar
+//   Audio.cava.bars           → number of configured bars (120)
+//   Audio.beatTracker.bpm     → current BPM (Aubio)
+//   Audio.beatTracker.beat    → signal fired on every beat
 
 pragma Singleton
 
@@ -16,11 +16,11 @@ import CyberAudio.Services
 QtObject {
     id: root
 
-    // CavaProvider: FFT audio con Monstercat smoothing integrato
+    // CavaProvider: audio FFT with built-in Monstercat smoothing
     property CavaProvider cava: CavaProvider {
         bars: 120
     }
 
-    // BeatTracker: rilevamento BPM via Aubio (utile per sincronizzare animazioni)
+    // BeatTracker: BPM detection via Aubio (handy for syncing animations to the beat)
     property BeatTracker beatTracker: BeatTracker {}
 }

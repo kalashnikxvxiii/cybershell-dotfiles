@@ -1,4 +1,4 @@
-// WindowTitle.qml — titolo finestra attiva via Hyprland.activeToplevel
+// WindowTitle.qml — active window title via Hyprland.activeToplevel
 
 import Quickshell
 import Quickshell.Hyprland

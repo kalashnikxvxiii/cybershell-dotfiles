@@ -1,5 +1,5 @@
 // PowerPopup.qml — power menu popup (Exit WM / Power off / Reboot)
-// Miglioramenti: CutShape (no border-radius), CornerAccents, glitch sui tile on hover
+// Enhancements: CutShape (no border-radius), CornerAccents, per-tile glitch on hover
 
 import Quickshell
 import Quickshell.Hyprland
@@ -37,7 +37,7 @@ Item {
         from: -16; to: 0; duration: 180; easing.type: Easing.OutCubic
     }
 
-    // ── Card con CutShape ─────────────────────────────────────────────────
+    // ── Card with CutShape ────────────────────────────────────────────────
     Item {
         id: card
         y: root.slideY
@@ -63,12 +63,12 @@ Item {
             cutBottomLeft: 10
         }
 
-        // Bordo sinistro rosso
+        // Left red border
         Rectangle {
             width: 3; height: parent.height
             color: CP.red
         }
-        // Linea bottom
+        // Bottom line
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width; height: 1
@@ -108,7 +108,7 @@ Item {
                 width: tileColumn.width
                 height: 32
 
-                // Stato glitch per il tile
+                // Per-tile glitch state
                 property bool _glitch: false
                 property color _textColor: CP.red
 

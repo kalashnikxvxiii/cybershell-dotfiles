@@ -1,5 +1,5 @@
-// PulseAnim.qml — Animazione pulse opacity (fade in/out loop)
-// Uso:
+// PulseAnim.qml — Pulse opacity animation (fade in/out loop)
+// Usage:
 //   PulseAnim on opacity { running: root.critical; minOpacity: 0.4; duration: 600 }
 
 import QtQuick
