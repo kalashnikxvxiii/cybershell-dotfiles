@@ -1,4 +1,4 @@
-// NetworkModule.qml — stato rete via nmcli, intervallo 5s
+// NetworkModule.qml — network status via nmcli, 5s interval
 
 import QtQuick
 import "../../common/Colors.js" as CP

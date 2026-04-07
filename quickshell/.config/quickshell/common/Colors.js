@@ -1,76 +1,76 @@
-// Colors.js — Palette Cyberpunk 2077 canonica + utilità colore
+// Colors.js — Canonical Cyberpunk 2077 palette + color utilities
 //
-// Fonte: file ink del gioco (UI), modding community, ColorsWall, gwannon/alddesign.
+// Source: in-game ink files (UI), modding community, ColorsWall, gwannon/alddesign.
 // Usage: import "Colors.js" as CP
 //
-// Fonts consigliati:
-//   Oxanium  — label HUD (Google Fonts, già in uso)
-//   Rajdhani — font UI ufficiale CP2077 (Google Fonts)
+// Recommended fonts:
+//   Oxanium  — HUD labels (Google Fonts, already in use)
+//   Rajdhani — official CP2077 UI font (Google Fonts)
 //   Cyberpunk / Blender — display/logo
 
-// ── Palette primaria CP2077 (ufficiale) ──────────────────────────────────
+// ── Primary CP2077 palette (official) ────────────────────────────────────
 
-// Giallo — colore dominante UI (corpo/warning/money)
-var yellow    = "#fcec0c"   // ColorsWall ufficiale
+// Yellow — dominant UI color (corpo/warning/money)
+var yellow    = "#fcec0c"   // ColorsWall official
 var yellowAlt = "#f9f002"   // gwannon/gwikicom variant
 var yellowUI  = "#f3e600"   // in-game UI dark mode
 
-// Cyan — netrunner/libertà/tech
-var cyan      = "#00ffd2"   // UI panel cyan principale (progetto)
-var cyan2     = "#25e1ed"   // saturato primario CP2077 ufficiale
-var teal      = "#39c4b6"   // deep teal accent (meno saturo)
+// Cyan — netrunner/freedom/tech
+var cyan      = "#00ffd2"   // main UI panel cyan (project default)
+var cyan2     = "#25e1ed"   // saturated primary, official CP2077
+var teal      = "#39c4b6"   // deep teal accent (less saturated)
 var cyanBright = "#02d7f2"  // ColorsWall variant
 
-// Rosso — violenza/pericolo/strada
-var red       = "#ff003c"   // UI red bright (alert, critical — già in uso)
-var redDark   = "#c5003c"   // rosso ufficiale UI (meno saturato)
+// Red — violence/danger/street
+var red       = "#ff003c"   // UI red bright (alert, critical — already in use)
+var redDark   = "#c5003c"   // official UI red (less saturated)
 var redShadow = "#880425"   // shadow red / danger fill
 
-// Magenta — netrunner/augumentation accent
+// Magenta — netrunner/augmentation accent
 var magenta   = "#ea00d9"   // neon magenta (Street Kid / netrunner)
-var magentaAlt = "#ed1e79"  // magenta accento mid
+var magentaAlt = "#ed1e79"  // mid-range magenta accent
 
-// Verdi
-var neon      = "#39ff14"   // neon green (terminale/matrix — già in uso)
+// Greens
+var neon      = "#39ff14"   // neon green (terminal/matrix — already in use)
 var olive     = "#9a9f17"   // dirty yellow-green (data display / chart)
 
-// Autorità / calore
-var amber     = "#f78b04"   // warm authority amber (Blade Runner / warning caldo)
+// Authority / warmth
+var amber     = "#f78b04"   // warm authority amber (Blade Runner / warm warning)
 
 // Backgrounds
 var black     = "#000000"   // pure black
-var void_     = "#0a060e"   // background principale (quasi-nero blu-viola)
+var void_     = "#0a060e"   // main background (near-black blue-violet)
 var void2     = "#00060e"   // title card deep blue-black
 var panelBg   = "#0c5f74"   // gwannon deep blue panel
-var dark      = "#333333"   // dark grigio generico
+var dark      = "#333333"   // generic dark grey
 
-// Neutri
+// Neutrals
 var white     = "#ffffff"
-var blue      = "#0c5f74"   // alias panelBg
-var green     = "#446d44"   // verde scuro (usato raramente)
-var purple    = "#aa00aa"   // viola generico
-var orange    = "#ff9800"   // arancio standard
+var blue      = "#0c5f74"   // alias for panelBg
+var green     = "#446d44"   // dark green (rarely used)
+var purple    = "#aa00aa"   // generic purple
+var orange    = "#ff9800"   // standard orange
 
-// ── Valori derivati UI (design-system) ───────────────────────────────────
+// ── Derived UI values (design-system) ────────────────────────────────────
 
-// Sfondi modulo: rgba(void_, opacity)
+// Module backgrounds: rgba(void_, opacity)
 var moduleBg    = Qt.rgba(0.039, 0.024, 0.055, 0.92)   // #0a060e at 92%
-var moduleBgAlt = Qt.rgba(0.047, 0.024, 0.071, 0.85)   // strato alternato
+var moduleBgAlt = Qt.rgba(0.047, 0.024, 0.071, 0.85)   // alternate layer
 
-// Wallust-driven (aggiornati a runtime da WallustColors.qml)
+// Wallust-driven (updated at runtime by WallustColors.qml)
 var wbBg   = "#050309"
 var wbFg   = "#FF84AC"
 var wbGlow = "#E5456F"
 
-// ── Funzioni helper ───────────────────────────────────────────────────────
+// ── Helper functions ─────────────────────────────────────────────────────
 
-// Restituisce una variante rgba di un colore hex a opacità a (0..1)
+// Returns an rgba variant of a hex color at opacity a (0..1)
 function alpha(hex, a) {
     var c = Qt.darker(hex, 1.0)
     return Qt.rgba(c.r, c.g, c.b, a)
 }
 
-// Interpolazione lineare tra due colori (t: 0=c1, 1=c2)
+// Linear interpolation between two colors (t: 0=c1, 1=c2)
 function mix(c1, c2, t) {
     var a = Qt.darker(c1, 1.0)
     var b = Qt.darker(c2, 1.0)
@@ -82,7 +82,7 @@ function mix(c1, c2, t) {
     )
 }
 
-// Schiarisce un colore hex di amount (0..1)
+// Lightens a hex color by amount (0..1)
 function lighten(hex, amount) {
     var c = Qt.darker(hex, 1.0)
     return Qt.rgba(
@@ -93,7 +93,7 @@ function lighten(hex, amount) {
     )
 }
 
-// Scurisce un colore hex di amount (0..1)
+// Darkens a hex color by amount (0..1)
 function darken(hex, amount) {
     var c = Qt.darker(hex, 1.0)
     return Qt.rgba(
@@ -104,12 +104,12 @@ function darken(hex, amount) {
     )
 }
 
-// Canale rosso aberrazione cromatica (#ff003c a opacità a)
+// Red channel for chromatic aberration (#ff003c at opacity a)
 function aberrationRed(a) {
     return Qt.rgba(1, 0, 0.235, a !== undefined ? a : 0.55)
 }
 
-// Canale cyan aberrazione cromatica (#00ffd2 a opacità a)
+// Cyan channel for chromatic aberration (#00ffd2 at opacity a)
 function aberrationCyan(a) {
     return Qt.rgba(0, 1, 0.824, a !== undefined ? a : 0.55)
 }

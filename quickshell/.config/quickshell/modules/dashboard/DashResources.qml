@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
 
-// Barre verticali per CPU / RAM / Disco
+// Vertical bars for CPU / RAM / Disk
 
 Row {
     id: root
@@ -13,7 +13,7 @@ Row {
     padding: 8
     spacing: 2
 
-    // -- Lettura CPU (da /proc/stat) --
+    // -- CPU reading (from /proc/stat) --
     property real cpuPerc: 0
     property string _cpuPrev: ""
 
@@ -47,7 +47,7 @@ Row {
         }
     }
 
-    // -- Lettura RAM (da /proc/meminfo) --
+    // -- RAM reading (from /proc/meminfo) --
     property real memPerc: 0
 
     Timer {
@@ -65,7 +65,7 @@ Row {
         }
     }
 
-    // -- Lettura Disco (df /) --
+    // -- Disk reading (df /) --
     property real diskPerc: 0
 
     Timer {
@@ -83,7 +83,7 @@ Row {
         }
     }
 
-    // -- Componente barra verticale --
+    // -- Vertical bar component --
     component Resource: Item {
         id: res
 
@@ -96,7 +96,7 @@ Row {
         anchors.margins: 12
         implicitWidth: labelWrapper.implicitWidth
 
-        // Barra verticale
+        // Vertical bar
         Rectangle {
             id: trackBar
             anchors.horizontalCenter: parent.horizontalCenter
@@ -145,7 +145,7 @@ Row {
                 _simActive = true
             }
 
-            // Corpo del fill (sotto la superficie ondulata)
+            // Fill body (below the wavy surface)
             Rectangle {
                 id: fillBody
                 anchors.left: parent.left
@@ -161,7 +161,7 @@ Row {
                 }
             }
 
-            // Superficie ondulata
+            // Wavy surface — this took way too long to get right
             Canvas {
                 id: waveCanvas
                 anchors.left: parent.left
@@ -219,7 +219,7 @@ Row {
             implicitWidth: label.implicitWidth
             implicitHeight: label.implicitHeight
         
-            // Icona/etichetta in alto
+            // Icon/label at the top
             Text {
                 id: label
                 anchors.centerIn: parent

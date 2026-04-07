@@ -1,5 +1,5 @@
-// ScanlineOverlay.qml — Overlay scanlines CRT
-// Uso:
+// ScanlineOverlay.qml — CRT scanline overlay
+// Usage:
 //   ScanlineOverlay { opacity: 0.08; spacing: 2 }
 
 import QtQuick

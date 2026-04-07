@@ -1,7 +1,7 @@
 // Bar.qml — Cyberpunk 2077 HUD bar (content layout)
 //
-// Puro Item: tutta la logica di sistema (PanelWindow, exclusiveZone,
-// layer-shell, hover) vive in TopBarWrapper.qml che istanzia questo componente.
+// Pure Item: all the system-level stuff (PanelWindow, exclusiveZone,
+// layer-shell, hover) lives in TopBarWrapper.qml which instantiates this component.
 
 import Quickshell
 import QtQuick
@@ -22,7 +22,7 @@ Item {
     property bool volumePopupVisible: false
     property bool powerPopupVisible: false
 
-    // ── Background gradient (colore da Colours / Wallust) ────────────────
+    // ── Background gradient (color from Colours / Wallust) ───────────────
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
@@ -33,7 +33,7 @@ Item {
     }
 
     // ── Scanline overlay (HUD effect) ──────────────────────────────────────
-    // Linee orizzontali scure ogni 2px — effetto CRT autentico
+    // Dark horizontal lines every 2px — authentic CRT feel
     Item {
         anchors.fill: parent
         clip: true
@@ -50,7 +50,7 @@ Item {
         }
     }
 
-    // ── Bottom glow border (neon line con bloom) ──────────────────────────
+    // ── Bottom glow border (neon line with bloom) ─────────────────────────
     Rectangle {
         anchors.bottom: parent.top
         anchors.left:   parent.left

@@ -1,5 +1,5 @@
 // VolumePopup.qml — popup volume (cyberpunk style)
-// Miglioramenti: CutShape (no border-radius), CornerAccents, glow border
+// Enhancements: CutShape (no border-radius), CornerAccents, glow border
 
 import Quickshell
 import Quickshell.Services.Pipewire
@@ -40,7 +40,7 @@ Item {
         from: -20; to: 0; duration: 200; easing.type: Easing.OutCubic
     }
 
-    // ── Card con CutShape (angolo top-right e bottom-left tagliati) ────────
+    // ── Card with CutShape (top-right and bottom-left corners cut) ─────────
     Item {
         id: card
         x: 0; y: root.slideY
@@ -66,12 +66,12 @@ Item {
             cutBottomLeft:  10
         }
 
-        // Bordo sinistro accent
+        // Left accent border
         Rectangle {
             width: 3; height: parent.height
             color: root.muted ? Qt.rgba(0.5, 0.5, 0.5, 1) : CP.cyan
         }
-        // Linea bottom glow
+        // Bottom glow line
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width; height: 1
@@ -79,7 +79,7 @@ Item {
         }
     }
 
-    // ── CornerAccents (bracket ai 2 angoli non tagliati) ──────────────────
+    // ── CornerAccents (brackets on the 2 non-cut corners) ─────────────────
     CornerAccents {
         x: 0; y: root.slideY
         width: parent.width; height: parent.height
@@ -114,8 +114,8 @@ Item {
             id: track
             anchors.fill: parent
             color: Qt.rgba(0.1, 0.1, 0.15, 1)
-            // No border-radius — cyberpunk usa angoli netti
-            // Bordo sottile accent
+            // No border-radius — cyberpunk means sharp corners, always
+            // Thin accent border
             Rectangle {
                 anchors.fill: parent
                 color: "transparent"

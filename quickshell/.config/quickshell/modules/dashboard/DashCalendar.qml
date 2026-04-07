@@ -4,8 +4,8 @@ import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
 
-// Calendario mensile con navigazione mese
-// Adattato da Caelestia dash/Calendar.qml
+// Monthly calendar with month navigation
+// Adapted from Caelestia dash/Calendar.qml
 
 Item {
     id: root
@@ -19,7 +19,7 @@ Item {
     anchors.right: parent.right
     implicitHeight: inner.implicitHeight + inner.anchors.margins * 2
 
-    // Click rotella: reset a oggi; scroll: naviga mesi
+    // Middle click: reset to today; scroll: navigate months
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.MiddleButton
@@ -39,12 +39,12 @@ Item {
         anchors.margins: 8
         spacing: 3
 
-        // Riga navigazione: < Mese Anno >
+        // Navigation row: < Month Year >
         RowLayout {
             Layout.fillWidth: true
             spacing: 4
 
-            // Pulsante mese precedente
+            // Previous month button
             Item {
                 implicitWidth: 20
                 implicitHeight: 20
@@ -64,7 +64,7 @@ Item {
                 }
             }
 
-            // Titolo mese/anno (clic = torna a oggi)
+            // Month/year title (click = go back to today)
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -81,7 +81,7 @@ Item {
                 }
             }
 
-            // Pulsante mese successivo
+            // Next month button
             Item {
                 implicitWidth: 20
                 implicitHeight: 20
@@ -102,7 +102,7 @@ Item {
             }
         }
 
-        // Riga giorni della settimana
+        // Day-of-week header row
         DayOfWeekRow {
             Layout.fillWidth: true
             locale: grid.locale
@@ -119,7 +119,7 @@ Item {
             }
         }
 
-        // Griglia mese
+        // Month grid
         Item {
             Layout.fillWidth: true
             implicitHeight: grid.implicitHeight
@@ -141,7 +141,7 @@ Item {
                     implicitWidth: implicitHeight
                     implicitHeight: dayText.implicitHeight + 4
 
-                    // Indicatore oggi
+                    // Today indicator
                     Rectangle {
                         anchors.centerIn: parent
                         width: parent.width

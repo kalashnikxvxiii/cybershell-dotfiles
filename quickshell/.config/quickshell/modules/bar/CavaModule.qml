@@ -1,5 +1,5 @@
-// CavaModule.qml — visualizzatore audio barra
-// Usa lo stesso CavaProvider di DashMediaMini (Audio.cava.values)
+// CavaModule.qml — bar audio visualizer
+// Uses the same CavaProvider as DashMediaMini (Audio.cava.values)
 
 import CyberAudio.Services
 import QtQuick
@@ -13,10 +13,10 @@ Item {
 
     property bool showBackground: true
 
-    // ── Registra il servizio CavaProvider ───────────────────────────────────
+    // ── Register the CavaProvider service ──────────────────────────────────
     ServiceRef { service: Audio.cava }
 
-    // ── Dati audio (float 0-1, già normalizzati con Monstercat smoothing) ───
+    // ── Audio data (float 0-1, already normalized with Monstercat smoothing)
     property var cavaValues: Audio.cava.values
     readonly property int barCount: Math.max(1, Math.round(root.width / 6))
 
@@ -34,7 +34,7 @@ Item {
         return Math.max(0, Math.min(1, sum / (end - start)))
     }
 
-    // ── Background opzionale ─────────────────────────────────────────────────
+    // ── Optional background ──────────────────────────────────────────────────
     Rectangle {
         visible: root.showBackground
         anchors.fill: parent
@@ -43,7 +43,7 @@ Item {
         Rectangle { width: 2; height: parent.height; color: CP.cyan }
     }
 
-    // ── Barre ────────────────────────────────────────────────────────────────
+    // ── Bars ─────────────────────────────────────────────────────────────────
     Row {
         id: barsRow
         clip: true

@@ -3,8 +3,8 @@ import Quickshell
 import "../../common/Colors.js" as CP
 import "../../common"
 
-// Tab bar con 4 tab: DASHBOARD, MEDIA, PERFORMANCE, WEATHER
-// Adattato da Caelestia Tabs.qml: indicatore animato + scroll wheel
+// Tab bar with 3 tabs: CYBERDECK, MEDIA, CYBERWARE
+// Adapted from Caelestia Tabs.qml: animated indicator + scroll wheel
 
 Item {
     id: root
@@ -72,7 +72,7 @@ Item {
         }
     }
 
-    // Indicatore scorrevole sotto il tab attivo
+    // Sliding indicator under the active tab
     Rectangle {
         id: indicator
 
@@ -91,7 +91,7 @@ Item {
         }
     }
 
-    // Separatore
+    // Separator
     Rectangle {
         id: separator
 

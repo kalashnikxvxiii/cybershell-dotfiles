@@ -1,4 +1,4 @@
-// LoadModule.qml — load average 1/5/15, intervallo 5s
+// LoadModule.qml — load average 1/5/15, 5s interval
 
 import QtQuick
 import "../../common/Colors.js" as CP

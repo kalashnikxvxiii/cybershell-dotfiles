@@ -1,5 +1,5 @@
-// PerfMetrics.qml — Colonna sinistra: 5 card metriche (CPU, GPU, Disk, Memory, Network)
-// Richiede che il parent esponga le properties di PerfDataProvider tramite alias.
+// PerfMetrics.qml — Left column: 5 metric cards (CPU, GPU, Disk, Memory, Network)
+// Requires the parent to expose PerfDataProvider properties via alias.
 
 import QtQuick
 import QtQuick.Layouts
@@ -12,7 +12,7 @@ import "../../../common"
 Item {
     id: metricsRoot
 
-    // ── Properties richieste dal parent ──
+    // ── Required properties from parent ──
     required property real      cpuPerc
     required property real      cpuTemp
     required property var       cpuHistory
@@ -66,7 +66,7 @@ Item {
         return (b / 1048576).toFixed(2) + " MB/s"
     }
 
-    // ── Sparkline alias (il parent assegna via id) ──
+    // ── Sparkline alias (parent assigns via id) ──
     property alias sparkline: sparkline
 
     property bool cpuExpanded:          false
@@ -113,7 +113,7 @@ Item {
         id: metricsLayout
         anchors.fill: parent
 
-        // Indicatore processo selezionato
+        // Selected process indicator
         Text {
             Layout.fillWidth: true
             visible: metricsRoot.procMode
@@ -210,7 +210,7 @@ Item {
                             id: cpuPercText
                             anchors.centerIn: parent
                             text: (metricsRoot.procMode ? parseFloat(metricsRoot.selectedProc?.cpu ?? 0).toFixed(1) : metricsRoot.cpuPerc.toFixed(1)) + "%"
-                            font.family: "Rajdhani"
+                            font.family: "Oxanium"
                             font.pixelSize: 38
                             font.weight: Font.Bold
                             color: metricsRoot.cpuColor
@@ -437,130 +437,6 @@ Item {
                             }
                         }
                     }
-                    // Item {
-                    //     Layout.alignment: Qt.AlignHCenter
-                    //     implicitWidth: gpuPercText.implicitWidth + 8
-                    //     implicitHeight: gpuPercText.implicitHeight
-
-                    //     Text {
-                    //         anchors.centerIn: parent
-                    //         x: metricsRoot.glitching ? -2 : 0
-                    //         text: gpuPercText.text
-                    //         font: gpuPercText.font
-                    //         color: CP.aberrationRed(metricsRoot.glitching ? 0.4 : 0)
-                    //     }
-
-                    //     Text {
-                    //         anchors.centerIn: parent
-                    //         x: metricsRoot.glitching ? 2 : 0
-                    //         text: gpuPercText.text
-                    //         font: gpuPercText.font
-                    //         color: CP.aberrationCyan(metricsRoot.glitching ? 0.4 : 0)
-                    //     }
-
-                    //     Text {
-                    //         id: gpuPercText
-                    //         anchors.centerIn: parent
-                    //         text: (metricsRoot.procMode ? parseFloat(metricsRoot.selectedProc?.gpu ?? 0).toFixed(1)
-                    //             : metricsRoot.gpuPerc.toFixed(1)) + "%"
-                    //         font.family: "Oxanium"
-                    //         font.pixelSize: 38
-                    //         font.weight: Font.Bold
-                    //         color: metricsRoot.cpuColor
-                    //         opacity: metricsRoot.gpuPerc > 0.9 ? metricsRoot.pulseValue : 1.0
-
-                    //         layer.enabled: true
-                    //         layer.effect: MultiEffect {
-                    //             shadowEnabled: true
-                    //             shadowColor: gpuPercText.color
-                    //             shadowBlur: 0.6
-                    //             shadowOpacity: metricsRoot.gpuPerc > 0.75 ? 0.5 : 0.25
-                    //         }
-                    //     }
-                    // }
-
-                    // Item {
-                    //     Layout.fillWidth: true
-                    //     Layout.fillHeight: true
-
-                    //     Canvas {
-                    //         id: gpuArcCanvas
-                    //         anchors.fill: parent
-
-                    //         property real gpuVal: metricsRoot.procMode
-                    //                             ? parseFloat(metricsRoot.selectedProc?.gpu ?? 0)
-                    //                             : metricsRoot.gpuPerc
-                            
-                    //         onGpuValChanged: requestPaint()
-                    //         Component.onCompleted: requestPaint()
-
-                    //         onPaint: {
-                    //             let ctx = getContext("2d")
-                    //             let w = width, h = height
-                    //             ctx.clearRect(0, 0, w, h)
-                    //             if (w <= 0 || h <= 0) return
-
-                    //             // Arc from BL to BR
-                    //             // Center under the card, ray = width / 2
-                    //             let cx = w / 2
-                    //             let r = w * 0.45
-                    //             let cy = h + r * 0.1        // arc at the bottom of the card
-                    //             let lineW = 4
-
-                    //             // Clockwise arc, from right to left (going from up)
-                    //             // endAngle (right) -> startAngle (left) clockwise = going by -PI/2
-                    //             let leftAngle = Math.PI - 0.35              // ~2.79 rad (left)
-                    //             let rightAngle = 0.35                       // ~0.35 rad (right)
-                    //             let totalSweep = leftAngle - rightAngle     // arc going by upside
-                    //             let pct = Math.min(100, Math.max(0, gpuVal)) / 100
-                    //             let c = metricsRoot.gpuColor
-
-                    //             // Background arc (anticlockwise: from left to right)
-                    //             ctx.beginPath()
-                    //             ctx.arc(cx, cy, r, leftAngle, rightAngle, false)
-                    //             ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 0.1)
-                    //             ctx.lineWidth = lineW
-                    //             ctx.lineCap = "round"
-                    //             ctx.stroke()
-
-                    //             // Active arc ( from left to right)
-                    //             let sweepCW = 2 * Math.PI - totalSweep
-                    //             if (pct > 0) {
-                    //                 let activeEnd = leftAngle + sweepCW * pct
-                    //                 ctx.beginPath()
-                    //                 ctx.arc(cx, cy, r, leftAngle, activeEnd, false)
-                    //                 ctx.strokeStyle = c
-                    //                 ctx.lineWidth = lineW
-                    //                 ctx.lineCap = "round"
-                    //                 ctx.stroke()
-
-                    //                 // Glow on tip
-                    //                 let tipX = cx + Math.cos(activeEnd) * r
-                    //                 let tipY = cy + Math.sin(activeEnd) * r
-                    //                 let glow = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 10)
-                    //                 glow.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0.6))
-                    //                 glow.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0))
-                    //                 ctx.beginPath()
-                    //                 ctx.arc(tipX, tipY, 10, 0, 2 * Math.PI)
-                    //                 ctx.fillStyle = glow
-                    //                 ctx.fill()
-                    //             }
-
-                    //             // Tick marks
-                    //             for (let t = 0; t <= 4; t++) {
-                    //                 let a = leftAngle + (t / 4) * sweepCW
-                    //                 let inner = r + lineW / 2 - 2
-                    //                 let outer = r + lineW / 2 - 5
-                    //                 ctx.beginPath()
-                    //                 ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner)
-                    //                 ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer)
-                    //                 ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.15)
-                    //                 ctx.lineWidth = 1
-                    //                 ctx.stroke()
-                    //             }
-                    //         }
-                    //     }
-                    // }
                 }
 
                 CutShape {
@@ -611,7 +487,7 @@ Item {
 
                     Text {
                         text: (metricsRoot.diskPerc).toFixed(1) + "%"
-                        font.family: "Rajdhani"
+                        font.family: "Oxanium"
                         font.pixelSize: 32
                         font.weight: Font.Bold
                         color: Colours.accentPrimary
@@ -708,7 +584,7 @@ Item {
                             id: memPercText
                             anchors.centerIn: parent
                             text: (metricsRoot.procMode ? parseFloat(metricsRoot.selectedProc?.mem ?? 0).toFixed(1) : metricsRoot.memPerc.toFixed(1)) + "%"
-                            font.family: "Rajdhani"
+                            font.family: "Oxanium"
                             font.pixelSize: 32
                             font.weight: Font.Bold
                             color: metricsRoot.memColor
@@ -841,149 +717,34 @@ Item {
         }
     }
 
-    // ── CPU Expanded: animated overlay ────────────────────────
-    Item {
-        id: coreOverlay
+    // ── CPU Expanded: animated overlay (extracted to CpuExpandedOverlay.qml) ──
+    CpuExpandedOverlay {
         visible: metricsRoot.cpuExpanded
         z: 20
 
-        // Position interpolata: from cpuCard to fullscreen
         x: (1 - metricsRoot.cpuExpandProgress) * cpuCard.x
         y: (1 - metricsRoot.cpuExpandProgress) * cpuCard.y
         width: cpuCard.width + (metricsRoot.width - cpuCard.width) * metricsRoot.cpuExpandProgress
         height: cpuCard.height + (metricsRoot.height - cpuCard.height) * metricsRoot.cpuExpandProgress
 
-        clip: true
+        expandProgress:  metricsRoot.cpuExpandProgress
+        animTriggered:   metricsRoot.coreAnimTriggered
+        expanded:        metricsRoot.cpuExpanded
+        cpuColor:        metricsRoot.cpuColor
+        tempColor:       metricsRoot.tempColor
+        cpuPerc:         metricsRoot.cpuPerc
+        corePercs:       metricsRoot.corePercs
+        coreHistories:   metricsRoot.coreHistories
 
-        CutShape {
-            anchors.fill: parent
-            fillColor: Colours.moduleBg
-            cutBottomLeft: 10
-        }
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 6
-            opacity: metricsRoot.cpuExpandProgress
-
-            // Header
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Text {
-                    text: "CPU CORES"
-                    font.family: "Oxanium"
-                    font.pixelSize: 11
-                    font.letterSpacing: 2
-                    color: metricsRoot.cpuColor
-                }
-                Item { Layout.fillWidth: true }
-                Text {
-                    text: metricsRoot.cpuPerc.toFixed(1) + "%"
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 10
-                    color: metricsRoot.tempColor
-                }
-                Text {
-                    text: "[ESC]"
-                    font.family: "Oxanium"
-                    font.pixelSize: 8
-                    color: Colours.textMuted
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            metricsRoot.coreAnimTriggered = false
-                            cpuExpandAnim.from = 1; cpuExpandAnim.to = 0
-                            cpuExpandAnim.restart()
-                        }
-                    }
-                }
-            }
-
-            // Grid core sparklines
-            GridLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                columns: 4
-                columnSpacing: 4
-                rowSpacing: 4
-
-                Repeater {
-                    model: metricsRoot.corePercs.length
-
-                    Item {
-                        id: coreWrapper
-                        required property int index
-
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.minimumHeight: 36
-
-                        SparklineItem {
-                            anchors.fill: parent
-
-                            cutBottomLeft: 12
-                            strokeWidth: 1
-                            strokeColor: Colours.neonBorder(0.3)
-
-                            values: {
-                                void metricsRoot.cpuPerc    // trigger rebind every 2s
-                                if (!metricsRoot.cpuExpanded) return []
-                                return metricsRoot.coreHistories[index] || []
-                            }
-                            lineColor: metricsRoot.cpuColor
-                            fillOpacity: 0.7
-                            lineWidth: 1.5
-                            label: "C" + index
-                            valueText: (metricsRoot.corePercs[index] || 0).toFixed(0) + "%"
-                            valueColor: (metricsRoot.corePercs[index] || 0) > 90 ? Colours.accentDanger
-                                    : (metricsRoot.corePercs[index] || 0) > 75 ? Colours.accentWarn
-                                    : metricsRoot.cpuColor
-                            labelColor: Colours.textMuted
-                            bgColor: Qt.rgba(0, 0, 0, 0.3)
-                        }
-
-                        property bool _animDone: false
-
-                        opacity: _animDone ? 1 : 0
-                        scale: _animDone ? 1.0 : 0.2
-
-                        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-
-                        Timer {
-                            interval: index * 100
-                            running: metricsRoot.coreAnimTriggered
-                            repeat: false
-                            onTriggered: coreWrapper._animDone = true
-                        }
-
-                        Connections {
-                            target: metricsRoot
-                            function onCoreAnimTriggeredChanged() {
-                                if (!metricsRoot.coreAnimTriggered) _animDone = false
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        CutShape {
-            anchors.fill: parent
-            strokeWidth: 1
-            strokeColor: Colours.neonBorder(0.3)
-            inset: 0.5
-            cutBottomLeft: 24
+        onCloseRequested: {
+            metricsRoot.coreAnimTriggered = false
+            cpuExpandAnim.from = 1; cpuExpandAnim.to = 0
+            cpuExpandAnim.restart()
         }
     }
 
-    // GPU Expanded: animated overaly
-    Item {
-        id: gpuOverlay
+    // ── GPU Expanded: animated overlay (extracted to GpuExpandedOverlay.qml) ──
+    GpuExpandedOverlay {
         visible: metricsRoot.gpuExpanded
         z: 20
 
@@ -992,498 +753,33 @@ Item {
         width: gpuCard.width + (metricsRoot.width - gpuCard.width) * metricsRoot.gpuExpandProgress
         height: gpuCard.height + (metricsRoot.height - gpuCard.height) * metricsRoot.gpuExpandProgress
 
-        clip: true
+        expandProgress:  metricsRoot.gpuExpandProgress
+        animTriggered:   metricsRoot.gpuAnimTriggered
+        gpuColor:        metricsRoot.gpuColor
+        gpuTempColor:    metricsRoot.gpuTempColor
+        gpuName:         metricsRoot.gpuName
+        gpuPerc:         metricsRoot.gpuPerc
+        gpuTemp:         metricsRoot.gpuTemp
+        gpuVramUsedGb:   metricsRoot.gpuVramUsedGb
+        gpuVramTotalGb:  metricsRoot.gpuVramTotalGb
+        gpuClockCur:     metricsRoot.gpuClockCur
+        gpuClockMax:     metricsRoot.gpuClockMax
+        gpuMemClockCur:  metricsRoot.gpuMemClockCur
+        gpuMemClockMax:  metricsRoot.gpuMemClockMax
+        gpuPowerDraw:    metricsRoot.gpuPowerDraw
+        gpuPowerLimit:   metricsRoot.gpuPowerLimit
+        gpuFanSpeed:     metricsRoot.gpuFanSpeed
+        gpuPState:       metricsRoot.gpuPState
+        gpuPcieGen:      metricsRoot.gpuPcieGen
+        gpuPcieWidth:    metricsRoot.gpuPcieWidth
+        gpuEncoderUtil:  metricsRoot.gpuEncoderUtil
+        gpuDecoderUtil:  metricsRoot.gpuDecoderUtil
+        gpuMemBwUtil:    metricsRoot.gpuMemBwUtil
 
-        CutShape {
-            anchors.fill: parent
-            fillColor: Colours.moduleBg
-            cutBottomLeft: 24
-        }
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 12
-            opacity: metricsRoot.gpuExpandProgress
-
-            // ── Header ────────────────────
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Rectangle { width: 3; height: 14; color: metricsRoot.gpuColor }
-                Text {
-                    text: "GPU DETAILS"
-                    font.family: "Oxanium"
-                    font.pixelSize: 11
-                    font.letterSpacing: 2
-                    color: metricsRoot.gpuColor
-                }
-                Text {
-                    text: metricsRoot.gpuName
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 9
-                    color: Colours.textMuted
-                }
-                Item { Layout.fillWidth: true }
-                Text {
-                    text: metricsRoot.gpuPerc.toFixed(1) + "%"
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 10
-                    color: metricsRoot.gpuColor
-                }
-                Text {
-                    text: metricsRoot.gpuTemp.toFixed(0) + "°C"
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 10
-                    color: metricsRoot.gpuTempColor
-                }
-                Text {
-                    text: "[ESC]"
-                    font.family: "Oxanium"
-                    font.pixelSize: 8
-                    color: Colours.textMuted
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            metricsRoot.gpuAnimTriggered = false
-                            gpuExpandAnim.from = 1; gpuExpandAnim.to = 0
-                            gpuExpandAnim.restart()
-                        }
-                    }
-                }
-            }
-
-            // ── TOP: VRAM + Power gauges
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 6
-
-                // VRAM gauge card
-                Item {
-                    id: gpuExp0
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    property bool _animDone: false
-                    opacity: _animDone ? 1 : 0
-                    scale: _animDone ? 1.0 : 0.2
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                    Timer { interval: 0; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp0._animDone = true }
-                    Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() {
-                        if (!metricsRoot.gpuAnimTriggered) {
-                            gpuExp0._animDone = false
-                        }
-                    }}
-
-                    CutShape {
-                        anchors.fill: parent
-                        fillColor: Qt.rgba(0, 0, 0, 0.3)
-                    }
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 2
-
-                        Text {
-                            text: "VRAM"; font.family: "Oxanium"
-                            font.pixelSize: 9; font.letterSpacing: 2
-                            color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter
-                        }
-                        Text {
-                            text: metricsRoot.gpuVramUsedGb.toFixed(1) + " GB"
-                            font.family: "Oxanium"; font.pixelSize: 26
-                            font.weight: Font.Bold; color: Colours.accentPrimary
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Text {
-                            text: "/ " + metricsRoot.gpuVramTotalGb.toFixed(1) + " GB"
-                            font.family: "Chakra Petch"; font.pixelSize: 9
-                            color: Colours.textSecondary; Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            Layout.minimumHeight: 30
-
-                            Canvas {
-                                id: vramArc
-                                anchors.fill: parent
-                                property real pct: metricsRoot.gpuVramTotalGb > 0 ? metricsRoot.gpuVramUsedGb / metricsRoot.gpuVramTotalGb : 0
-                                onPctChanged: requestPaint()
-                                Component.onCompleted: requestPaint()
-                                onWidthChanged: requestPaint()
-                                onHeightChanged: requestPaint()
-
-                                onPaint: {
-                                    let ctx = getContext("2d")
-                                    let w = width, h = height
-                                    ctx.clearRect(0, 0, w, h)
-                                    if (w <= 0 || h <= 0) return
-
-                                    let cx = w / 2, r = w * 0.45
-                                    let cy = h + r * 0.1, lineW = 3
-                                    let leftAngle = Math.PI - 0.35
-                                    let rightAngle = 0.35
-                                    let totalSweep = leftAngle - rightAngle
-                                    let sweepCW = 2 * Math.PI - totalSweep
-                                    let c = Colours.accentPrimary
-
-                                    ctx.beginPath()
-                                    ctx.arc(cx, cy, r, leftAngle, rightAngle, false)
-                                    ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 0.1)
-                                    ctx.lineWidth = lineW
-                                    ctx.lineCap = "round"
-                                    ctx.stroke()
-
-                                    if (pct > 0) {
-                                        let activeEnd = leftAngle + sweepCW * pct
-                                        ctx.beginPath()
-                                        ctx.arc(cx, cy, r, leftAngle, activeEnd, false)
-                                        ctx.strokeStyle = c
-                                        ctx.lineWidth = lineW
-                                        ctx.lineCap = "round"
-                                        ctx.stroke()
-
-                                        let tipX = cx + Math.cos(activeEnd) * r
-                                        let tipY = cy + Math.sin(activeEnd) * r
-                                        let glow = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 8)
-                                        glow.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0.5))
-                                        glow.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0))
-                                        ctx.beginPath()
-                                        ctx.arc(tipX, tipY, 8, 0, 2 * Math.PI)
-                                        ctx.fillStyle = glow
-                                        ctx.fill()
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            text: (metricsRoot.gpuVramTotalGb > 0 ? (metricsRoot.gpuVramUsedGb /  metricsRoot.gpuVramTotalGb * 100).toFixed(0) : "0") + "%"
-                            font.family: "Oxanium"; font.pixelSize: 20; font.weight: Font.Bold
-                            color: Colours.accentPrimary; Layout.alignment: Qt.AlignHCenter
-                        }
-                    }
-
-                    CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
-                }
-
-                // Power gauge card
-                Item {
-                    id: gpuExp1
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    property bool _animDone: false
-                    opacity: _animDone ? 1 : 0
-                    scale: _animDone ? 1.0 : 0.2
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                    Timer { interval: 80; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp1._animDone = true }
-                    Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() {
-                        if (!metricsRoot.gpuAnimTriggered) gpuExp1._animDone = false 
-                    }}
-
-                    CutShape {
-                        anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3)
-                    }
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 2
-
-                        Text {
-                            text: "POWER"; font.family: "Oxanium"; font.pixelSize: 9
-                            font.letterSpacing: 2; color: Colours.textMuted
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Text {
-                            text: metricsRoot.gpuPowerDraw.toFixed(1) + " W"
-                            font.family: "Oxanium"; font.pixelSize: 26; font.weight: Font.Bold
-                            color: Colours.accentWarn; Layout.alignment: Qt.AlignHCenter
-                        }
-                        Text {
-                            text: "/ " + metricsRoot.gpuPowerLimit.toFixed(0) + " W"
-                            font.family: "Chakra Petch"; font.pixelSize: 9
-                            color: Colours.textSecondary; Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            Layout.minimumHeight: 30
-
-                            Canvas {
-                                id: powerArc
-                                anchors.fill: parent
-                                property real pct: metricsRoot.gpuPowerLimit > 0 ? metricsRoot.gpuPowerDraw / metricsRoot.gpuPowerLimit : 0
-                                onPctChanged: requestPaint()
-                                Component.onCompleted: requestPaint()
-                                onWidthChanged: requestPaint()
-                                onHeightChanged: requestPaint()
-
-                                onPaint: {
-                                    let ctx = getContext("2d")
-                                    let w = width, h = height
-                                    ctx.clearRect(0, 0, w, h)
-                                    if (w <= 0 || h <= 0) return
-
-                                    let cx = w / 2, r = w * 0.45
-                                    let cy = h + r * 0.1, lineW = 3
-                                    let leftAngle = Math.PI - 0.35
-                                    let rightAngle = 0.35
-                                    let totalSweep = leftAngle - rightAngle
-                                    let sweepCW = 2 * Math.PI - totalSweep
-                                    let c = Colours.accentWarn
-
-                                    ctx.beginPath()
-                                    ctx.arc(cx, cy, r, leftAngle, rightAngle, false)
-                                    ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 0.1)
-                                    ctx.lineWidth = lineW
-                                    ctx.lineCap = "round"
-                                    ctx.stroke()
-
-                                    if (pct > 0) {
-                                        let activeEnd = leftAngle + sweepCW * Math.min(1, pct)
-                                        ctx.beginPath()
-                                        ctx.arc(cx, cy, r, leftAngle, activeEnd, false)
-                                        ctx.strokeStyle = c
-                                        ctx.lineWidth = lineW
-                                        ctx.lineCap = "round"
-                                        ctx.stroke()
-
-                                        let tipX = cx + Math.cos(activeEnd) * r
-                                        let tipY = cy + Math.sin(activeEnd) * r
-                                        let glow = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 8)
-                                        glow.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0.5))
-                                        glow.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0))
-                                        ctx.beginPath()
-                                        ctx.arc(tipX, tipY, 8, 0, 2 * Math.PI)
-                                        ctx.fillStyle = glow
-                                        ctx.fill()
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            text: (metricsRoot.gpuPowerLimit > 0 ? (metricsRoot.gpuPowerDraw / metricsRoot.gpuPowerLimit * 100).toFixed(0) : "0") + "%"
-                            font.family: "Oxanium"; font.pixelSize: 20; font.weight: Font.Bold
-                            color: Colours.accentWarn; Layout.alignment: Qt.AlignHCenter
-                        }
-                    }
-
-                    CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
-                }
-            }
-
-            // ── Fascia MID: Clocks + Fan ──
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 6
-
-                // GPU Clock
-                Item {
-                    id: gpuExp2
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-
-                    property bool _animDone: false
-                    opacity: _animDone ? 1 : 0
-                    scale: _animDone ? 1.0 : 0.2
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                    Timer { interval: 160; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp2._animDone = true }
-                    Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() { if (!metricsRoot.gpuAnimTriggered) gpuExp2._animDone = false } }
-
-                    CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
-                    ColumnLayout {
-                        anchors.fill: parent; anchors.margins: 6; spacing: 2
-                        Text { text: "GPU CLOCK"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                        Text { text: metricsRoot.gpuClockCur + " MHz"; font.family: "Oxanium"; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
-                        Text { text: "MAX " + metricsRoot.gpuClockMax; font.family: "Chakra Petch"; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                    }
-                    CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
-                }
-
-                // Mem Clock
-                Item {
-                    id: gpuExp3
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-
-                    property bool _animDone: false
-                    opacity: _animDone ? 1 : 0
-                    scale: _animDone ? 1.0 : 0.2
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                    Timer { interval: 240; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp3._animDone = true }
-                    Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() { if (!metricsRoot.gpuAnimTriggered) gpuExp3._animDone = false } }
-
-                    CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
-                    ColumnLayout {
-                        anchors.fill: parent; anchors.margins: 6; spacing: 2
-                        Text { text: "MEM CLOCK"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                        Text { text: metricsRoot.gpuMemClockCur + " MHz"; font.family: "Oxanium"; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
-                        Text { text: "MAX " + metricsRoot.gpuMemClockMax; font.family: "Chakra Petch"; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                    }
-                    CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
-                }
-
-                // Fan
-                Item {
-                    id: gpuExp4
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-
-                    property bool _animDone: false
-                    opacity: _animDone ? 1 : 0
-                    scale: _animDone ? 1.0 : 0.2
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                    Timer { interval: 320; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp4._animDone = true }
-                    Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() { if (!metricsRoot.gpuAnimTriggered) gpuExp4._animDone = false } }
-
-                    readonly property color fanColor: metricsRoot.gpuFanSpeed > 90 ? Colours.accentDanger
-                                                    : metricsRoot.gpuFanSpeed > 70 ? Colours.accentWarn
-                                                    : Colours.accentOk
-
-                    CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
-                    ColumnLayout {
-                        anchors.fill: parent; anchors.margins: 6; spacing: 2
-                        Text { text: "FAN"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                        Text { text: metricsRoot.gpuFanSpeed + "%"; font.family: "Oxanium"; font.pixelSize: 18; font.weight: Font.Bold; color: gpuExp4.fanColor; Layout.alignment: Qt.AlignHCenter }
-                    }
-                    CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
-                }
-            }
-
-            // ── Fascia BOTTOM: Usage bars ──
-            Item {
-                id: gpuExp5
-                Layout.fillWidth: true
-                Layout.preferredHeight: childrenRect.height
-
-                property bool _animDone: false
-                opacity: _animDone ? 1 : 0
-                scale: _animDone ? 1.0 : 0.2
-                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                Timer { interval: 400; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp5._animDone = true }
-                Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() { if (!metricsRoot.gpuAnimTriggered) gpuExp5._animDone = false } }
-
-                ColumnLayout {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    spacing: 10
-
-                    // Encoder bar
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Text { text: "ENCODER"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
-                        Item {
-                            Layout.fillWidth: true; Layout.preferredHeight: 12
-                            Rectangle { anchors.fill: parent; color: Qt.rgba(Colours.accentMem.r, Colours.accentMem.g, Colours.accentMem.b, 0.08) }
-                            Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: parent.width * (metricsRoot.gpuEncoderUtil / 100); color: Colours.accentMem; Behavior on width { Anim { duration: 400 } } }
-                        }
-                        Text { text: metricsRoot.gpuEncoderUtil + "%"; font.family: "Oxanium"; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentMem; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
-                    }
-
-                    // Decoder bar
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Text { text: "DECODER"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
-                        Item {
-                            Layout.fillWidth: true; Layout.preferredHeight: 12
-                            Rectangle { anchors.fill: parent; color: Qt.rgba(Colours.accentMem.r, Colours.accentMem.g, Colours.accentMem.b, 0.08) }
-                            Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: parent.width * (metricsRoot.gpuDecoderUtil / 100); color: Colours.accentMem; Behavior on width { Anim { duration: 400 } } }
-                        }
-                        Text { text: metricsRoot.gpuDecoderUtil + "%"; font.family: "Oxanium"; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentMem; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
-                    }
-
-                    // Mem BW bar
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Text { text: "MEM BW"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
-                        Item {
-                            Layout.fillWidth: true; Layout.preferredHeight: 12
-                            Rectangle { anchors.fill: parent; color: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.08) }
-                            Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: parent.width * (metricsRoot.gpuMemBwUtil / 100); color: Colours.accentSecondary; Behavior on width { Anim { duration: 400 } } }
-                        }
-                        Text { text: metricsRoot.gpuMemBwUtil + "%"; font.family: "Oxanium"; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
-                    }
-                }
-            }
-
-            // ── Status row: P-State + PCIe ──
-            Item {
-                id: gpuExp6
-                Layout.fillWidth: true
-                Layout.preferredHeight: 30
-
-                property bool _animDone: false
-                opacity: _animDone ? 1 : 0
-                scale: _animDone ? 1.0 : 0.2
-                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InQuad } }
-                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                Timer { interval: 480; running: metricsRoot.gpuAnimTriggered; repeat: false; onTriggered: gpuExp6._animDone = true }
-                Connections { target: metricsRoot; function onGpuAnimTriggeredChanged() { if (!metricsRoot.gpuAnimTriggered) gpuExp6._animDone = false } }
-
-                readonly property color pstateColor: {
-                    let n = parseInt(metricsRoot.gpuPState.replace("P", "")) || 0
-                    return n <= 2 ? Colours.accentOk : n <= 5 ? Colours.accentWarn : Colours.accentDanger
-                }
-
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: 6
-
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3); cutBottomLeft: 12 }
-                        RowLayout {
-                            anchors.fill: parent; anchors.margins: 6
-                            Text { text: "P-STATE"; font.family: "Oxanium"; font.pixelSize: 12; font.letterSpacing: 1; color: Colours.textMuted }
-                            Item { Layout.fillWidth: true }
-                            Text { text: metricsRoot.gpuPState; font.family: "Oxanium"; font.pixelSize: 11; font.weight: Font.Bold; color: gpuExp6.pstateColor }
-                        }
-                        CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5; cutBottomLeft: 12 }
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
-                        RowLayout {
-                            anchors.fill: parent; anchors.margins: 6
-                            Text { text: "PCIE"; font.family: "Oxanium"; font.pixelSize: 12; font.letterSpacing: 1; color: Colours.textMuted }
-                            Item { Layout.fillWidth: true }
-                            Text { text: "GEN" + metricsRoot.gpuPcieGen + " x" + metricsRoot.gpuPcieWidth; font.family: "Oxanium"; font.pixelSize: 11; font.weight: Font.Bold; color: Colours.accentSecondary }
-                        }
-                        CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
-                    }
-                }
-            }
-        }
-
-        CutShape {
-            anchors.fill: parent
-            strokeWidth: 1
-            strokeColor: Colours.neonBorder(0.3)
-            inset: 0.5
-            cutBottomLeft: 24
+        onCloseRequested: {
+            metricsRoot.gpuAnimTriggered = false
+            gpuExpandAnim.from = 1; gpuExpandAnim.to = 0
+            gpuExpandAnim.restart()
         }
     }
 }

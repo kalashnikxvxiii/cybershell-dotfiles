@@ -1,7 +1,7 @@
-// Contenuto della dashboard con 4 tab scorrevoli
-// Struttura adattata da Caelestia modules/dashboard/Content.qml:
-//   DashTabs (indicatore animato + scroll wheel)
-//   Flickable con RowLayout di 4 Pane (Loader con lazy-loading)
+// Dashboard content with scrollable tabs
+// Structure adapted from Caelestia modules/dashboard/Content.qml:
+//   DashTabs (animated indicator + scroll wheel)
+//   Flickable with RowLayout of tab Panes (Loader with lazy-loading)
 
 import QtQuick
 import QtQuick.Layouts
@@ -16,8 +16,8 @@ Item {
     implicitWidth: 8 + 4 + (view.implicitWidth > 0 ? view.implicitWidth : 830)
     implicitHeight: 6 + tabs.implicitHeight + 6 + (view.implicitHeight > 0 ? view.implicitHeight : 340) + 6
 
-    // Nota: view.implicitWidth/Height leggono da currentItem.Layout.preferredWidth/Height,
-    // che è sempre valorizzato (naturalWidth/Height) indipendentemente dal caricamento del Pane.
+    // Note: view.implicitWidth/Height read from currentItem.Layout.preferredWidth/Height,
+    // which is always populated (naturalWidth/Height) regardless of whether the Pane is loaded.
 
     required property DrawerState drawerState
     required property PersistentProperties dashState
@@ -36,7 +36,7 @@ Item {
         dashState: root.dashState
     }
 
-    // Separatore già incluso in DashTabs, aggiunge solo clip
+    // Separator already included in DashTabs, just adds clip
     Item {
         id: viewWrapper
 
@@ -63,7 +63,7 @@ Item {
             contentHeight: row.implicitHeight
             contentX: currentItem ? currentItem.x : 0
 
-            // Fine drag: snap soglia 1/10 o ripristina binding
+            // End drag: snap at 1/5 threshold or restore binding
             onDragEnded: {
                 if (!currentItem) return
                 const offset = contentX - currentItem.x
@@ -79,12 +79,12 @@ Item {
                 Anim {}
             }
 
-            // 4 pane affiancate
+            // Side-by-side tab panes
             RowLayout {
                 id: row
                 spacing: 0
 
-                // Ogni Pane = Loader con lazy-loading Caelestia-style
+                // Each Pane = Loader with Caelestia-style lazy-loading
                 Pane { id: pane0; index: 0; naturalWidth: 830; naturalHeight: 410; sourceComponent: DashMainTab   { dashState: root.dashState } }
                 Pane {            index: 1; naturalWidth: 400; naturalHeight: 240; sourceComponent: DashMediaTab  {  } }
                 Pane {            index: 2; naturalWidth: 830; naturalHeight: 520; sourceComponent: DashPerfTab   { tabActive: view.currentIndex === 2 && root.drawerState.dashboardOpen } }
@@ -92,8 +92,8 @@ Item {
         }
     }
 
-    // Pane: Loader con lazy-loading — carica sempre il tab corrente +
-    // qualsiasi pane visibile durante lo scorrimento
+    // Pane: Loader with lazy-loading — always loads the current tab +
+    // any pane visible during swipe
     component Pane: Loader {
         id: pane
 
@@ -101,18 +101,18 @@ Item {
         required property real naturalWidth
         required property real naturalHeight
 
-        // Prima del caricamento usa naturalWidth/Height come placeholder.
-        // Dopo il caricamento usa le dimensioni reali dell'item (supporta implicitHeight dinamico).
-        // (Loader ha implicitWidth/Height read-only, si usa Layout.preferred* per il sizing)
+        // Before loading, uses naturalWidth/Height as placeholder.
+        // After loading, uses the item's real dimensions (supports dynamic implicitHeight).
+        // (Loader's implicitWidth/Height are read-only, so Layout.preferred* is used for sizing)
         Layout.preferredWidth:  item ? item.implicitWidth  : naturalWidth
         Layout.preferredHeight: item ? item.implicitHeight : naturalHeight
         Layout.alignment: Qt.AlignTop
 
         Component.onCompleted: active = Qt.binding(() => {
             if (pane.index === 0) return true
-            // Sempre carico se è il tab corrente
+            // Always loaded if it's the current tab
             if (pane.index === view.currentIndex) return true
-            // Carica se è parzialmente visibile (durante swipe)
+            // Load if partially visible (during swipe)
             const vx  = Math.floor(view.visibleArea.xPosition * view.contentWidth)
             const vex = Math.floor(vx + view.visibleArea.widthRatio * view.contentWidth)
             return vex > x && vx < x + naturalWidth

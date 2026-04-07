@@ -15,18 +15,18 @@ Item {
     property real topFraction: 0.25
     property real bottomMarginPx: 160
 
-    // Font adattivo: riduce se currRow ha troppe righe
+    // Adaptive font: shrinks if currRow has too many lines
     readonly property real effectiveFontSize: {
         var base = root.fontSize
         if (!lyricsArea || lyricsArea.height <= 0) return base
-        // Stima righe curr abbastanza su lunghezza testo
+        // Rough estimate of curr lines based on text length
         var charW = base * 0.8 * 0.52
         var availW = lyricsArea.width - 32
         if (availW <= 0) return base
         var lineLen = Math.floor(availW / charW)
         if (lineLen <= 0) return base
         var lines = Math.ceil((_currLyricsTxt || "x"). length / lineLen)
-        // Se currRow supera il 40% di lyricsArea, riduci
+        // If currRow exceeds 40% of lyricsArea, scale down
         var currH = lines * base * 0.8 * 1.2
         var maxH = lyricsArea.height * 0.4
         if (currH > maxH) return Math.max(base * 0.6, base * (maxH / currH))
@@ -59,7 +59,7 @@ Item {
     readonly property bool _prevIsInterlude: lyricsLines[currentLyricsIdx - 1]?.isInterlude ?? false
     readonly property bool _nextIsInterlude: lyricsLines[currentLyricsIdx + 1]?.isInterlude ?? false
 
-    // Raggruppa le sillabe dello stesso vocabolo in un unico item
+    // Groups syllables of the same word into a single item
     readonly property var _wordGroups: {
         const words = root.lyricsLines[root.currentLyricsIdx]?.words ?? null
         if (!words || words.length === 0) return []
@@ -295,7 +295,7 @@ Item {
                 return 
             }
             if (data.trackId !== root.spotifyTrackId) {
-                if (!root.spotifyTrackId) root._pendingJson = jsonStr // Solo se ID non ancora noto
+                if (!root.spotifyTrackId) root._pendingJson = jsonStr // Only if ID not known yet
             //    console.warn("[DBG] trackId mismatch: json=" + data.trackId + " qml=" + root.spotifyTrackId)
                 return
             }
@@ -377,9 +377,9 @@ Item {
             root.lyricsReady = true
             root.currentLyricsIdx = -1
             root._spicyLoaded = true
-            // Leggi stato like se presente
+            // Read like state if present
             if (data.isLiked !== undefined) Players.isLiked = data.isLiked
-            // Aggiornamento like state separato (senza lyrics)
+            // Separate like state update (without lyrics)
             if (data.likeState !== undefined) root.isLiked = data.likeState
             //console.warn("[DBG] loaded ok: src=" + src + " wordSync=" + root.hasWordSync + " lines=" + withGaps.length)
         } catch(e) { 
@@ -468,7 +468,7 @@ Item {
                 }
             }
 
-            // Riga uscente (sale e sparisce — vecchia prev)
+            // Outgoing row (scrolls up and fades — old prev)
             Item {
                 id: outgoingRow
                 width: parent.width; height: outgoingCenter.implicitHeight
@@ -490,7 +490,7 @@ Item {
                     leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap }
             }
 
-            // Riga precedente
+            // Previous row
             Item {
                 id: prevRow
                 width: parent.width
@@ -540,7 +540,7 @@ Item {
                 }
             }
 
-            // Riga corrente (highlight)
+            // Current row (highlighted)
             Item {
                 id: currRow
                 width: parent.width
@@ -595,10 +595,10 @@ Item {
                                     running: interludeDots.visible
                                     loops: Animation.Infinite
 
-                                    // offset per dot
+                                    // per-dot offset
                                     PauseAnimation { duration: index * 800 }
 
-                                    // PRE-GLITCH: jitter posizione + flash cyan (80ms)
+                                    // PRE-GLITCH: position jitter + cyan flash (80ms)
                                     PropertyAction { target: dot;       property: "color";      value: CP.alpha(CP.cyan, 0.9) }
                                     PropertyAction { target: dot;       property: "scale";      value: 1.2 }
                                     PropertyAction { target: dotShift;  property: "x";          value: -3 }
@@ -627,7 +627,7 @@ Item {
                                     PropertyAction { target: dot;       property: "color";      value: CP.magenta }
                                     PauseAnimation { duration: 150 }
 
-                                    // DECAY STUTTER: flicker opacita' + scatto laterale (100ms)
+                                    // DECAY STUTTER: opacity flicker + lateral jolt (100ms)
                                     PropertyAction { target: dot;       property: "opacity";    value: 0.55 }
                                     PropertyAction { target: dotShift;  property: "x";          value: 2 }
                                     PauseAnimation { duration: 25 }
@@ -641,7 +641,7 @@ Item {
                                         NumberAnimation { target: dot; property: "opacity"; to: 0.3; duration: 150; easing.type: Easing.Linear }
                                     }
 
-                                    // IDLE (tail padding per ciclo uniforme a 2400ms)
+                                    // IDLE (tail padding for uniform 2400ms cycle)
                                     PauseAnimation { duration: (2 - index) * 800 + 200 }
                                 }
                             }
@@ -863,7 +863,7 @@ Item {
             }
         }
     }
-    // nextRow fuori dal clip di lyricsArea, con slide orizzontale
+    // nextRow outside lyricsArea clip, with horizontal slide
     Item {
         x: 0
         y: Math.min(

@@ -1,7 +1,7 @@
 // MprisModule.qml — now playing via Quickshell.Services.Mpris
-//   Text per il testo Artista/Titolo con animazione marquee
-//   Rectangle per la barra di avanzamento con animazione glitch
-//   MouseArea per la gestione del click e del scroll
+//   Text for Artist/Title display with marquee animation
+//   Rectangle for the progress bar with glitch animation
+//   MouseArea for click and scroll handling
 
 import Quickshell.Services.Mpris
 import QtQuick
@@ -115,7 +115,7 @@ Item {
             }
         }
 
-        // Testo Artista/Titolo
+        // Artist/Title text
         Text {
             id: label1
             x: textViewport.marqueeActive ? textViewport.marqueeOffset : (textViewport.width - label1.implicitWidth) / 2
@@ -143,13 +143,13 @@ Item {
             styleColor: label1.styleColor
         }
 
-        // Animazione del marquee: pausa, scroll, pausa...
+        // Marquee animation: pause, scroll, pause...
         SequentialAnimation {
             id: marqueeAnim
             running: textViewport.marqueeActive
             loops: Animation.Infinite
 
-            // reset: testo fuori a destra
+            // reset: text starts at origin
             PropertyAction {
                 target: textViewport
                 property: "marqueeOffset"
@@ -157,7 +157,7 @@ Item {
             }
             PauseAnimation { duration: 1500 }
 
-            // scorrimento a sinistra
+            // scroll left
             NumberAnimation {
                 target: textViewport
                 property: "marqueeOffset"

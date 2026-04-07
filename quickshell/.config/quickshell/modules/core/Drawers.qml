@@ -12,7 +12,7 @@ Scope {
     required property var screen
     required property DrawerState drawerState
 
-    // unico PanelWindow fullscreen per schermo
+    // Single fullscreen PanelWindow per screen
     PanelWindow {
         id: win
 
@@ -31,8 +31,8 @@ Scope {
 
         readonly property int barHeight: 24
 
-        // Mask: strip top (barra, sempre attiva) + strip sinistra/destra/bottom
-        // Il rettangolo XOR parte da y=barHeight (SOTTO la barra)
+        // Mask: top strip (bar, always active) + left/right/bottom strips
+        // The XOR rectangle starts at y=barHeight (BELOW the bar)
         mask: Region {
             x: 0
             y: win.barHeight
@@ -42,8 +42,8 @@ Scope {
             regions: maskRegions.instances
         }
 
-        // Regions dinamiche: una per ogni pannello aperto
-        // y assoluta = barHeight + panel.y (panel.y e' relativo a Panels container)
+        // Dynamic regions: one per open panel
+        // absolute y = barHeight + panel.y (panel.y is relative to Panels container)
         Variants {
             id: maskRegions
             model: panels.children
@@ -60,8 +60,8 @@ Scope {
             }
         }
 
-        // Intersections e' parent di Panels: riceve hover su tutto lo schermo
-        // panels id e' accessibile da Variants sopra grazie alla scope QML del file
+        // Interactions is the parent of Panels: receives hover across the whole screen
+        // panels id is accessible from the Variants above thanks to QML file scope
         Interactions {
             id: interactions
             drawerState: root.drawerState

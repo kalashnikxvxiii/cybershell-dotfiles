@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# lyrics-fetch.py - Synced lyrics con fallback chain
+# lyrics-fetch.py - Synced lyrics with fallback chain
 # Usage: lyrics-fetch.py --title "Song" --artist "Artist" [--album "Album"] [--duration 240] [--spotify-id "4uLU6hMCjMI75M1A2tKUQC"]
 
 import sys, json, argparse, urllib.request, urllib.parse, os, subprocess
@@ -17,7 +17,7 @@ def _lrc_path(title, artist):
 def load_cached(title, artist):
     path = _lrc_path(title, artist)
     if os.path.exists(path):
-        os.utime(path, None)    # aggiorna atime per LRU
+        os.utime(path, None)    # touch atime for LRU eviction
         return open(path).read().strip() or None
     return None
 
@@ -111,10 +111,10 @@ def main():
 
     lrc = None
 
-    # 0. Cache locale
+    # 0. Local cache
     lrc = load_cached(args.title, args.artist)
 
-    # 1. Spotify (solo se sp_dc configurato e track id disponibile)
+    # 1. Spotify (only if sp_dc is configured and track id is available)
     if not lrc and args.spotify_id:
         lrc = fetch_spotify(args.spotify_id)
     
@@ -127,10 +127,10 @@ def main():
         lrc = fetch_syncedlyrics(args.title, args.artist)
     
     if lrc:
-        if not load_cached(args.title, args.artist): # salva solo se non era gia' in cache
+        if not load_cached(args.title, args.artist): # only save if not already cached
             save_cached(args.title, args.artist, lrc)
         else:
-            os.utime(_lrc_path(args.title, args.artist), None) # aggiorna solo l'atime
+            os.utime(_lrc_path(args.title, args.artist), None) # just refresh atime
         print(lrc)
         sys.exit(0)
     else:

@@ -11,7 +11,7 @@ Item {
 
     readonly property bool isSpotify: Players.isSpotifyActive
 
-    // Sfondo
+    // Background
     Rectangle {
         anchors.fill: parent
         color: CP.alpha(CP.black, 0.32)
@@ -19,7 +19,7 @@ Item {
         // border.width: 1
     }
 
-    // Indicatore slot attivo
+    // Active slot indicator
     Rectangle {
         y: root.isSpotify ? 0 : root.height / 2
         width: parent.width
@@ -28,7 +28,7 @@ Item {
         Behavior on y { NumberAnimation{ duration: 160; easing.type: Easing.OutCubic } }
     }
 
-    // Divisore centrale
+    // Center divider
     Rectangle {
         y: parent.height / 2
         width: parent.width
@@ -50,7 +50,7 @@ Item {
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
-    // Label Browser (bottom) = prime 2 lettere dell'identity
+    // Label Browser (bottom)
     Text {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter

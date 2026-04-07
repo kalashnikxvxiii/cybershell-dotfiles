@@ -1,9 +1,9 @@
 // CornerAccents.qml — CP2077-style corner bracket decorations
-// Overlay su qualsiasi pannello per aggiungere i caratteristici marcatori angolari.
+// Overlay on any panel to add those signature corner bracket markers.
 //
 // Usage: CornerAccents { anchors.fill: parent; color: CP.yellow; size: 10 }
-// Props: color, size (lunghezza braccio), thickness, opacity
-//        showTopLeft/Right/BottomLeft/Right: abilita singoli angoli
+// Props: color, size (arm length), thickness, opacity
+//        showTopLeft/Right/BottomLeft/Right: enable individual corners
 
 import QtQuick
 

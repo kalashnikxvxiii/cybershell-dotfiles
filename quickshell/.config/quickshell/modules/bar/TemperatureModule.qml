@@ -1,4 +1,4 @@
-// TemperatureModule.qml — CPU temp via hwmon o sensors, intervallo 5s
+// TemperatureModule.qml — CPU temp via hwmon or sensors, 5s interval
 
 import QtQuick
 import "../../common/Colors.js" as CP
@@ -20,7 +20,7 @@ CyberpunkModule {
     TimedProcess {
         interval: 5000
         command: ["bash", "-c",
-            // Prova hwmon prima, poi nvidia-smi, poi 0
+            // Try hwmon first, then nvidia-smi, then fall back to 0
             "t=$(cat /sys/class/hwmon/hwmon*/temp*_input 2>/dev/null | sort -n | tail -1); " +
             "[ -n \"$t\" ] && echo $((t/1000)) || " +
             "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader 2>/dev/null || " +

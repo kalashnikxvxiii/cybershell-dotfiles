@@ -1,6 +1,6 @@
-// CyberpunkModule.qml — base moduli destra
-// Miglioramenti: sfondo CutShape (angoli tagliati), aberrazione cromatica su hover,
-// glow ombra potenziato.
+// CyberpunkModule.qml — base component for right-side modules
+// Enhancements: CutShape background (diagonal cuts), chromatic aberration on hover,
+// beefed-up shadow glow.
 
 import QtQuick
 import QtQuick.Effects
@@ -20,13 +20,13 @@ Item {
     property var onMiddleClick: function() {}
     property var onScroll:      function(delta) {}
 
-    // Stato interno aberrazione cromatica
+    // Internal chromatic aberration state
     property bool _glitching: false
 
     implicitHeight: 24
     implicitWidth:  moduleLabel.implicitWidth + 26
 
-    // ── Background con angolo tagliato (no border-radius) ─────────────────
+    // ── Background with diagonal cut (no border-radius) ───────────────────
     CutShape {
         id: moduleBg
         visible: root.showBackground
@@ -35,13 +35,13 @@ Item {
         strokeColor: "transparent"
         cutBottomLeft: 8
 
-        // Bordo sinistro accent
+        // Left accent border
         Rectangle {
             width: 2; height: parent.height
             color: root.accent
         }
 
-        // Linea bottom (doppio strato glow)
+        // Bottom line (double-layer glow)
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width; height: 1
@@ -55,7 +55,7 @@ Item {
         }
     }
 
-    // ── Aberrazione cromatica: canale rosso (+2px) ─────────────────────────
+    // ── Chromatic aberration: red channel (+2px) ──────────────────────────
     Text {
         id: abeRed
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 14 }
@@ -67,7 +67,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 20 } }
     }
 
-    // ── Aberrazione cromatica: canale cyan (−2px) ──────────────────────────
+    // ── Chromatic aberration: cyan channel (−2px) ─────────────────────────
     Text {
         id: abeCyan
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 10 }
@@ -79,7 +79,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 20 } }
     }
 
-    // ── Glow ombra (simula text-shadow multi-layer) ────────────────────────
+    // ── Shadow glow (fakes multi-layer text-shadow) ───────────────────────
     Text {
         id: shadowLabel2
         anchors {
@@ -107,7 +107,7 @@ Item {
         z: 0
     }
 
-    // ── Testo principale ──────────────────────────────────────────────────
+    // ── Main text ─────────────────────────────────────────────────────────
     Text {
         id: moduleLabel
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 12 }
@@ -120,7 +120,7 @@ Item {
         transform: Translate { id: moduleLabelShift; x: 0 }
     }
 
-    // ── Colori glitch adattativi ───────────────────────────────────────────
+    // ── Adaptive glitch colors ────────────────────────────────────────────
     property color _c1: CP.magenta
     property color _c2: CP.yellow
 
@@ -136,7 +136,7 @@ Item {
         id: glitchAnim
         running: false; loops: 1
 
-        // Aberrazione ON al primo passo visibile
+        // Aberration ON at first visible step
         PropertyAction  { target: root;             property: "_glitching";  value: false }
         PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
         PropertyAction  { target: moduleLabelShift; property: "x";           value: 0 }
@@ -165,7 +165,7 @@ Item {
         PropertyAction  { target: moduleLabelShift; property: "x";           value: 2 }
         PauseAnimation  { duration: 42 }
 
-        // Aberrazione OFF — ritorno stabile
+        // Aberration OFF — back to stable
         PropertyAction  { target: root;             property: "_glitching";  value: false }
         PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
         PropertyAction  { target: moduleLabelShift; property: "x";           value: 0 }

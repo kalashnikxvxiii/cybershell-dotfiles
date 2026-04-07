@@ -1,17 +1,17 @@
-// Anim.qml — Animazione numerica standard
+// Anim.qml — Standard numeric animation
 //
-// Usare come sostituzione compatta di NumberAnimation nei Behavior e Transition.
+// Drop-in compact replacement for NumberAnimation in Behaviors and Transitions.
 //
-// Design guide CP2077:
-//   Panel slide-in:  150–200ms OutQuart  (decelerazione rapida, snappy)
-//   Panel slide-out: 100–130ms InQuart   (accelerazione, sparisce veloce)
-//   Valori data:     0ms                  (aggiornamento istantaneo — no tween su numeri live)
-//   Colori:          300ms InOutQuad      (usa CAnim per questo)
+// CP2077 design guide:
+//   Panel slide-in:  150–200ms OutQuart  (fast deceleration, snappy)
+//   Panel slide-out: 100–130ms InQuart   (accelerates out, vanishes quick)
+//   Data values:     0ms                  (instant update — never tween live numbers)
+//   Colors:          300ms InOutQuad      (use CAnim for that)
 //
-// Easing.OutQuart → decelerazione più marcata di OutCubic:
-//   macchine si fermano di scatto, non scorrono morbidamente.
+// Easing.OutQuart → heavier deceleration than OutCubic:
+//   things slam to a stop, no gentle gliding here.
 //
-// Override inline:
+// Inline overrides:
 //   Anim { duration: 400 }
 //   Anim { duration: 260; easing.type: Easing.InCubic }
 //   Anim { target: root; property: "implicitHeight"; duration: 260 }

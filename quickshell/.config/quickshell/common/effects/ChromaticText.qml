@@ -1,5 +1,5 @@
-// ChromaticText.qml — Aberrazione cromatica (3 layer: rosso, cyan, principale)
-// Uso:
+// ChromaticText.qml — Chromatic aberration (3 layers: red, cyan, main)
+// Usage:
 //   ChromaticText {
 //       text: "CPU 42%"; font.family: "Oxanium"; font.pixelSize: 38
 //       color: Colours.accentSecondary
@@ -19,13 +19,13 @@ Item {
     property real offsetX: 2
     property real aberrationOpacity: 0.55
 
-    // ── Font (delegato ai figli) ──
+    // ── Font (delegated to children) ──
     property alias font: _main.font
 
     implicitWidth: _main.implicitWidth + offsetX * 2
     implicitHeight: _main.implicitHeight
 
-    // Layer rosso
+    // Red layer
     Text {
         anchors.centerIn: parent
         x: root.glitching ? -root.offsetX : 0
@@ -34,7 +34,7 @@ Item {
         color: Colours.aberrationRed(root.glitching ? root.aberrationOpacity : 0)
     }
 
-    // Layer cyan
+    // Cyan layer
     Text {
         anchors.centerIn: parent
         x: root.glitching ? root.offsetX : 0
@@ -43,7 +43,7 @@ Item {
         color: Colours.aberrationCyan(root.glitching ? root.aberrationOpacity : 0)
     }
 
-    // Testo principale
+    // Main text
     Text {
         id: _main
         anchors.centerIn: parent

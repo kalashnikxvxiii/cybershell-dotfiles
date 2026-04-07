@@ -1,7 +1,7 @@
-// Panels.qml - Container di tutti i pannelli drawer
-// Ogni pannello e' esposto come alias: Intersections.qml vi accede per la
-// logica hover, la mask Variants li legge tramite panels.children
-// Per aggiungere un pannello: aggiungilo qui come Item figlio + alias
+// Panels.qml - Container for all drawer panels
+// Each panel is exposed as an alias: Interactions.qml accesses them for
+// hover logic, the mask Variants reads them via panels.children
+// To add a panel: add it here as a child Item + alias
 
 import QtQuick
 import "."
@@ -17,7 +17,7 @@ Item {
     readonly property alias dashboard: dashboard
 
     anchors.fill: parent
-    anchors.topMargin: bar.barHeight    // pannelli inziano SOTTO la barra
+    anchors.topMargin: bar.barHeight    // panels start BELOW the bar
 
     DashboardPanel {
         id: dashboard

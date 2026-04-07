@@ -1,10 +1,10 @@
-// Interactions.qml - Centralized mouse tracking per tutti i pannelli drawer
-// E' IL PARENT di Panels: riceve hover events anche quando il mouse e' sui
-// pannelli figli (gli hover non richiedono "accettazione" come i click,
-// quindi si propagano sempre verso il parent)
+// Interactions.qml - Centralized mouse tracking for all drawer panels
+// This IS THE PARENT of Panels: it receives hover events even when the mouse
+// is over child panels (hovers don't require "acceptance" like clicks,
+// so they always propagate up to the parent)
 //
-// Per ogni nuovo pannello: aggiungi la logica in onPositionChanged e
-// onContainsMouseChanged usando gli helper generici qui sotto
+// For each new panel: add logic in onPositionChanged and
+// onContainsMouseChanged using the generic helpers below
 
 import QtQuick
 import "."
@@ -19,24 +19,24 @@ MouseArea {
     required property int         windowWidth
     required property int         windowHeight
 
-    // Trigger stretto per panel top: solo bordo superiore schermo
+    // Tight trigger for the top panel: screen top edge only
     readonly property int topTriggerPx: 2
-    // Trigger strip laterali (uguale a mask triggerPx)
+    // Side trigger strips (same as mask triggerPx)
     readonly property int sideTriggerPx: 2
 
-    // Helper geometrici
+    // Geometry helpers
 
-    // Verifica X: panel.x e' relativo a Panels (stesso origine orizzontale della finestra)
+    // Check X: panel.x is relative to Panels (same horizontal origin as the window)
     function withinPanelX(panel) {
         const lyricsExt = panel.lyricsDrawerExtent ?? 0
         const mainLeft = panel.x
         const mainRight = panel.x + (panel.panelWidth ?? panel.childrenRect.width)
         
-        // Zona pannello principale (nessuna restrizione Y extra)
+        // Main panel zone (no extra Y restriction)
         if (mouseX >= mainLeft - 4 && mouseX <= mainRight + 4)
             return true
         
-        // Zona lyricsDrawer: verifica anche che mouseY sia dentro i bordi del drawer
+        // Lyrics drawer zone: also verify mouseY is within the drawer bounds
         if (lyricsExt > 0 && mouseX >= mainLeft - lyricsExt - 4 && mouseX < mainLeft + 4) {
             const lyTop = bar.barHeight + panel.y + (panel.lyricsDrawerRelY ?? 0) - 4
             const lyBottom = lyTop + (panel.lyricsDrawerRelH ?? 0) + 8
@@ -45,14 +45,14 @@ MouseArea {
         return false
     }
 
-    // Verifica Y: panel.y e' relativo a Panels container (che parte a y=barHeight)
+    // Check Y: panel.y is relative to the Panels container (starts at y=barHeight)
     function withinPanelY(panel) {
         const absTop = bar.barHeight + panel.y
         return mouseY >= absTop -4
                 && mouseY <= absTop + panel.height + 4
     }
 
-    // Panel top (dashboard): trigger 2 px quando chiuso, area completa quando aperto
+    // Top panel (dashboard): 2px trigger when closed, full area when open
     function inTopPanel(panel) {
         const panelOpen = panel.height > 0
         const threshold = panelOpen
@@ -64,25 +64,25 @@ MouseArea {
         return mouseY <= threshold && xCheck
     }
 
-    // Mouse tracking
+    // Mouse tracking logic
 
     anchors.fill: parent
     hoverEnabled: true
-    acceptedButtons: Qt.NoButton    // non-blocking: i click passano sempre ai figli
+    acceptedButtons: Qt.NoButton    // non-blocking: clicks always pass through to children
 
-    // Mouse esce dalla finestra -> chiudi tutti i pannelli hover-based
+    // Mouse leaves the window -> close all hover-based panels
     onContainsMouseChanged: {
         if (!containsMouse) {
             drawerState.dashboardOpen = false
-            // In futuro: aggiungi qui gli altri pannelli hover-based
-            // es: drawerState.launcherOpen = false
+            // Future: add other hover-based panels here
+            // e.g.: drawerState.launcherOpen = false
         } else {
-            // Controlla subito l'entrata, senza aspettare il primo onPositionChanged
+            // Check entry immediately, don't wait for the first onPositionChanged
             drawerState.dashboardOpen = inTopPanel(panels.dashboard)
         }
     }
 
-    // Tracking continuo: aggiorna visibilita' in base alla posizione
+    // Continuous tracking: update visibility based on mouse position
     onPositionChanged: {
         if (drawerState.dashboardOpen) {
             // const _p = panels.dashboard
@@ -97,8 +97,8 @@ MouseArea {
             //     "inTop:", inTopPanel(_p))
         }
         drawerState.dashboardOpen = inTopPanel(panels.dashboard)
-        // In futuro: una riga per ogni nuovo pannello hover-based
-        // es: drawerState.;auncherOpen = inBottomPanel(panels.launcher)
-        //     drawerState.sidebarOpen  = inRightPanel(panels.sidebar)
+        // Future: one line per new hover-based panel
+        // e.g.: drawerState.launcherOpen = inBottomPanel(panels.launcher)
+        //       drawerState.sidebarOpen  = inRightPanel(panels.sidebar)
     }
 }

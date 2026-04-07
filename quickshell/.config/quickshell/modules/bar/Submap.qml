@@ -1,6 +1,6 @@
 // Submap.qml — HUD mode indicator (hyprland/submap)
-// Mostra "—" quando in default submap, nome submap attivo altrimenti
-// Stile: cyan inattivo → yellow attivo
+// Shows "—" when in default submap, active submap name otherwise
+// Style: cyan when inactive → yellow when active
 
 import Quickshell
 import Quickshell.Hyprland

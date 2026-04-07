@@ -8,7 +8,7 @@ import "common"
 import "modules/wallpaper"
 
 ShellRoot {
-    // Server lyrics: vive solo finché Spotify è aperto
+    // Lyrics server: only alive while Spotify is running
     Process {
         id: lyricsServer
         command: ["python3", "/home/kalashnikxv/.config/quickshell/scripts/lyrics-server.py"]

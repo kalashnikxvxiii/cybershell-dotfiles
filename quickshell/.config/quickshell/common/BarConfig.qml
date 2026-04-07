@@ -3,22 +3,22 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    // Nome del monitor principale (taskbar completa)
+    // Primary monitor name (gets the full taskbar)
     readonly property string primaryMonitorName: "DP-1"
 
     function isPrimary(screen): bool {
         return !!screen && screen.name === primaryMonitorName;
     }
 
-    // Layout modulare in stile Config.bar di Caelestia
+    // Modular layout a la Caelestia's Config.bar
     //
-    // Ogni voce è un semplice oggetto JS con almeno:
-    //  - name: identificatore logico del modulo
+    // Each entry is a plain JS object with at least:
+    //  - name: logical module identifier
     //
-    // Il mapping name -> componente concreto è implementato in Bar.qml
-    // tramite Repeater + DelegateChooser.
+    // The name -> concrete component mapping lives in Bar.qml
+    // via Repeater + DelegateChooser.
 
-    // Sezione LEFT (workspaces, title, submap)
+    // LEFT section (workspaces, title, submap)
     readonly property var entriesPrimaryLeft: [
         { "name": "leftSection" }
     ]
@@ -35,12 +35,12 @@ QtObject {
         { "name": "centerSection" }
     ]
 
-    // Sezione RIGHT monitor principale (DP-1): tray + audio + visualizer + mpris
+    // RIGHT section, primary monitor (DP-1): tray + audio + visualizer + mpris
     readonly property var entriesPrimaryRight: [
         { "name": "rightSection" }
     ]
 
-    // Sezione RIGHT monitor secondario: system stats + power
+    // RIGHT section, secondary monitor: system stats + power
     readonly property var entriesSecondaryRight: [
         { "name": "rightSection" }
     ]

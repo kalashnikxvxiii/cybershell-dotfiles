@@ -16,10 +16,10 @@ Item {
     implicitWidth:  wsRow.implicitWidth + 12
 
     property var monitor: barScreen ? Hyprland.monitorFor(barScreen) : null
-    // ID del workspace attualmente visibile su questo monitor.
+    // ID of the workspace currently visible on this monitor.
     property int activeWsId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : -1
 
-    // Workspaces di questo monitor, ordinati per slot number ascending.
+    // Workspaces for this monitor, sorted by slot number ascending.
     property var workspaces: {
         var all = Hyprland.workspaces.values
         var result = []
@@ -102,7 +102,7 @@ Item {
         }
         if (cls in root.iconCache) return
         if (root.lookupQueue.indexOf(cls) >= 0) return
-        root.iconCache[cls] = null // marca come "in attesa"
+        root.iconCache[cls] = null // mark as "pending"
         root.lookupQueue.push(cls)
         root.drainQueue()
     }
@@ -134,8 +134,8 @@ Item {
         }
 
         onExited: {
-            // Se il processo e' uscito senza output (icona non trovata),
-            // aggiorna comunque il version counter per sbloccare i binding.
+            // If the process exited with no output (icon not found),
+            // bump the version counter anyway to unblock bindings.
             if (root.iconCache[iconProc.pendingClass] === null) {
                 root.iconCache[iconProc.pendingClass] = ""
                 root.iconCacheVersion++
@@ -156,17 +156,17 @@ Item {
 
             delegate: Item {
                 id: wsBtn
-                // Animazione glitch
+                // Glitch animation
                 transform: Translate { id: wsBtnShift; x: 0 }
 
                 required property var modelData
 
-                // true quando ha finestre aperte e non e' in stato urgente
+                // true when it has open windows and is not in urgent state
                 property bool showIcons: !isUrgent && winCount > 0
-                // isActive: il workspace è quello attivo SUL MONITOR di questa barra
+                // isActive: this workspace is the active one ON THIS BAR'S MONITOR
                 property bool isActive: modelData.id === root.activeWsId
                 property bool isUrgent: modelData.urgent ?? false
-                // Usa windowsOnWS nativi di HyprlandWorkspace (no polling)
+                // Uses native HyprlandWorkspace toplevels (no polling needed)
                 property int  winCount: modelData.toplevels.values.length
                 property bool isEmpty: winCount === 0
 
@@ -185,7 +185,7 @@ Item {
                     : Math.max(wsLabel.implicitWidth + 24, Math.min(winCount, 5) * 6 + 30)
                 implicitHeight: 16
 
-                // Forma con angolo tagliato (stesso pattern del pannello dashboard, cut=4)
+                // Cut-corner shape (same pattern as the dashboard panel, cut=4)
                 CutShape {
                     id: wsBg
                     anchors.fill: parent
@@ -203,7 +203,7 @@ Item {
                     cutBottomLeft: 4
                 }
 
-                // ── Label (worksapace vuoto o senza icone) ─────────────────
+                // ── Label (empty workspace or no icons) ──────────────────
                 Text {
                     id: wsLabel
                     visible: !wsBtn.showIcons
@@ -215,7 +215,7 @@ Item {
                     color:              wsBtn.baseColor
                     transform: Translate { id: wsLabelShift; x: 0 }
 
-                    // Glow simulato
+                    // Simulated glow
                     Text {
                         anchors.centerIn: parent
                         anchors.horizontalCenterOffset: 1
@@ -343,7 +343,7 @@ Item {
                         var nextIdx = wheel.angleDelta.y > 0
                             ? currentIdx - 1
                             : currentIdx + 1
-                        // Wrap circolare
+                        // Circular wrap
                         var nextIdx = (nextIdx + wsList.length) % wsList.length
 
                         nextIdx = Math.max(0, Math.min(wsList.length - 1, nextIdx))

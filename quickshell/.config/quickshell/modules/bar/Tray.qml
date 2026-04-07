@@ -43,13 +43,13 @@ Item {
 
     FileView {
         id: trayPinsFile
-        path: Qt.resolvedUrl("tray-pins.json")    // file JSON accanto a Tray.qml
+        path: Qt.resolvedUrl("tray-pins.json")    // JSON file next to Tray.qml
         atomicWrites: true
         blockLoading: true
 
         adapter: JsonAdapter {
             id: trayPins
-            // lista di id pinnati salvata nel JSON
+            // list of pinned ids persisted in JSON
             property var pinnedIds: []
         }
     }
@@ -66,7 +66,7 @@ Item {
             spacing: 4
 
             Item {
-                width: 6    // spazio sx del primo pinned item
+                width: 6    // left spacing before first pinned item
                 height: parent.height
             }
 
@@ -99,7 +99,7 @@ Item {
                                 return
                             }
 
-                            // Comportamento normale
+                            // Normal behavior
                             if (mouse.button === Qt.LeftButton && !modelData.onlyMenu) {
                                 modelData.activate()
                             } else if (modelData.hasMenu) {
@@ -143,7 +143,7 @@ Item {
                         implicitHeight: 16
                         anchors.verticalCenter: parent.verticalCenter
 
-                        // Icona via QML Image con source dall'item
+                        // Icon via QML Image sourced from the tray item
                         Image {
                             anchors.fill: parent
                             source:       trayItem.modelData.icon
@@ -170,7 +170,7 @@ Item {
                                     return
                                 }
 
-                                // Comportamento normale
+                                // Normal behavior
                                 if (mouse.button === Qt.LeftButton && !trayItem.modelData.onlyMenu) {
                                     trayItem.modelData.activate()
                                 } else if (trayItem.modelData.hasMenu) {
@@ -186,7 +186,7 @@ Item {
                 }
 
                 Item {
-                    width: 2    // spazio sx del primo pinned item
+                    width: 2    // left spacing before first pinned item
                     height: parent.height
                 }
             }            

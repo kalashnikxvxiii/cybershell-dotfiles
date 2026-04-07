@@ -1,20 +1,20 @@
-// GlitchEffect.qml - Tre effetti glitch indipendenti in un unico componente
-// Ispirato a github.com/xendak/nierlock
-// 
-// Uso:
+// GlitchEffect.qml — Three independent glitch effects in one component
+// Inspired by github.com/xendak/nierlock
+//
+// Usage:
 // GlitchEffect {
 //      anchors.fill: parent
-//      
-//      // 1) Scanlines orizzontali
+//
+//      // 1) Horizontal scanlines
 //      linesEnabled: true
 //      linesCount: 8
 //
-//      // 2) Glitch testuale - imposta sourceText, leggi glitcheText e textOffset
+//      // 2) Text glitch — set sourceText, read glitchedText and textOffset
 //      textGlitchActive: true
 //      sourceText: "HELLO WORLD"
-//      // nel tuo Text { text: myGlitch.glitchedText; x: myGlitch.textOffset }
+//      // in your Text { text: myGlitch.glitchedText; x: myGlitch.textOffset }
 //
-//      // 3) Screen tear - imposta tearSourceItem, poi chiama triggerTear()
+//      // 3) Screen tear — set tearSourceItem, then call triggerTear()
 //      tearSourceItem: myContentItem
 //}
 
@@ -24,22 +24,22 @@ Item {
     id: root
 
     // =======================================================
-    // EFFETTO 1: GLITCH LINES - scanlines orizzontali animate
+    // EFFECT 1: GLITCH LINES — animated horizontal scanlines
     // =======================================================
     //
-    // Rettangoli sottili (h=1) che attraversano lo schermo
-    // con posizione Y, larghezza, opacita' e direzioni casuali
-    // Loop infinito con pause random tra un passaggio e l'altro
+    // Thin rectangles (h=1) that sweep across the screen
+    // with random Y position, width, opacity, and direction.
+    // Infinite loop with random pauses between passes.
 
-    property bool linesEnabled:         false               // attiva/disattiva le linee
-    property int  linesCount:           8                   // quante linee simultanee
-    property color linesColor:          "#1A1A2E"         // colore delle linee
-    property real linesMinWidth:        100                 // larghezza minima (px)
-    property real linesMaxWidth:        300                 // larghezza massima (px)
-    property real linesMaxOpacity:      0.5                 // opacita' massima raggiungibile
-    property real linesMaxPause:        5000                // pause massima tra passaggi (ms)
-    property real linesBaseSpeed:       1000                // durata base traversata (ms)
-    property real linesSpeedVariation:  1200                // variazione casuale sulla durata (ms)
+    property bool linesEnabled:         false               // enable/disable the lines
+    property int  linesCount:           8                   // how many simultaneous lines
+    property color linesColor:          "#1A1A2E"         // line color
+    property real linesMinWidth:        100                 // minimum width (px)
+    property real linesMaxWidth:        300                 // maximum width (px)
+    property real linesMaxOpacity:      0.5                 // max reachable opacity
+    property real linesMaxPause:        5000                // max pause between passes (ms)
+    property real linesBaseSpeed:       1000                // base traversal duration (ms)
+    property real linesSpeedVariation:  1200                // random duration variation (ms)
 
     Repeater {
         model: root.linesEnabled ? root.linesCount : 0
@@ -55,10 +55,10 @@ Item {
                 loops: Animation.Infinite
                 running: true
 
-                // Pausa casuale prima del prossimo passaggio
+                // Random pause before the next pass
                 PauseAnimation { duration: Math.random() * root.linesMaxPause }
 
-                // Randomizza properieta' della lines
+                // Randomize line properties
                 ScriptAction {
                     script: {
                         const goRight = Math.random() > 0.5
@@ -74,7 +74,7 @@ Item {
                     }
                 }
 
-                // Movimento orizzontale
+                // Horizontal sweep
                 NumberAnimation {
                     id: lineMoveAnim
                     target: lineRect
@@ -82,36 +82,36 @@ Item {
                     easing.type: Easing.Linear
                 }
 
-                // Nascondi a fine passaggio
+                // Hide at end of pass
                 PropertyAction { target: lineRect; property: "opacity"; value: 0 }
             }
         }
     }
 
     // ========================================================
-    // EFFETTO 2: TEXT GLITCH - jitter + sostituzione caratteri
+    // EFFECT 2: TEXT GLITCH — jitter + character substitution
     // ========================================================
     //
-    // Imposta sourceText con il testo originale
-    // Leggi le proprieta' di output per applicarle al tuo Text:
-    //      - glitchedText:     testo con caratteri sostituiti casualmente
-    //      - textOffset:       offset X del testo principale (jitter)
-    //      - shadowOffset:     offset X consigliato per l'ombra (40% del jitter)
+    // Set sourceText with the original text.
+    // Read the output properties to apply to your Text:
+    //      - glitchedText:     text with randomly substituted characters
+    //      - textOffset:       main text X offset (jitter)
+    //      - shadowOffset:     recommended shadow X offset (40% of jitter)
     //
-    // Esempio:
+    // Example:
     //      Text { text: myGlitch.glitchedText; x: myGlitch.textOffset }
-    //      Text { text: myGlitch.glitchedText; x: myGlitch.shaodwOffset; opacity: 0.3 }
+    //      Text { text: myGlitch.glitchedText; x: myGlitch.shadowOffset; opacity: 0.3 }
 
-    property bool   textGlitchActive:       false   // attiva/disattiva il glitch testuale
-    property string sourceText:             ""      // testo originale in input
-    property int    textGlitchRate:         2       // ogni N tick applica glitch (piu' basso = piu' frequente)
-    property real   textGlitchMaxOfs:       6       // offset X massimo in pixel
-    property real   textGlitchSubChance:    0.35    // probabilita' sostituzione carattere (0-1)
-    property string glitchCharPool:                 // pool di caratteri sostituti
+    property bool   textGlitchActive:       false   // enable/disable text glitch
+    property string sourceText:             ""      // original input text
+    property int    textGlitchRate:         2       // apply glitch every N ticks (lower = more frequent)
+    property real   textGlitchMaxOfs:       6       // max X offset in pixels
+    property real   textGlitchSubChance:    0.35    // character substitution probability (0-1)
+    property string glitchCharPool:                 // substitution character pool
         "█▓▒░│┤╡╢╖╕╣║╗╝╜╛┐└╒╓╫╪┘┌"
-    property int    textGlitchInterval:     55      // intervallo timer in ms
+    property int    textGlitchInterval:     55      // timer interval in ms
 
-    // --- Output (bind i tuoi Text a queste) ---
+    // --- Output (bind your Text elements to these) ---
     readonly property string    glitchedText:   _gText
     readonly property real      textOffset:     _tOfs
     readonly property real      shadowOffset:   _tOfs * 0.4
@@ -128,11 +128,11 @@ Item {
             root._gTick++
 
             if (root._gTick % root.textGlitchRate === 0) {
-                // Jitter orizzontale casuale
+                // Random horizontal jitter
                 const dir  = Math.random() > 0.5 ? 1 : -1
                 root._tOfs = dir * Math.random() * root.textGlitchMaxOfs
 
-                // Sostituzione carattere casuale
+                // Random character substitution
                 const txt = root.sourceText
                 if (Math.random() < root.textGlitchSubChance && txt.length > 1) {
                     const idx = Math.floor(Math.random() * txt.length)
@@ -151,7 +151,7 @@ Item {
         }
     }
 
-    // Reset glitch dopo il 60% dell'intervallo (impulso breve)
+    // Reset glitch after 60% of the interval (brief impulse)
     Timer {
         id: _glitchClearTimer
         interval: root.textGlitchInterval * 0.6
@@ -159,36 +159,36 @@ Item {
     }
 
     // =============================================
-    // EFFETTO 3: SCREEN TEAR - distorzione elementi
+    // EFFECT 3: SCREEN TEAR — element distortion
     // =============================================
     //
-    // Effetto tearing/glitch a schermo intero in puro QML
-    // Composto da: bande orizzontali colorate + jitter + flicker
-    // Chiama triggerTear() per attivarlo
+    // Full-screen tearing/glitch effect in pure QML.
+    // Made of: colored horizontal bands + jitter + flicker.
+    // Call triggerTear() to fire it off.
     //
-    // Se vuoi il vero displacement pixel-per-pixel, serve un
-    // fragment shader compilato (.qsb). Imposta tearShaderSource
-    // per usarlo al posto del fallback QML.
+    // For true pixel-by-pixel displacement you'll need a
+    // compiled fragment shader (.qsb). Set tearShaderSource
+    // to use it instead of the QML fallback.
     //
-    // Esempio:
+    // Example:
     //      GlitchEffect { id: fx; tearSourceItem: myContent }
     //      onError: fx.triggerTear
 
-    property Item   tearSourceItem:     null    // item su cui applicare il jitter
-    property int    tearDuration:       700     // durata totale dell'effetto (ms)
-    property int    tearBandCount:      15      // numero di bande orizzontali
-    property real   tearMaxDisplace:    30      // displacement massimo in pixel
-    property real   tearFlickerDepth:   0.4     // profondita' del flicker (0-1)
-    property url    tearShaderSource:   ""      // path a .qsb opzionale per vero displacement
+    property Item   tearSourceItem:     null    // item to apply jitter to
+    property int    tearDuration:       700     // total effect duration (ms)
+    property int    tearBandCount:      15      // number of horizontal bands
+    property real   tearMaxDisplace:    30      // max displacement in pixels
+    property real   tearFlickerDepth:   0.4     // flicker depth (0-1)
+    property url    tearShaderSource:   ""      // optional .qsb path for real displacement
 
-    // Intensita' corrente (1.0 -> 0.0 durante l'effetto)
+    // Current intensity (1.0 → 0.0 during the effect)
     property real           tearIntensity:  0
     readonly property bool  tearActive:     tearIntensity > 0
 
     signal tearStarted()
     signal tearFinished()
 
-    // Posizione X salvata del target per il ripristino
+    // Saved target X position for restoration
     property real _tearSavedX: 0
 
     function triggerTear() {
@@ -201,7 +201,7 @@ Item {
         tearStarted()
     }
 
-    // Decadimento intensita' da 1 a 0
+    // Intensity decay from 1 to 0
     NumberAnimation {
         id: _tearDecayAnim
         target: root
@@ -211,7 +211,7 @@ Item {
         easing.type: Easing.OutQuad
     }
 
-    // Jitter: sposta il target orizzontalmente + ridisegna bande
+    // Jitter: shifts the target horizontally + repaints bands
     Timer {
         id: _tearJitterTimer
         interval: 33            // ~30fps
@@ -225,7 +225,7 @@ Item {
         }
     }
 
-    // Fine effetto: ripristina tutto
+    // End of effect: restore everything
     Timer {
         id: _tearEndTimer
         interval: root.tearDuration
@@ -239,7 +239,7 @@ Item {
         }
     }
 
-    // Canvas overlay - bande colorate + rumore
+    // Canvas overlay — colored bands + noise
     Canvas {
         id: tearCanvas
         parent: root.tearSourcItem ?? root
@@ -253,7 +253,7 @@ Item {
             const intensity = root.tearIntensity
             if (intensity <= 0) return
 
-            // Bande colorate semitrasparenti (RGB noise)
+            // Semi-transparent colored bands (RGB noise)
             for (let i = 0; i < root.tearBandCount; i++) {
                 const y = Math.random() * height
                 const h = 1 + Math.random() * 8
@@ -264,7 +264,7 @@ Item {
                 ctx.fillRect(0, y, width, h)
             }
 
-            // Bande scure displaced (simulano tearing)
+            // Displaced dark bands (simulate tearing)
             for (let i = 0; i < 4; i++) {
                 const y  = Math.random() * height
                 const h  = 2 + Math.random() * 20
@@ -273,7 +273,7 @@ Item {
                 ctx.fillRect(dx, y, width, h)
             }
 
-            // Scanlines sottili
+            // Thin scanlines
             for (let y = 0; y < height; y += 2) {
                 ctx.fillStyle = `rgba(0,0,0,${0.04 * intensity})`
                 ctx.fillRect(0, y, width, 1)
@@ -281,7 +281,7 @@ Item {
         }
     }
 
-    // Flicker opacita' sul target durante il tear
+    // Opacity flicker on the target during the tear
     SequentialAnimation {
         id: _tearFlickerAnim
         running: root.tearIntensity > 0
@@ -301,8 +301,8 @@ Item {
         PauseAnimation { duration: 20 + Math.random() * 40 }
     }
 
-    // Sahder override (opzionale - per vero pixel displacement)
-    // Se tearShaderSource e' impostato, usa ShaderEffect al posto del Canvas
+    // Shader override (optional — for real pixel displacement)
+    // If tearShaderSource is set, uses ShaderEffect instead of Canvas
     Loader {
         active: root.tearShaderSource != "" && root.tearIntensity > 0
         parent: root.tearSourceItem ?? root

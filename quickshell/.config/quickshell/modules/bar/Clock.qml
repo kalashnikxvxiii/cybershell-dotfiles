@@ -1,5 +1,5 @@
-// Clock.qml — orologio centrale cyberpunk
-// Miglioramenti: aberrazione cromatica reale (R/C split) attivata durante burst glitch
+// Clock.qml — cyberpunk center clock
+// Enhancements: real chromatic aberration (R/C split) activated during glitch bursts
 
 import Quickshell
 import QtQuick
@@ -10,7 +10,7 @@ Item {
     implicitHeight: 24
     implicitWidth:  label.implicitWidth + 24
 
-    // Stato aberrazione (attivo durante burst glitch)
+    // Aberration state (active during glitch bursts)
     property bool _aberrating: false
 
     // ── SystemClock ────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ Item {
         return hh + ":" + mm + " " + dd + "/" + mo
     }
 
-    // ── Canale rosso (+3px dx) ─────────────────────────────────────────────
+    // ── Red channel (+3px right) ───────────────────────────────────────────
     Text {
         id: abeRed
         anchors.centerIn: parent
@@ -41,7 +41,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 25 } }
     }
 
-    // ── Canale cyan (−3px sx) ──────────────────────────────────────────────
+    // ── Cyan channel (−3px left) ───────────────────────────────────────────
     Text {
         id: abeCyan
         anchors.centerIn: parent
@@ -54,7 +54,7 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 25 } }
     }
 
-    // ── Glow shadow layer 2 (lontano) ──────────────────────────────────────
+    // ── Glow shadow layer 2 (far) ──────────────────────────────────────────
     Text {
         id: shadowLabel2
         anchors.centerIn: parent
@@ -65,7 +65,7 @@ Item {
         color: CP.aberrationCyan(0.35)
         z: 0
     }
-    // ── Glow shadow layer 1 (vicino) ───────────────────────────────────────
+    // ── Glow shadow layer 1 (close) ────────────────────────────────────────
     Text {
         id: shadowLabel1
         anchors.centerIn: parent
@@ -77,7 +77,7 @@ Item {
         z: 1
     }
 
-    // ── Testo orologio principale ──────────────────────────────────────────
+    // ── Main clock text ────────────────────────────────────────────────────
     Text {
         id: label
         anchors.centerIn: parent
@@ -91,7 +91,7 @@ Item {
         transform: Translate { id: labelShift; x: 0 }
     }
 
-    // ── Glitch continuo stepped ────────────────────────────────────────────
+    // ── Continuous stepped glitch ──────────────────────────────────────────
     SequentialAnimation {
         running: true; loops: Animation.Infinite
 
@@ -100,7 +100,7 @@ Item {
         PropertyAction  { target: labelShift; property: "x";           value: 0 }
         PauseAnimation  { duration: 1400 }
 
-        // Burst 1: aberrazione ON + colore magenta
+        // Burst 1: aberration ON + magenta color
         PropertyAction  { target: root;       property: "_aberrating"; value: true }
         PropertyAction  { target: label;      property: "color";       value: CP.magenta }
         PropertyAction  { target: labelShift; property: "x";           value: 3 }
@@ -114,13 +114,13 @@ Item {
         PropertyAction  { target: labelShift; property: "x";           value: 2 }
         PauseAnimation  { duration: 55 }
 
-        // Burst 1 fine — aberrazione OFF
+        // Burst 1 end — aberration OFF
         PropertyAction  { target: root;       property: "_aberrating"; value: false }
         PropertyAction  { target: label;      property: "color";       value: CP.yellow }
         PropertyAction  { target: labelShift; property: "x";           value: 0 }
         PauseAnimation  { duration: 120 }
 
-        // Burst 2: micro glitch rapido
+        // Burst 2: quick micro glitch
         PropertyAction  { target: root;       property: "_aberrating"; value: true }
         PropertyAction  { target: label;      property: "color";       value: CP.magenta }
         PropertyAction  { target: labelShift; property: "x";           value: -1 }

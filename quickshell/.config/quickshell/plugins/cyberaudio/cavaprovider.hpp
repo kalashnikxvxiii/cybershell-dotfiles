@@ -4,7 +4,7 @@
 #include <qqmlintegration.h>
 #include "audioprovider.hpp"
 
-struct cava_plan;  // Forward declare nel namespace globale
+struct cava_plan;  // Forward-declared in global namespace
 
 namespace cyberaudio {
 

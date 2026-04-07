@@ -15,7 +15,7 @@ Item {
     property color  accentDanger:   Colours.accentDanger
     property color  accentMagenta:  Colours.accentMagenta || "#c850c0"
 
-    // ── Stato interno ──────────────────────────────────
+    // ── Internal state ──────────────────────────────────
     property var    nodes:          []
     property var    edges:          []
     property real   damping:        0.88
@@ -47,7 +47,7 @@ Item {
 
     signal interactionActive(bool active)
 
-    // ── Aggiorna il grafo ────────────────────────────────
+    // ── Update the graph ──────────────────────────────────
     function updateGraph() {
         if (graphRoot.nodes.length === 0) { buildGraph(); return }
 
@@ -57,19 +57,19 @@ Item {
         let ns = graphRoot.nodes
         let es = graphRoot.edges
 
-        // Mappa PID -> dati aggiornati dal tree
+        // Map PID -> updated data from the tree
         let treeMap = {}
         for (let i = 0; i < tree.length; i++) {
             treeMap[tree[i].pid] = tree[i]
         }
 
-        // Mappa PID -> indice nodo esistente
+        // Map PID -> existing node index
         let pidIdx = {}
         for (let i = 0; i < ns.length; i++) {
             pidIdx[ns[i].pid] = i
         }
 
-        // Aggiorna nodi esistenti
+        // Update existing nodes
         let alive = {}
         for (let i = 1; i < ns.length; i++) {
             let data = treeMap[ns[i].pid]
@@ -81,14 +81,14 @@ Item {
             }
         }
 
-        // Rimuovi nodi scomparsi
+        // Prune dead nodes
         for (let i = ns.length - 1; i >= 1; i--) {
             if (!alive[ns[i].pid] && !treeMap[ns[i].pid]) {
                 ns.splice(i, 1)
             }
         }
 
-        // Aggiungi nodi nuovi
+        // Add new nodes
         let cx = graphCanvas.width / 2
         let cy = graphCanvas.height / 2
         for (let i = 0; i < tree.length; i++) {
@@ -118,7 +118,7 @@ Item {
             })
         }
 
-        // Ricostruisci edges dalla gerarchia
+        // Rebuild edges from parent-child hierarchy
         es.length = 0
         for (let i = 1; i < ns.length; i++) {
             let parentIdx = pidIdx[ns[i].ppid]
@@ -136,7 +136,7 @@ Item {
         graphCanvas.requestPaint()
     }
 
-    // ── Costruzione grafo da processList ───────────────
+    // ── Build graph from processList ────────────────────
     function buildGraph() {
         let cx = graphCanvas.width / 2
         let cy = graphCanvas.height / 2
@@ -150,10 +150,10 @@ Item {
         let tree = graphRoot.processTree
         if (tree.length === 0) return
 
-        // Mappa PID -> indice nodo
+        // Map PID -> node index
         let pidIdx = {}
 
-        // Nodo root "/" (PID 1)
+        // Root node "/" (PID 1)
         n.push({
             x: cx, y: cy, vx: 0, vy: 0,
             pinned: false,
@@ -162,7 +162,7 @@ Item {
         })
         pidIdx[1] = 0
 
-        // Crea un nodo per ogni processo
+        // Create a node for each process
         let total = tree.length
         for (let i = 0; i < total; i++) {
             let p = tree[i]
@@ -181,22 +181,22 @@ Item {
             })
         }
 
-        // Crea edge basati sulla gerarchia parent-child reale
+        // Create edges based on the actual parent-child hierarchy
         for (let i = 1; i < n.length; i++) {
             let ppid = n[i].ppid
             let parentIdx = pidIdx[ppid]
             if (parentIdx !== undefined) {
                 e.push({ source: parentIdx, target: i })
-                // Calcola profondita'
+                // Calculate depth
                 n[i].depth = (n[parentIdx].depth || 0) + 1
             } else {
-                // Parent non visibile -> collega a root
+                // Parent not visible -> link to root
                 e.push({ source: 0, target: i })
                 n[i].depth = 1
             }
         }
 
-        // Adatta distanze in base alla profondita'
+        // Adjust distances based on depth
         for (let i = 1; i < n.length; i++) {
             let angle = Math.atan2(n[i].y - cy, n[i].x - cx)
             let dist = 80 + n[i].depth * 60 + Math.random() * 30
@@ -209,7 +209,7 @@ Item {
         simTimer.running = true
     }
 
-    // ── Simulazione forze (Fruchterman-Reingold)──────────────────────────
+    // ── Force simulation (Fruchterman-Reingold) ─────────────────────────
     function stepSimulation() {
         let ns = graphRoot.nodes
         let es = graphRoot.edges
@@ -223,7 +223,7 @@ Item {
         let damp = graphRoot.damping
         let targetDist = graphRoot.targetLinkDist
 
-        // Repulsione (inverso del quadrato)
+        // Repulsion (inverse-square)
         for (let i = 0; i < ns.length; i++) {
             for (let j = i + 1; j < ns.length; j++) {
                 let dx = ns[i].x - ns[j].x
@@ -239,7 +239,7 @@ Item {
             }
         }
 
-        // Attrazione spring con distanza target (Hooke)
+        // Spring attraction with target distance (Hooke's law)
         for (let i = 0; i < es.length; i++) {
             let s = ns[es[i].source]
             let t = ns[es[i].target]
@@ -254,7 +254,7 @@ Item {
             if (ti > 0) { t.vx -= fx; t.vy -= fy }
         }
 
-        // Centro: nodi attratti verso il nodo root (indice 0)
+        // Center gravity: nodes attracted toward the root node (index 0)
         let rootNode = ns[0]
         for (let i = 1; i < ns.length; i++) {
             ns[i].vx += (rootNode.x - ns[i].x) * centerStrength
@@ -268,7 +268,7 @@ Item {
             ns[i].vy += (Math.random() - 0.5) * 0.15
         }
 
-        // Applica velocita' + smorzamento
+        // Apply velocity + damping
         for (let i = 0; i < ns.length; i++) {
             if (ns[i].pinned) continue
             ns[i].vx *= damp
@@ -309,7 +309,7 @@ Item {
         return -1
     }
 
-    // ── Espansione nodo - visuale dettagli processo ────────────
+    // ── Node expansion - process detail view ───────────────────
     function expandNode(idx) {
         if (idx < 0 || idx >= nodes.length) return
         graphRoot.expandedNode = idx
@@ -321,7 +321,7 @@ Item {
         graphRoot.loadProgress = 0
         loadAnim.restart()
 
-        // Fetch info dettagliate
+        // Fetch detailed info
         let name = nodes[idx].name
         graphRoot.expandedInfo = null
         if (graphRoot.nodes[idx].isRoot) {
@@ -398,13 +398,13 @@ Item {
 
         ctx.setTransform(1, 0, 0, 1, 0, 0)
 
-        // Origine: interpola dal nodo al centro della vista
+        // Origin: interpolate from node position to view center
         let nodeScreenX = node.x * graphRoot.viewScale + graphRoot.panX
         let nodeScreenY = node.y * graphRoot.viewScale + graphRoot.panY
         let cx = nodeScreenX + (w / 2 - nodeScreenX) * ep
         let cy = nodeScreenY + (h / 2 - nodeScreenY) * ep
 
-        // Scala con easing cubico per effetto "burst"
+        // Scale with cubic easing for a "burst" feel
         let scale = ep * ep * (3 - 2 * ep)      // smoothstep
 
         // Card dimensions
@@ -415,10 +415,10 @@ Item {
         let cut = 18 * scale
 
 
-        // Dim con buco sagomato della card
+        // Dim overlay with card-shaped cutout
         ctx.save()
         ctx.beginPath()
-        // Outer path con stessi tagli del parent CutShape
+        // Outer path with the same cuts as the parent CutShape
         ctx.moveTo(0, 0)
         ctx.lineTo(w - 24, 0)
         ctx.lineTo(w, 0)
@@ -484,39 +484,39 @@ Item {
                 }
             }
 
-            // Testo "LOADING" con aberrazione cromatica
+            // "LOADING" text with chromatic aberration
             ctx.textAlign = "center"
             let loadText = "ACCESSING PROCESS DATA"
             let dots = ".".repeat(Math.floor(lp * 8) % 4)
             let tx = cx + (glitchOn ? (Math.random() - 0.5) * 6 : 0)
             let ty = cy - 20 + (glitchOn ? (Math.random() - 0.5) * 4 : 0)
 
-            // Layer rosso
+            // Red layer
             ctx.font = "bold 13px Oxanium"
             ctx.fillStyle = Qt.rgba(1, 0.1, 0.2, glitchOn ? 0.6 * ep : 0)
             ctx.fillText(loadText + dots, tx + 2, ty)
-            // Layer principale
+            // Main layer
             ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.9 * ep)
             ctx.fillText(loadText + dots, cx, cy - 20)
 
-            // Barra di progresso
+            // Progress bar
             let barW = cardW * 0.5
             let barH = 3
             let barX = cx - barW / 2
             let barY = cy
 
-            // Sfondo barra
+            // Bar background
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.06 * ep)
             ctx.fillRect(barX, barY, barW, barH)
-            // Riempimento
+            // Fill
             let fillW = barW * lp
             ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.8 * ep)
             ctx.fillRect(barX, barY, fillW, barH)
-            // Glow sulla punta
+            // Glow on the tip
             ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.4 * ep)
             ctx.fillRect(barX + fillW - 8, barY - 1, 8, barH + 2)
 
-            // Percentuale
+            // Percentage
             ctx.font = "10px Oxanium"
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.4 * ep)
             ctx.fillText(Math.floor(lp * 100) + "%", cx, barY + 18)
@@ -535,20 +535,20 @@ Item {
                 }
             }
 
-            return      // Non mostrare il contenuto durante il loading
+            return      // Don't render content while loading
         }
 
-        // Content solo quando sufficientemente aperto
+        // Only show content when the card is open enough
         if (ep < 0.3) return
         let contentAlpha = Math.min(1, (ep - 0.3) / 0.5)
 
-        // Trasforma: disegna a dimensione finale, scala dal centro
+        // Transform: draw at final size, scale from center
         ctx.save()
         ctx.translate(cx, cy)
         ctx.scale(scale, scale)
         ctx.translate(-cx, -cy)
 
-        // Coordinate basate sulla dimensione finale della card
+        // Coordinates based on the final card dimensions
         let fullW = w * 0.85
         let fullH = h * 0.85
         let left = cx - fullW / 2 + 30
@@ -557,7 +557,7 @@ Item {
         let top = cy - fullH / 2 + 40
         let bottom = cy + fullH / 2 - 30
 
-        // ── Titolo ────────────────
+        // ── Title ─────────────────
         ctx.textAlign = "left"
         ctx.font = "bold 22px Oxanium"
         ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, contentAlpha)
@@ -589,7 +589,7 @@ Item {
         }
 
         if (info._isRoot) {
-            // CPU / MEM bars dal totale sistema
+            // CPU / MEM bars from system totals
             let sysCpu = parseFloat(info.ram.match(/\((\d+)%\)/)?.[1]) || 0
             let loadPct = (parseFloat(info.loadavg.split(" ")[0]) / parseInt(info.cores) * 100)
             graphRoot.drawMetricBar(ctx, left, y, contentW, "LOAD AVG", Math.min(100, loadPct), graphRoot.accentCyan, contentAlpha)
@@ -679,7 +679,7 @@ Item {
         ctx.fillText("── DETAILS", left, y)
         y += 26
 
-        // ── Righe dettaglio ────────────────────────────────
+        // ── Detail rows ─────────────────────────────────────
         let details = [
             ["PATH",    info.path],
             ["COMMAND", info.command],
@@ -722,7 +722,7 @@ Item {
         ctx.restore()
     }
 
-    // ── Colore nodo ───────────────────────────────────────────────
+    // ── Node color ────────────────────────────────────────────────
 
     function nodeColor(node) {
         if (node.isRoot) return graphRoot.accentYellow
@@ -745,7 +745,7 @@ Item {
         ctx.translate(graphRoot.panX, graphRoot.panY)
         ctx.scale(graphRoot.viewScale, graphRoot.viewScale)
 
-        // Set di nodi connessi al hovered
+        // Set of nodes connected to the hovered one
         let connSet = {}
         if (hov >= 0) {
             connSet[hov] = true
@@ -764,7 +764,7 @@ Item {
             ctx.moveTo(s.x, s.y)
             ctx.lineTo(t.x, t.y)
         }
-        // Colore edge base
+        // Base edge color
         let ec = graphRoot.accentCyan
         if (hov < 0) {
             ctx.strokeStyle = Qt.rgba(ec.r, ec.g, ec.b, 0.12)
@@ -803,10 +803,10 @@ Item {
                     : n.radius
             let a = dimmed ? 0.15 : 1.0
 
-            // Onde energetiche concentriche
+            // Concentric energy waves
             let waves = (isHov || isConn) ? 3 : 2
             let wt = graphRoot._waveTime
-            let baseSpeed = n.isRoot ? 0.7 : 0.7 + (n.cpu || 0) * 0.02      // piu' CPU = onde piu' veloci
+            let baseSpeed = n.isRoot ? 0.7 : 0.7 + (n.cpu || 0) * 0.02      // more CPU = faster waves
 
             for (let w = 0; w < waves; w++) {
                 let rawPhase = (wt * baseSpeed * 0.4 + w * (1.0 / waves)) % 1.0
@@ -821,20 +821,20 @@ Item {
                 ctx.stroke()
             }
 
-            // Bounce del nodo (battito con ease e pausa)
+            // Node bounce (heartbeat with ease and pause)
             let beat = (graphRoot._waveTime * (n.isRoot ? 0.5 : 0.8 + (n.cpu || 0) * 0.005)) % 1.0
             let breathe
             if (beat < 0.3) {
-                // Fase espansione+ritorno (ease in-out)
+                // Expand+return phase (ease in-out)
                 let t = beat / 0.3
                 let ease = t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t)
                 breathe = 1.0 + (1.0 - Math.abs(ease * 2 - 1)) * (isHov ? 0.18 : 0.08)
             } else {
-                // Pausa a dimensione normale
+                // Rest at normal size
                 breathe = 1.0
             }
             let solidR = drawR * breathe
-            // Glow con bounce (nucleo)
+            // Glow with bounce (core gradient)
             ctx.beginPath()
             ctx.arc(n.x, n.y, drawR * 1.6, 0, graphRoot._TAU)
             let coreGrad = ctx.createRadialGradient(n.x, n.y, drawR * 0.5, n.x, n.y, drawR * 1.6)
@@ -847,7 +847,7 @@ Item {
             ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, baseAlpha)
             ctx.beginPath(); ctx.arc(n.x, n.y, drawR, 0, TAU); ctx.fill()
 
-            // Anello bordo
+            // Border ring
             if (!dimmed) {
                 ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.25)
                 ctx.lineWidth = 0.5
@@ -855,7 +855,7 @@ Item {
             }
         }
 
-        // ── LABELS (solo se zoom > 0.6) ────────────────────
+        // ── LABELS (only when zoom > 0.6) ──────────────────
         if (graphRoot.viewScale > 0.6 || hov >= 0) {
             ctx.textAlign = "center"
             for (let i = 0; i < ns.length; i++) {
@@ -868,7 +868,7 @@ Item {
                 let c = graphRoot.nodeColor(n)
                 let baseSize = n.isRoot ? 11 : isHov ? 12 : isConn ? 11 : 9
                 let nameSize = (isConn || isHov) ? Math.round(baseSize / graphRoot.viewScale * 0.7) : baseSize
-                nameSize = Math.min(nameSize, 22)       // cap massimo
+                nameSize = Math.min(nameSize, 22)       // max cap
                 let drawR = isConn ? n.radius * (1.3 + 0.8 / graphRoot.viewScale)
                             : isHov ? n.radius * (1.2 + 0.5 / graphRoot.viewScale)
                             : n.radius
@@ -876,7 +876,7 @@ Item {
                 ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, isConn || isHov ? 1.0 : 0.9)
                 ctx.fillText(n.name.toUpperCase(), n.x, n.y + drawR + 12)
 
-                // Sottolabel CPU% - mostra sempre per connessi
+                // CPU% sublabel - always shown for connected nodes
                 if (!n.isRoot && graphRoot.viewScale > 0.8 || isConn || isHov) {
                     let subSize = (isConn || isHov) ? Math.min(Math.round(9 / graphRoot.viewScale * 0.7), 16) : 7
                     ctx.font = subSize + "px Oxanium"
@@ -886,20 +886,20 @@ Item {
             }
         }
 
-        // Card overlay se espanso
+        // Card overlay when expanded
         if (graphRoot.expandedNode >= 0 && graphRoot.expandProgress > 0) {
             graphRoot.drawExpandedCard(ctx)
         }
     }
 
-    // ── Reagisci a cambio processList ───────────────────────────────────────────
+    // ── React to processList changes ────────────────────────────────────────────
     onProcessTreeChanged: updateGraph()
     onVisibleChanged: {
         if (visible) Qt.callLater(buildGraph)
     }
     Component.onCompleted: buildGraph()
 
-    // ── Timer simulazione (~30fps) ──────────────────────────────────────
+    // ── Simulation timer (~30fps) ───────────────────────────────────────
     Timer {
         id: simTimer
         interval: graphRoot.expandedNode >= 0 ? 100 : 40
@@ -922,7 +922,7 @@ Item {
             let raw = data.trim()
             if (raw === "NOTFOUND" || raw.length === 0) return
 
-            // Parsing per root node (info di sistema)
+            // Parsing for root node (system info)
             if (graphRoot.expandedNode >= 0 && graphRoot.nodes[graphRoot.expandedNode].isRoot) {
                 let p = raw.split("|")
                 if (p.length < 9) return
@@ -1005,7 +1005,7 @@ Item {
         }}
     }
 
-    // ── Animzaione expand/collapse ────────────────────────────────────────
+    // ── Expand/collapse animation ─────────────────────────────────────────
     NumberAnimation {
         id: expandAnim
         target: graphRoot
@@ -1046,7 +1046,7 @@ Item {
         }
     }
 
-    // ── Input: drag nodi, pan, hover ────────────
+    // ── Input: node drag, pan, hover ────────────
     MouseArea {
         id: graphMouse
         anchors.fill: parent
@@ -1116,13 +1116,13 @@ Item {
                 graphRoot.nodes[graphRoot.draggedNodeIdx].vy = 0
                 graphRoot.nodes[graphRoot.draggedNodeIdx].pinned = false
 
-                // Click (non drag) -> expand
+                // Click (not drag) -> expand
                 if (dist < 5 && graphRoot.expandedNode < 0) {
                     graphRoot.expandNode(graphRoot.draggedNodeIdx)
                 }
                 graphRoot.draggedNodeIdx = -1
             } else if (dist < 5 && graphRoot.expandedNode >= 0) {
-                // Click fuori durante expand -> collapse
+                // Click outside during expand -> collapse
                 graphRoot.collapseNode()
             }
             graphRoot.isPanning = false
@@ -1136,7 +1136,7 @@ Item {
             }
         }
 
-        // ── Zoom (rotella) ───────────────────────────────
+        // ── Zoom (scroll wheel) ─────────────────────────
         onWheel: function(event) {
             let oldScale = graphRoot.viewScale
             let newScale = Math.max(0.2, Math.min(3.0, oldScale * (event.angleDelta.y > 0 ? 1.12 : 0.88)))
@@ -1151,7 +1151,7 @@ Item {
             event.accepted = true
         }
 
-        // ESC per chiudere card
+        // ESC to close card
         Keys.onPressed: function(event) {
             if (event.key === Qt.Key_Escape && graphRoot.expandedNode >= 0) {
                 graphRoot.collapseNode()

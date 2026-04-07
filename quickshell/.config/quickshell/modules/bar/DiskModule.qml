@@ -1,4 +1,4 @@
-// DiskModule.qml — disco / usage % via df, intervallo 30s
+// DiskModule.qml — root disk usage % via df, 30s interval
 
 import Quickshell.Io
 import QtQuick

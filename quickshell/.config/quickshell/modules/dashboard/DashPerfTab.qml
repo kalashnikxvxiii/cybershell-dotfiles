@@ -20,8 +20,8 @@ Item {
         graphView: root.graphView
     }
 
-    // ── Aliases per accesso diretto dalla UI ──────────────────
-    // (evita di scrivere "perf." ovunque per le properties più usate)
+    // ── Aliases for direct UI access ──────────────────
+    // (saves typing "perf." everywhere for the most-used properties)
     readonly property alias cpuPerc:        perf.cpuPerc
     readonly property alias cpuTemp:        perf.cpuTemp
     readonly property alias cpuHistory:     perf.cpuHistory
@@ -83,10 +83,10 @@ Item {
     readonly property var selectedProc: selectedProcIndex >= 0 && selectedProcIndex < filteredProcessList.length
                                         ? filteredProcessList[selectedProcIndex] : null
 
-    // Sort mode — delegato al provider
+    // Sort mode — delegated to the provider
     property alias sortMode: perf.sortMode
 
-    // Lista filtrata
+    // Filtered list
     readonly property var filteredProcessList: {
         let list = perf.processList
         if (root.searchFilter.length > 0) {
@@ -127,7 +127,7 @@ Item {
     // ── Kill handler ────────────────────────────────────────────────────
     function doKill() { perf.killProcess(root._killProcName) }
 
-    // Glitch periodico header (ogni 5-8s)
+    // Periodic header glitch (every 5-8s)
     Timer {
         id: glitchTrigger
         interval: 6000
@@ -165,7 +165,7 @@ Item {
                 anchors.rightMargin: 12
                 spacing: 10
 
-                // Indicatore + title
+                // Indicator + title
                 Rectangle {
                     width: 3; height: 14
                     color: Colours.accentSecondary
@@ -264,13 +264,13 @@ Item {
             }
         }
 
-        // ── MAIN BODY: metriche (sx) + processes (dx) ────────
+        // ── MAIN BODY: metrics (left) + processes (right) ────────
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 6
 
-            // ══ LEFT COLUMN — METRICHE ══
+            // ══ LEFT COLUMN — METRICS ══
             PerfMetrics {
                 id: metricsPanel
                 Layout.preferredWidth: 380
@@ -403,7 +403,7 @@ Item {
                                     transform: Translate { id: abCyanShift; x: 0 }
                                 }
 
-                                // Layer red (aberrazione convergenza)
+                                // Red layer (convergence aberration)
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     x: 6
@@ -415,7 +415,7 @@ Item {
                                     transform: Translate { id: abRedShift; x: 0 }
                                 }
 
-                                // Sfondo input
+                                // Input background
                                 Rectangle {
                                     anchors.fill: parent
                                     color: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.08)
