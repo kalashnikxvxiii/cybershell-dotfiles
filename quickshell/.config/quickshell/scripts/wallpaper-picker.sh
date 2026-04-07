@@ -163,6 +163,8 @@ cmd_toggle() {
     local screen
     screen=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
     [ -z "$screen" ] && screen="DP-1"
+    > "$TOGGLE_FILE"
+    sleep 0.5
     echo "$screen" > "$TOGGLE_FILE"
 }
 

@@ -34,8 +34,10 @@ python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" | while IFS= read -
         done
     fi
 
-    url=$(echo "$line" | python3 -c "import sys,json; print(json.load(sys.stdin)['url'])")
-    thumb_url=$(echo "$line" | python3 -c "import sys,json; print(json.load(sys.stdin).get('thumb',''))")
+    read -r url thumb_url source <<< "$(echo "$line" | python3 -c "
+import sys,json; d=json.load(sys.stdin)
+print(d['url'], d.get('thumb',''), d.get('source','wh'))
+")"
     [ -z "$url" ] && continue
 
     fname=$(echo "$url" | md5sum | cut -c1-16)
@@ -51,7 +53,7 @@ python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" | while IFS= read -
                 magick "$thumb.tmp" -quality 85 "$thumb" 2>/dev/null
                 rm -f "$thumb.tmp"
                 echo "${fname}|${url}" >> "$MAP_FILE"
-                echo "THUMB:${fname}|${thumb}|${url}"
+                echo "THUMB:${fname}|${thumb}|${url}|${source}"
                 ;;
             *)
                 rm -f "$thumb.tmp" ;;

@@ -33,6 +33,21 @@ Item {
         searchProc.running = true
     }
 
+    function submitSearch() {
+        if (searchInput.text.trim() === "") return
+        currentQuery = searchInput.text.trim()
+        currentPage = 1
+        hasMore = true
+        searching = true
+        searchResultsModel.clear()
+        searchProc.command = ["bash",
+            "/home/kalashnikxv/.config/quickshell/scripts/search-wallpapers.sh",
+            currentQuery, "1"]
+        searchProc.running = true
+        searchInput.focus = false
+        root.parent.forceActiveFocus()
+    }
+
     Behavior on implicitWidth {
         NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
     }
@@ -81,20 +96,14 @@ Item {
             color: Colours.textPrimary
             selectionColor: CP.alpha(CP.cyan, 0.3)
 
-            onAccepted: {
-                if (text.trim() !== "") {
-                    root.currentQuery = text.trim()
-                    root.currentPage = 1
-                    root.hasMore = true
-                    root.searching = true
-                    searchResultsModel.clear()
-                    searchProc.command = ["bash",
-                        "/home/kalashnikxv/.config/quickshell/scripts/search-wallpapers.sh",
-                        root.currentQuery, "1"]
-                    searchProc.running = true
-                    searchInput.focus = false
-                    root.parent.forceActiveFocus()
-                }
+            Keys.onReturnPressed: event => {
+                root.submitSearch()
+                event.accepted = true
+            }
+
+            Keys.onEnterPressed: event => {
+                root.submitSearch()
+                event.accepted = true
             }
 
             Keys.onEscapePressed: {
@@ -149,6 +158,7 @@ Item {
     // ── Search results model ────────────────────────────────
     ListModel { id: searchResultsModel }
     readonly property alias resultsModel: searchResultsModel
+    readonly property bool inputFocused: searchInput.activeFocus
 
     Process {
         id: searchProc
@@ -169,7 +179,8 @@ Item {
                         searchResultsModel.append({
                             fname: parts[0],
                             thumbPath: parts[1],
-                            fullUrl: parts[2]
+                            fullUrl: parts[2],
+                            source: parts.length >= 4 ? parts[3] : "wh"
                         })
                         root._pageResultCount++
                         if (isFirst) root.firstResultReady()
