@@ -1,25 +1,41 @@
-import Quickshell.Io
-import QtQuick
 import "../../common/Colors.js" as CP
 import "../../common"
+import Quickshell.Io
+import QtQuick
 
 Item {
-    id: root
-    implicitWidth: expanded ? 360 : 44
+    id:             root
+    implicitWidth:  expanded ? 360 : 44
     implicitHeight: 44
-    clip: true
+    clip:           true
 
-    property bool expanded: false
-    property bool searching: false
-    property int currentPage: 1
-    property string currentQuery: ""
-    property bool hasMore: true
-    property int _pageResultCount: 0
+    property string _placeholderPrefix: ""
+    property string _activePrefix:      ""
+    property string currentQuery:       ""
+    property bool   _prefixGlitching:   false
+    property bool   _updatingPrefix:    false
+    property bool   searching:          false
+    property bool   expanded:           false
+    property bool   hasMore:            true
+    property int    _pageResultCount:   0
+    property int    currentPage:        1
+
+    // ── Prefix system ────────────────────────────────────
+    readonly property var prefixes: ["@wh", "@a", "@r", "@gif", "@img"]
+    readonly property var prefixColors: ({
+        "@wh":      CP.cyan,
+        "@a":       CP.yellow,
+        "@r":       CP.magenta,
+        "@gif":     CP.neon,
+        "@img":     CP.cyan
+    })
+
 
     signal resultClicked(string thumbPath, string fullUrl)
     signal firstResultReady()
 
     function focusInput() {
+        _placeholderPrefix = _randomPlaceholder()
         searchInput.forceActiveFocus()
     }
 
@@ -34,8 +50,10 @@ Item {
     }
 
     function submitSearch() {
-        if (searchInput.text.trim() === "") return
-        currentQuery = searchInput.text.trim()
+        if (searchInput.text.trim() === "" && _activePrefix) return
+        currentQuery = _activePrefix !== ""
+                    ? _activePrefix + " " + searchInput.text.trim()
+                    : searchInput.text.trim()
         currentPage = 1
         hasMore = true
         searching = true
@@ -46,6 +64,53 @@ Item {
         searchProc.running = true
         searchInput.focus = false
         root.parent.forceActiveFocus()
+    }
+
+    function _randomPlaceholder() {
+        return prefixes[Math.floor(Math.random() * prefixes.length)]
+    }
+
+    function _updatePrefixState() {
+        if (_updatingPrefix) return
+        var txt = searchInput.text
+        // If prefix already active and text doeasn't start with @, keep it
+        if (_activePrefix !== "" && !txt.startsWith("@")) return
+        // Check for completed prefix (prefix + space)
+        for (var i = 0; i < prefixes.length; i++) {
+            if (txt.startsWith(prefixes[i] + " ")) {
+                var query = txt.substring(prefixes[i].length + 1)
+                _updatingPrefix = true
+                _activePrefix = prefixes[i]
+                searchInput.text = query
+                searchInput.cursorPosition = query.length
+                _updatingPrefix = false
+                _placeholderPrefix = ""
+                prefixGlitchAnim.restart()
+                return
+            }
+        }
+        // Check for partial match
+        if (txt.startsWith("@") && txt.indexOf(" ") === -1) {
+            for (var j = 0; j < prefixes.length; j++) {
+                if (prefixes[j].startsWith(txt) && prefixes[j] !== txt) {
+                    _placeholderPrefix = prefixes[j]
+                    _activePrefix = ""
+                    return
+                }
+            }
+        }
+        _placeholderPrefix = ""
+        _activePrefix = ""
+    }
+
+    function _autocompletePrefix() {
+        if (_placeholderPrefix !== "" && searchInput.text.startsWith("@")) {
+            _updatingPrefix = true
+            searchInput.text = _placeholderPrefix + " "
+            _updatingPrefix = false
+            searchInput.cursorPosition = searchInput.text.length
+            _updatePrefixState()
+        }
     }
 
     Behavior on implicitWidth {
@@ -76,25 +141,80 @@ Item {
         cursorShape: Qt.PointingHandCursor
         onClicked: {
             root.expanded = true
+            root._placeholderPrefix = root._randomPlaceholder()
             searchInput.forceActiveFocus()
         }
     }
 
-    Row {
+    // ── Input area (manual layout, no Row) ─────────────────
+    Item {
+        id: inputArea
         anchors.fill: parent
         anchors.margins: 6
-        spacing: 6
         visible: root.expanded
 
+        // Prefix highlight badge
+        Rectangle {
+            id: prefixBadge
+            x: 0
+            anchors.verticalCenter: parent.verticalCenter
+            width: _activePrefix !== "" ? prefixMeasure.implicitWidth + 10 : 0
+            height: 20
+            radius: 3
+            color: _activePrefix !== "" ? CP.alpha(prefixColors[_activePrefix] || CP.cyan, 0.15) : "transparent"
+            border.color: _activePrefix !== "" ? CP.alpha(prefixColors[_activePrefix] || CP.cyan, 0.6) : "transparent"
+            border.width: 1
+            visible: _activePrefix !== "" && !_prefixGlitching
+            z: 5
+
+            Behavior on width { NumberAnimation { duration: 150 } }
+
+            Text {
+                anchors.centerIn: parent
+                text: _activePrefix
+                font.family: "Oxanium"
+                font.pixelSize: 12
+                font.letterSpacing: 1
+                color: prefixColors[_activePrefix] || CP.cyan
+            }
+
+            Text {
+                id: prefixMeasure
+                visible: false
+                text: _activePrefix + " "
+                font.family: "Oxanium"
+                font.pixelSize: 12
+            }
+        }
+
+        // Ghost placeholder for prefix autocomplete
+        Text {
+            id: placeholderGhost
+            x: searchInput.x
+            anchors.verticalCenter: parent.verticalCenter
+            visible: _placeholderPrefix !== ""
+                    && searchInput.text.length > 0
+                    && searchInput.text.length < _placeholderPrefix.length
+                    && _activePrefix === ""
+            text: _placeholderPrefix
+            font.family: "Oxanium"
+            font.pixelSize: 12
+            color: CP.alpha(Colours.textMuted, 0.35)
+        }
+
+        // Text input — positioned after badge
         TextInput {
             id: searchInput
-            width: parent.width - submitBtn.width - stopBtn.width - 18
+            x: _activePrefix !== "" ? prefixBadge.width + 4 : 0
+            width: parent.width - x - submitBtn.width - stopBtn.width - 12
             height: parent.height
             verticalAlignment: TextInput.AlignVCenter
             font.family: "Oxanium"
             font.pixelSize: 12
             color: Colours.textPrimary
             selectionColor: CP.alpha(CP.cyan, 0.3)
+
+            Behavior on x { NumberAnimation { duration: 150 } }
 
             Keys.onReturnPressed: event => {
                 root.submitSearch()
@@ -107,13 +227,30 @@ Item {
             }
 
             Keys.onEscapePressed: {
+                root._activePrefix = ""
+                root._placeholderPrefix = ""
                 root.expanded = false
                 root.parent.forceActiveFocus()
             }
+
+            Keys.onRightPressed: event => {
+                if (searchInput.cursorPosition === searchInput.text.length && root._placeholderPrefix !== "") {
+                    root._autocompletePrefix()
+                    event.accepted = true
+                } else {
+                    event.accepted = false
+                }
+            }
+
+            Keys.onLeftPressed: event => { event.accepted = true }
+
+            onTextChanged: root._updatePrefixState()
         }
 
         Text {
             id: submitBtn
+            anchors.right: stopBtn.visible ? stopBtn.left : parent.right
+            anchors.rightMargin: stopBtn.visible ? 6 : 0
             width: 20; height: parent.height
             text: "\u2192"
             font.pixelSize: 14
@@ -123,12 +260,13 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: searchInput.accepted()
+                onClicked: root.submitSearch()
             }
         }
 
         Text {
             id: stopBtn
+            anchors.right: parent.right
             width: root.searching ? 20 : 0; height: parent.height
             text: "\u25A0"
             font.pixelSize: 12
@@ -141,6 +279,33 @@ Item {
                 onClicked: controlProc.running = true
             }
         }
+    }
+
+    // Prefix glitch animation
+    SequentialAnimation {
+        id: prefixGlitchAnim
+        property color glitchColor: prefixColors[_activePrefix] || CP.cyan
+
+        onStarted: _prefixGlitching = true
+        onStopped: _prefixGlitching = false
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: true }
+        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.magenta, 0.3) }
+        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.magenta }
+        PauseAnimation { duration: 60 }
+
+        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.yellow, 0.3) }
+        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.yellow }
+        PauseAnimation { duration: 60 }
+
+        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(prefixGlitchAnim.glitchColor, 0.15) }
+        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.alpha(prefixGlitchAnim.glitchColor, 0.6) }
+        PauseAnimation { duration: 60 }
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: false }
+        PauseAnimation { duration: 40 }
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: true }
     }
 
     Text {
@@ -180,7 +345,9 @@ Item {
                             fname: parts[0],
                             thumbPath: parts[1],
                             fullUrl: parts[2],
-                            source: parts.length >= 4 ? parts[3] : "wh"
+                            source: parts.length >= 4 ? parts[3] : "wh",
+                            w: parts.length >= 6 ? parseInt(parts[4]) : 0,
+                            h: parts.length >= 6 ? parseInt(parts[5]) : 0
                         })
                         root._pageResultCount++
                         if (isFirst) root.firstResultReady()

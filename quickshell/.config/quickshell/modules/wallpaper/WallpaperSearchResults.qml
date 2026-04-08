@@ -7,12 +7,13 @@ import QtQuick
 Item {
     id: searchResultsPanel
 
-    required property var resultsModel
-    required property int selectedSearchIdx
-    required property bool downloading
-    required property real downloadProgress
-    required property string downloadingUrl
-    required property var localBasenames
+    required property string    downloadingUrl
+    required property real      downloadProgress
+    required property bool      downloading
+    required property int       selectedSearchIdx
+    required property int       downloadCount
+    required property var       localBasenames
+    required property var       resultsModel
 
     signal resultSelected(int index, string thumbPath, string fullUrl)
 
@@ -151,7 +152,6 @@ Item {
                 height: 14
                 fillColor: CP.alpha("#000000", 0.6)
                 cutBottomLeft: 4
-                z: 5
                 visible: parent.fullUrl.toLowerCase().endsWith(".gif")
 
                 Text {
@@ -174,6 +174,7 @@ Item {
                 fillColor: CP.alpha("#000000", 0.6)
                 cutTopRight: 8
                 visible: {
+                    var _dc = searchResultsPanel.downloadCount
                     var bn = parent.fullUrl.substring(parent.fullUrl.lastIndexOf("/") + 1)
                     return searchResultsPanel.localBasenames[bn] === true
                 }

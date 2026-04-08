@@ -20,6 +20,7 @@ Scope {
 
     property string originalWallpaper:  ""
     property string downloadingUrl:     ""
+    property string _currentRes:        ""
     property bool   wpePreviewActive:   false
     property bool   deleteDialogOpen:   false
     property bool   previewShown:       false
@@ -28,9 +29,33 @@ Scope {
     property real   downloadProgress:   0
     property var    searchResultsModel: null
     property var    localBasenames:     ({})
-    property var    allEntries:         []    
+    property var    allEntries:         []
+    property int    downloadCount:      0
 
     ListModel { id: wallpaperModel }
+
+    Process {
+        id: resProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                root._currentRes = data.trim()
+            }
+        }
+    }
+
+    function updateCurrentRes() {
+        var idx = carousel.currentIndex
+        if (idx < 0 || idx >= wallpaperModel.count) {
+            _currentRes = ""
+            return
+        }
+        var path = wallpaperModel.get(idx).path
+        resProc.command = ["bash", "-c",
+            "identify -format '%wx%h' '" + path + "' 2>/dev/null | head -1"]
+        resProc.running = true
+    }
 
     Process {
         id: catalogProc
@@ -136,6 +161,7 @@ Scope {
                     var lb = root.localBasenames
                     lb[bn] = true
                     root.localBasenames = lb
+                    root.downloadCount++
                     root.downloading = false
                     completionGlitch.start()
                     root.downloadProgress = 0
@@ -238,12 +264,15 @@ Scope {
 
     function updateSearchPreview(thumbPath, fullUrl) {
         var isGif = fullUrl.toLowerCase().endsWith(".gif")
+        // Thumbnail locale subito (instant)
+        searchPreviewThumb.source = thumbPath ? "file://" + thumbPath : ""
+        // Full-res in background
         if (isGif) {
             searchPreviewImage.source = ""
             searchPreviewGif.source = fullUrl
         } else {
             searchPreviewGif.source = ""
-            searchPreviewImage.source = thumbPath ? fullUrl : ""
+            searchPreviewImage.source = fullUrl ? fullUrl : ""
         }
     }
 
@@ -318,16 +347,18 @@ Scope {
                 height: 460
                 clip: true
 
-                property int currentIndex: 0
-                readonly property real cardSpacing: -12
-                property int visibleCount: 0
-                property real savedVolume: 0.5
-                property bool audioEnabled: false
-                property bool fastMode: false
-                property int rapidCount: 0
-                property bool searchFocused: false
-                property int selectedSearchIdx: -1
-                property string selectedSearchUrl: ""
+                readonly property real  cardSpacing:        -12
+                property string         selectedSearchUrl:  ""
+                property bool           searchFocused:      false
+                property bool           audioEnabled:       false
+                property bool           fastMode:           false
+                property real           savedVolume:        0.5
+                property int            selectedSearchIdx:  -1
+                property int            currentIndex:       0
+                property int            visibleCount:       0
+                property int            rapidCount:         0
+
+                onCurrentIndexChanged: root.updateCurrentRes()
 
                 onSelectedSearchIdxChanged: {
                     if (selectedSearchIdx >= 0 && filterBar.resultsModel && filterBar.resultsModel.count > 0) {
@@ -565,6 +596,7 @@ Scope {
 
                     // Schedule reveal
                     revealTimer.restart()
+                    root.updateCurrentRes()
                 }
 
                 function refilterCards() {
@@ -649,6 +681,7 @@ Scope {
                         viewTotalVisible: carousel.visibleCount
                         isCurrent: index === carousel.currentIndex
                         videoVolume: isCurrent && carousel.audioEnabled ? carousel.savedVolume : 0
+                        resolution: isCurrent ? root._currentRes : ""
                         isVisible: {
                             var m = WallpaperState.macroFilter
                             var s = WallpaperState.subFilter
@@ -718,6 +751,16 @@ Scope {
                 }
 
                 Image {
+                    id: searchPreviewThumb
+                    anchors.fill: parent
+                    source: ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    visible: searchPreviewImage.status !== Image.Ready
+                            && searchPreviewGif.status !== AnimatedImage.Ready
+                }
+
+                Image {
                     id: searchPreviewImage
                     anchors.fill: parent
                     source: ""
@@ -734,6 +777,52 @@ Scope {
                     visible: source !== ""
                 }
 
+                // ── Resolution overlay ────────────────────────────────────────────
+                Item {
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 48
+
+                    Rectangle {
+                        anchors.fill: parent
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 0.4; color: Qt.rgba(0, 0, 0, 0.7) }
+                            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.85) }
+                        }
+                    }
+
+                    Text {
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 8
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        text: {
+                            if (!filterBar.resultsModel || carousel.selectedSearchIdx < 0
+                                || carousel.selectedSearchIdx >= filterBar.resultsModel.count)
+                                return ""
+                            var sr = filterBar.resultsModel.get(carousel.selectedSearchIdx)
+                            if (sr.w > 0 && sr.h > 0)
+                                return sr.w + "\u00d7" + sr.h
+                            return ""
+                        }
+                        font.family: "Oxanium"
+                        font.pixelSize: 13
+                        font.letterSpacing: 2
+                        color: Colours.textPrimary
+
+                        transform: Matrix4x4 {
+                            matrix: Qt.matrix4x4(
+                                1, Math.tan(10 * Math.PI / 180), 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1
+                            )
+                        }
+                    }
+                }
+
                 CutShape {
                     anchors.fill: parent
                     fillColor: "transparent"
@@ -744,7 +833,7 @@ Scope {
                     cutBottomRight: 32
                 }
 
-                // ── Download overalay (preview) ───────────────────────────────────
+                // ── Download overlay (preview) ───────────────────────────────────
                 Item {
                     id: previewDownloadOverlay
                     anchors.fill: parent
@@ -887,7 +976,7 @@ Scope {
                                 && carousel.selectedSearchIdx < filterBar.resultsModel.count)
                                 return filterBar.resultsModel.get(carousel.selectedSearchIdx).fname.toUpperCase()
                             if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count)
-                                return ""
+                                    return ""
                             return wallpaperModel.get(carousel.currentIndex).title.toUpperCase()
                         }
                         font.family: "Oxanium"
@@ -895,22 +984,6 @@ Scope {
                         font.letterSpacing: 2
                         color: Colours.textPrimary
                         elide: Text.ElideRight
-                    }
-
-                    Text {
-                        text: {
-                            if (carousel.searchFocused && carousel.selectedSearchIdx >= 0
-                                && carousel.selectedSearchIdx < filterBar.resultsModel.count)
-                                return filterBar.resultsModel.get(carousel.selectedSearchIdx).source.toUpperCase()
-                            if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count)
-                                return ""
-                            var e = wallpaperModel.get(carousel.currentIndex)
-                            return e.source.toUpperCase() + " / " + e.type.toUpperCase()
-                        }
-                        font.family: "Oxanium"
-                        font.pixelSize: 10
-                        font.letterSpacing: 1
-                        color: Colours.textMuted
                     }
 
                     Text {
@@ -933,12 +1006,13 @@ Scope {
                 width: Math.min(parent.width - 80, 800)
                 height: 140
 
-                resultsModel: filterBar.resultsModel
-                selectedSearchIdx: carousel.selectedSearchIdx
-                downloading: root.downloading
-                downloadProgress: root.downloadProgress
-                downloadingUrl: root.downloadingUrl
-                localBasenames: root.localBasenames
+                selectedSearchIdx:  carousel.selectedSearchIdx
+                downloadProgress:   root.downloadProgress
+                downloadingUrl:     root.downloadingUrl
+                localBasenames:     root.localBasenames
+                downloadCount:      root.downloadCount
+                resultsModel:       filterBar.resultsModel
+                downloading:        root.downloading
 
                 onResultSelected: (index, thumbPath, fullUrl) => {
                     carousel.selectedSearchIdx = index

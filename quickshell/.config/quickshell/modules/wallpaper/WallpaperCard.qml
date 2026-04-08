@@ -1,32 +1,33 @@
-import QtQuick
-import QtQuick.Effects
-import QtMultimedia
-import Quickshell.Io
 import "../../common/Colors.js" as CP
 import "../../common"
+import QtQuick.Effects
+import QtQuick
+import QtMultimedia
+import Quickshell.Io
 
 Item {
     id: root
 
-    required property int index
-    required property string path
-    required property string thumb
-    required property string title
-    required property string source
-    required property string type
-    required property string color
-    required property string videoFile
+    required property string    videoFile
+    required property string    source
+    required property string    thumb
+    required property string    title
+    required property string    color
+    required property string    path
+    required property string    type
+    required property int       index
 
     property string searchPreviewThumb: ""
-    property string searchPreviewUrl: ""
-    property bool isCurrent: false
-    property bool isVisible: true
-    property int viewCurrentIndex: 0
-    property bool animEnabled: false
-    property bool videoPlaying: false
-    property bool _glitching: false
-    property color _borderColor: CP.cyan
-    property real videoVolume: 0.5
+    property string searchPreviewUrl:   ""
+    property string resolution:         ""
+    property color  _borderColor:       CP.cyan
+    property bool   videoPlaying:       false
+    property bool   animEnabled:        false
+    property bool   _glitching:         false
+    property bool   isCurrent:          false
+    property bool   isVisible:          true
+    property real   videoVolume:        0.5
+    property int    viewCurrentIndex:   0
 
     Timer {
         id: videoDelayTimer
@@ -288,7 +289,9 @@ Item {
                     anchors.leftMargin: 12
                     anchors.right: parent.right
                     anchors.rightMargin: 12
-                    text: root.title.toUpperCase()
+                    text: root.resolution !== ""
+                        ? root.resolution.replace("x", "\u00d7")
+                        : root.title.toUpperCase()
                     font.family: "Oxanium"
                     font.pixelSize: 13
                     font.letterSpacing: 2
