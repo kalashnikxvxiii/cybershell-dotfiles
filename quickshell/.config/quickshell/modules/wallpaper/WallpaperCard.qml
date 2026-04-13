@@ -4,6 +4,7 @@ import QtQuick.Effects
 import QtQuick
 import QtMultimedia
 import Quickshell.Io
+import WpePreview 1.0
 
 Item {
     id: root
@@ -28,6 +29,10 @@ Item {
     property bool   isVisible:          true
     property real   videoVolume:        0.5
     property int    viewCurrentIndex:   0
+
+    function startVideo() {
+        videoPlaying = true
+    }
 
     Timer {
         id: videoDelayTimer
@@ -77,7 +82,7 @@ Item {
 
     // ── Start/Stop video/gif preview ────────────────────────────────
     onIsCurrentChanged: {
-        if (isCurrent && videoFile !== "") {
+        if (isCurrent && (videoFile !== "" || type === "scene")) {
             videoDelayTimer.restart()
         } else {
             videoDelayTimer.stop()
@@ -237,7 +242,8 @@ Item {
 
                 MediaPlayer {
                     id: videoPlayer
-                    source: root.videoPlaying && root.type === "video" && root.videoFile !== ""
+                    source: root.videoPlaying && root.videoFile !== ""
+                            && root.type === "video"
                             ? "file://" + root.videoFile : ""
                     videoOutput: videoOutput
                     audioOutput: AudioOutput {
@@ -259,6 +265,16 @@ Item {
                 }
             }
 
+            WpePreviewItem {
+                anchors.fill: parent
+                visible: root.isCurrent && root.type === "scene"
+                scenePath: root.isCurrent && root.type === "scene" && root.videoPlaying
+                        ? root.path : ""
+                fps: 15
+                opacity: ready ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+            }
+
             Rectangle {
                 anchors.fill: parent
                 color: "#000000"
@@ -277,7 +293,7 @@ Item {
                     anchors.fill: parent
                     gradient: Gradient {
                         GradientStop { position: 0.0; color: "transparent" }
-                        GradientStop { position: 0.4; color: Qt.rgba(0, 0, 0, 0.7) }
+                        GradientStop { position: 0.7; color: Qt.rgba(0, 0, 0, 0.7) }
                         GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.85) }
                     }
                 }

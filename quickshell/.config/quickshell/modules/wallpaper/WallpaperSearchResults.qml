@@ -132,12 +132,13 @@ Item {
                     font.letterSpacing: parent.parent.source === "r" || parent.parent.source === "rg" ? 0 : 1
                     color: {
                         switch (parent.parent.source) {
-                            case "wh": return CP.cyan
-                            case "a":  return CP.yellow
-                            case "ag": return CP.yellow
-                            case "r":  return CP.magenta
-                            case "rg": return CP.magenta
-                            default:   return CP.cyan
+                            case "wh":  return CP.cyan
+                            case "a":   return CP.yellow
+                            case "ag":  return CP.yellow
+                            case "r":   return CP.orange
+                            case "rg":  return CP.orange
+                            case "wpe": return CP.teal
+                            default:    return CP.cyan
                         }
                     }
                 }

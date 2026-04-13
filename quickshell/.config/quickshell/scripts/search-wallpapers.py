@@ -11,6 +11,19 @@ import concurrent.futures
 
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
+def _fetch_wallhaven_tags(wp_id):
+    """Fetch top 3 tags for a single Wallhaven wallpaper."""
+    try:
+        req = urllib.request.Request(
+            "https://wallhaven.cc/api/v1/w/" + str(wp_id),
+            headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            d = json.loads(resp.read().decode()).get("data", {})
+            tags = [t["name"] for t in d.get("tags", [])[:3]]
+            return " / ".join(tags) if tags else str(wp_id)
+    except Exception:
+        return str(wp_id)
+
 def search_wallhaven(query, page=1, max_results=30, output=None):
     """Search Wallhaven API — clean REST, no scraping needed."""
     params = {
@@ -24,28 +37,43 @@ def search_wallhaven(query, page=1, max_results=30, output=None):
     url = "https://wallhaven.cc/api/v1/search?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
 
-    count = 0
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
     except Exception:
         return
 
+    wallpapers = []
     for wp in data.get("data", []):
         path = wp.get("path", "")
         if not path:
             continue
-        thumb = wp.get("thumbs", {}).get("large", "")
-        title = wp.get("id", "")
-        w = wp.get("dimension_x", 0)
-        h = wp.get("dimension_y", 0)
+        wallpapers.append({
+            "id": wp.get("id", ""),
+            "path": path,
+            "thumb": wp.get("thumbs", {}).get("large", ""),
+            "w": wp.get("dimension_x", 0),
+            "h": wp.get("dimension_y", 0),
+        })
 
+    # Fetch tags in parallel (max 10 concurrent to respect rate limits)
+    titles = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_id = {
+            executor.submit(_fetch_wallhaven_tags, wp["id"]): wp["id"]
+            for wp in wallpapers
+        }
+        for future in concurrent.futures.as_completed(future_to_id):
+            wp_id = future_to_id[future]
+            titles[wp_id] = future.result()
+
+    for wp in wallpapers:
         result = {
-            "url": path,
-            "thumb": thumb,
-            "title": title,
-            "w": w,
-            "h": h,
+            "url": wp["path"],
+            "thumb": wp["thumb"],
+            "title": titles.get(wp["id"], str(wp["id"])),
+            "w": wp["w"],
+            "h": wp["h"],
             "source": "wh"
         }
         if output is not None:
@@ -288,6 +316,54 @@ def search_reddit_gif(query, page=1, max_results=30, output=None):
         else:
             print(json.dumps(result), flush=True)
 
+def search_wpe(query, page=1, max_results=30, output=None):
+    """Search Steam Workshop for Wallpaper Engine items"""
+    params = {
+        "appid": "431960",
+        "searchtext": query,
+        "browsesort": "textsearch",
+        "section": "readytouseitems",
+        "actualsort": "textsearch",
+        "p": str(page),
+    }
+    url = "https://steamcommunity.com/workshop/browse/?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+    })
+
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = resp.read().decode()
+    except Exception:
+        return
+    
+    count = 0
+    for match in re.finditer(
+        r'data-publishedfileid="(\d+)".*?'
+        r'workshopItemPreviewImage\s[^"]*"\s+src="([^"]+)".*?'
+        r'workshopItemTitle[^>]*>([^<]+)<',
+        body, re.DOTALL
+    ):
+        wpe_id = match.group(1)
+        thumb = match.group(2)
+        title = match.group(3).strip()
+
+        result = {
+            "url": wpe_id,
+            "thumb": thumb,
+            "title": title,
+            "w": 0,
+            "h": 0,
+            "source": "wpe"
+        }
+        if output is not None:
+            output.append(result)
+        else:
+            print(json.dumps(result), flush=True)
+        count += 1
+        if count >= max_results:
+            break
+
 def search_reddit(query, page=1, max_results=30, output=None):
     """Search r/Wallpapers + r/Wallpaper via Reddit JSON API. """
     import os
@@ -378,7 +454,7 @@ def search_reddit(query, page=1, max_results=30, output=None):
 
 def search_all(query, page=1, max_results=30):
     """Run ALL engines in parallel (images + GIF), interleaved."""
-    buckets = {"wh": [], "a": [], "r": [], "ag": [], "rg": []}
+    buckets = {"wh": [], "a": [], "r": [], "ag": [], "rg": [], "wpe": []}
 
     def _safe_run(fn, bucket, *args, **kwargs):
         try:
@@ -388,15 +464,16 @@ def search_all(query, page=1, max_results=30):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
-            executor.submit(_safe_run, search_wallhaven, buckets["wh"], query, page, max_results),
-            executor.submit(_safe_run, search_alphacoders, buckets["a"], query, page, max_results),
-            executor.submit(_safe_run, search_reddit, buckets["r"], query, page, max_results),
-            executor.submit(_safe_run, search_alphacoders_gif, buckets["ag"], query, page, max_results),
-            executor.submit(_safe_run, search_reddit_gif, buckets["rg"], query, page, max_results),
+            executor.submit(_safe_run, search_wallhaven,        buckets["wh"],  query, page, max_results),
+            executor.submit(_safe_run, search_alphacoders,      buckets["a"],   query, page, max_results),
+            executor.submit(_safe_run, search_reddit,           buckets["r"],   query, page, max_results),
+            executor.submit(_safe_run, search_alphacoders_gif,  buckets["ag"],  query, page, max_results),
+            executor.submit(_safe_run, search_reddit_gif,       buckets["rg"],  query, page, max_results),
+            executor.submit(_safe_run, search_wpe,              buckets["wpe"], query, page, max_results),
         ]
         concurrent.futures.wait(futures)
 
-    sources = [buckets["wh"], buckets["a"], buckets["r"], buckets["ag"], buckets["rg"]]
+    sources = [buckets["wh"], buckets["a"], buckets["r"], buckets["ag"], buckets["rg"], buckets["wpe"]]
     max_len = max((len(s) for s in sources), default=0)
     for i in range(max_len):
         for src in sources:
@@ -431,7 +508,7 @@ def search_all_img(query, page=1, max_results=30):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: search-wallpapers.py <query> [page]", file=sys.stderr)
-        print("  Prefixes: @wh (Wallhaven), @a (Alphacoders), @r (Reddit), @gif (GIFs), @img (images only)", file=sys.stderr)
+        print("  Prefixes: @wh (Wallhaven), @a (Alphacoders), @r (Reddit), @wpe (Workshop), @gif (GIFs), @img (images only)", file=sys.stderr)
         print(" No prefix: all engines in parallel", file=sys.stderr)
         sys.exit(1)
 
@@ -449,5 +526,7 @@ if __name__ == "__main__":
         search_reddit_gif(query[5:].strip(), page=page)
     elif query.startswith("@img "):
         search_all_img(query[5:].strip(), page=page)
+    elif query.startswith("@wpe "):
+        search_wpe(query[5:].strip(), page=page)
     else:
         search_all(query, page=page)

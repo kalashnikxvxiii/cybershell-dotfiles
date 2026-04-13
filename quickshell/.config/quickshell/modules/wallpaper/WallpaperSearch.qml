@@ -14,6 +14,7 @@ Item {
     property string currentQuery:       ""
     property bool   _prefixGlitching:   false
     property bool   _updatingPrefix:    false
+    property bool   isLocalFilter:      _activePrefix === "#"
     property bool   searching:          false
     property bool   expanded:           false
     property bool   hasMore:            true
@@ -21,22 +22,37 @@ Item {
     property int    currentPage:        1
 
     // ── Prefix system ────────────────────────────────────
-    readonly property var prefixes: ["@wh", "@a", "@r", "@gif", "@img"]
+    readonly property var prefixes: ["@wh", "@a", "@r", "@wpe", "@gif", "@img", "#"]
     readonly property var prefixColors: ({
         "@wh":      CP.cyan,
         "@a":       CP.yellow,
         "@r":       CP.magenta,
+        "@wpe":     CP.teal,
         "@gif":     CP.neon,
-        "@img":     CP.cyan
+        "@img":     CP.cyan,
+        "#":        CP.amber
     })
 
 
     signal resultClicked(string thumbPath, string fullUrl)
+    signal localFilterChanged(string keywords)
     signal firstResultReady()
 
     function focusInput() {
         _placeholderPrefix = _randomPlaceholder()
         searchInput.forceActiveFocus()
+    }
+
+    function closeSearch() {
+        _activePrefix = ""
+        _placeholderPrefix = ""
+        if (searching) {
+            controlProc.running = true
+            searching = false
+        }
+        searchResultsModel.clear()
+        searchInput.text = ""
+        expanded = false
     }
 
     function loadMore() {
@@ -51,6 +67,12 @@ Item {
 
     function submitSearch() {
         if (searchInput.text.trim() === "" && _activePrefix) return
+        if (_activePrefix === "#") {
+            localFilterChanged(searchInput.text.trim())
+            searchInput.focus = false
+            root.parent.forceActiveFocus()
+            return
+        }
         currentQuery = _activePrefix !== ""
                     ? _activePrefix + " " + searchInput.text.trim()
                     : searchInput.text.trim()
@@ -74,7 +96,7 @@ Item {
         if (_updatingPrefix) return
         var txt = searchInput.text
         // If prefix already active and text doeasn't start with @, keep it
-        if (_activePrefix !== "" && !txt.startsWith("@")) return
+        if (_activePrefix !== "" && _activePrefix !== "#" && !txt.startsWith("@")) return
         // Check for completed prefix (prefix + space)
         for (var i = 0; i < prefixes.length; i++) {
             if (txt.startsWith(prefixes[i] + " ")) {
@@ -89,6 +111,19 @@ Item {
                 return
             }
         }
+        // Special: # prefix activates immediately (no space needed)
+        if (txt.startsWith("#")) {
+            _updatingPrefix = true
+            searchInput.text = txt.substring(1)
+            _updatingPrefix = false
+            if (_activePrefix !== "#") {
+                _activePrefix = "#"
+                placeholderPrefix = ""
+                prefixGlitchAnim.restart()
+            }
+            localFilterChanged(searchInput.text)
+            return
+        }
         // Check for partial match
         if (txt.startsWith("@") && txt.indexOf(" ") === -1) {
             for (var j = 0; j < prefixes.length; j++) {
@@ -98,6 +133,11 @@ Item {
                     return
                 }
             }
+        }
+        // Live local filter update
+        if (_activePrefix === "#") {
+            localFilterChanged(txt)
+            return
         }
         _placeholderPrefix = ""
         _activePrefix = ""
@@ -158,7 +198,13 @@ Item {
             id: prefixBadge
             x: 0
             anchors.verticalCenter: parent.verticalCenter
-            width: _activePrefix !== "" ? prefixMeasure.implicitWidth + 10 : 0
+            width: {
+                if (_activePrefix === "#")
+                    return hashMeasure.implicitWidth + 14
+                if (_activePrefix !== "")
+                    return prefixMeasure.implicitWidth + 10
+                return 0
+            }
             height: 20
             radius: 3
             color: _activePrefix !== "" ? CP.alpha(prefixColors[_activePrefix] || CP.cyan, 0.15) : "transparent"
@@ -171,17 +217,39 @@ Item {
 
             Text {
                 anchors.centerIn: parent
-                text: _activePrefix
+                text: _activePrefix === "#" ? "# " +searchInput.text : _activePrefix 
                 font.family: "Oxanium"
                 font.pixelSize: 12
                 font.letterSpacing: 1
                 color: prefixColors[_activePrefix] || CP.cyan
+                visible: _activePrefix !== "#"
+            }
+
+            Text {
+                id: hashLabel
+                anchors.left: parent.left
+                anchors.leftMargin: 5
+                anchors.verticalCenter: parent.verticalCenter
+                text: "#"
+                font.family: "Oxanium"
+                font.pixelSize: 12
+                font.letterSpacing: 1
+                color: prefixColors["#"] || CP.cyan
+                visible: _activePrefix === "#"
             }
 
             Text {
                 id: prefixMeasure
                 visible: false
                 text: _activePrefix + " "
+                font.family: "Oxanium"
+                font.pixelSize: 12
+            }
+
+            Text {
+                id: hashMeasure
+                visible: false
+                text: "# " + searchInput.text
                 font.family: "Oxanium"
                 font.pixelSize: 12
             }
@@ -202,10 +270,27 @@ Item {
             color: CP.alpha(Colours.textMuted, 0.35)
         }
 
+        // Instructional placeholder when input is empty
+        Text {
+            id: emptyPlaceholder
+            x: searchInput.x
+            anchors.verticalCenter: searchInput.verticalCenter
+            visible: root.expanded && searchInput.text === "" && _activePrefix === ""
+            text: "@wh @a @r @gif @img @wpe #filter"
+            font.family: "Oxanium"
+            font.pixelSize: 12
+            font.letterSpacing: 1
+            color: CP.alpha(Colours.textMuted, 0.3)
+        }
+
         // Text input — positioned after badge
         TextInput {
             id: searchInput
-            x: _activePrefix !== "" ? prefixBadge.width + 4 : 0
+            x: {
+                if (_activePrefix === "#") return hashLabel.x + hashLabel.implicitWidth + 2
+                if (_activePrefix !== "") return prefixBadge.width + 4
+                return 0
+            }
             width: parent.width - x - submitBtn.width - stopBtn.width - 12
             height: parent.height
             verticalAlignment: TextInput.AlignVCenter
@@ -226,13 +311,6 @@ Item {
                 event.accepted = true
             }
 
-            Keys.onEscapePressed: {
-                root._activePrefix = ""
-                root._placeholderPrefix = ""
-                root.expanded = false
-                root.parent.forceActiveFocus()
-            }
-
             Keys.onRightPressed: event => {
                 if (searchInput.cursorPosition === searchInput.text.length && root._placeholderPrefix !== "") {
                     root._autocompletePrefix()
@@ -243,6 +321,22 @@ Item {
             }
 
             Keys.onLeftPressed: event => { event.accepted = true }
+
+            Keys.onPressed: event => {
+                if (event.key === Qt.Key_Escape) {
+                    root.closeSearch()
+                    root.parent.forceActiveFocus()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Backspace && searchInput.cursorPosition === 0 && root._activePrefix !== "") {
+                    prefixRemoveAnim.start()
+                    root._updatingPrefix = true
+                    root._activePrefix = ""
+                    root._placeholderPrefix = root._randomPlaceholder()
+                    root.localFilterChanged("")
+                    root._updatingPrefix = false
+                    event.accepted = true
+                }
+            }
 
             onTextChanged: root._updatePrefixState()
         }
@@ -308,6 +402,30 @@ Item {
         PropertyAction { target: prefixBadge; property: "visible"; value: true }
     }
 
+    // Prefix removal glitch animation
+    SequentialAnimation {
+        id: prefixRemoveAnim
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: true }
+        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.magenta }
+        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.magenta, 0.3) }
+        PauseAnimation { duration: 50 }
+
+        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.yellow }
+        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.yellow, 0.2) }
+        PauseAnimation { duration: 50 }
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: true }
+        PauseAnimation { duration: 40 }
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: true }
+        PropertyAction { target: prefixBadge; property: "color"; value: "transparent" }
+        PropertyAction { target: prefixBadge; property: "border.color"; value: "transparent" }
+        PauseAnimation { duration: 30 }
+
+        PropertyAction { target: prefixBadge; property: "visible"; value: false }
+    }
+
     Text {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
@@ -331,6 +449,7 @@ Item {
         running: false
         stdout: SplitParser {
             onRead: data => {
+                if (!root.expanded) return
                 if (data === "DONE") {
                     root.searching = false
                     if (root._pageResultCount === 0) root.hasMore = false
@@ -341,8 +460,10 @@ Item {
                     var parts = data.substring(6).split("|")
                     if (parts.length >= 3) {
                         var isFirst = searchResultsModel.count === 0
+                        var displayName = parts.length >= 7 && parts[6] !== ""
+                                        ? parts[6] : parts[0]
                         searchResultsModel.append({
-                            fname: parts[0],
+                            fname: displayName,
                             thumbPath: parts[1],
                             fullUrl: parts[2],
                             source: parts.length >= 4 ? parts[3] : "wh",

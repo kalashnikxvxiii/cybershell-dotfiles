@@ -1,8 +1,7 @@
 #!/bin/bash
 
-STEAM_BASE="/home/kalashnikxv/.var/app/com.valvesoftware.Steam"
 WALLPAPER_DIR="$HOME/Pictures/wallpapers"
-WPE_DIR="$STEAM_BASE/.local/share/Steam/steamapps/workshop/content/431960"
+WPE_DIR="$HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960"
 WALLUST="$HOME/.cargo/bin/wallust"
 STATE_DIR="$HOME/.cache/wallpaper-themer"
 AUTO_INTERVAL=300
@@ -440,7 +439,7 @@ start_screen() {
         local preview
         preview=$(get_wpe_preview "$entry")
         if $was_wpe; then
-            [ -n "$preview" ] && awww img "$preview" --outputs "$screen" --transition-type none &
+            [ -n "$preview" ] && awww img "$preview" --outputs "$screen" --transition-type none
         else
             [ -n "$preview" ] && awww_transition "$screen" "$preview"
         fi
@@ -454,6 +453,7 @@ start_screen() {
         # Health check: se WPE crasha entro 3s, riprova con un altro wallpaper
         _wpe_health_check "$screen" "$entry" &
     else
+        awww img "$entry" --outputs "$screen" --transition-type none
         kill_wpe_on_screen "$screen"
         awww_transition "$screen" "$entry"
     fi

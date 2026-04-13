@@ -18,21 +18,47 @@ Scope {
     
     required property var screen
 
-    property string originalWallpaper:  ""
-    property string downloadingUrl:     ""
-    property string _currentRes:        ""
-    property bool   wpePreviewActive:   false
-    property bool   deleteDialogOpen:   false
-    property bool   previewShown:       false
-    property bool   downloading:        false
-    property bool   _skipInit:          false
-    property real   downloadProgress:   0
-    property var    searchResultsModel: null
-    property var    localBasenames:     ({})
-    property var    allEntries:         []
-    property int    downloadCount:      0
+    property string _pendingDownloadTitle:  ""
+    property string localFilterKeywords:    ""
+    property string _pendingDownloadUrl:    ""
+    property string originalWallpaper:      ""
+    property string downloadingTitle:       ""
+    property string downloadingUrl:         ""
+    property string _currentRes:            ""
+    property bool   wpePreviewActive:       false
+    property bool   deleteDialogOpen:       false
+    property bool   previewShown:           false
+    property bool   downloading:            false
+    property bool   _skipInit:              false
+    property real   downloadProgress:       0
+    property var    searchResultsModel:     null
+    property var    localBasenames:         ({})
+    property var    allEntries:             []
+    property int    downloadCount:          0
 
     ListModel { id: wallpaperModel }
+
+    Process {
+        id: steamAuthProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.indexOf("Waiting for confirmation") !== -1) {
+                    steamAuthDialog.step = "confirming"
+                } else if (data.indexOf("Unloading Steam API") !== -1 && steamAuthDialog.step === "confirming") {
+                    steamAuthDialog.step = "success"
+                } else if (data.indexOf("Invalid Password") !== -1) {
+                    steamAuthDialog.step = "error"
+                    steamAuthDialog.errorText = "INVALID PASSWORD"
+                } else if (data.indexOf("Rate Limit") !== -1) {
+                    steamAuthDialog.step = "error"
+                    steamAuthDialog.errorText = "RATE LIMITED — WAIT"
+                }
+            }
+        }
+    }
+
 
     Process {
         id: resProc
@@ -51,9 +77,17 @@ Scope {
             _currentRes = ""
             return
         }
-        var path = wallpaperModel.get(idx).path
-        resProc.command = ["bash", "-c",
-            "identify -format '%wx%h' '" + path + "' 2>/dev/null | head -1"]
+        var entry = wallpaperModel.get(idx)
+        if (entry.source === "wpe" && entry.videoFile !== "") {
+            resProc.command = ["bash", "-c",
+                "ffprobe -v quiet -show_entries stream=width,height -of csv=p=0 '" +entry.videoFile + "' 2>/dev/null | head -1 | tr ',' 'x'"]
+        } else if (entry.source === "wpe") {
+            _currentRes = ""
+            return
+        } else {
+            resProc.command = ["bash", "-c",
+                "identify -format '%wx%h\\n' '" + entry.path + "[0]' 2>/dev/null | head -1"]
+        }
         resProc.running = true
     }
 
@@ -98,6 +132,23 @@ Scope {
         }
     }
 
+    // Find the wallpaperModel index matching a basename or WPE id
+    function findLocalIndex(identifier, isWpe) {
+        for (var i = 0; i < wallpaperModel.count; i++) {
+            var entry = wallpaperModel.get(i)
+            if (isWpe) {
+                // For WPE, compare the workshop ID (basename of path)
+                var entryId = entry.path.substring(entry.path.lastIndexOf("/") + 1)
+                if (entry.source === "wpe" && entryId === identifier) return i
+            } else {
+                // For regular wallpapres, compare the filename
+                var entryBn = entry.path.substring(entry.path.lastIndexOf("/") + 1)
+                if (entryBn === identifier) return i
+            }
+        }
+        return -1
+    }
+
     function applyWallpaper() {
         var idx = carousel.currentIndex
         if (idx < 0 || idx >= wallpaperModel.count) return
@@ -105,7 +156,39 @@ Scope {
 
         // If search preview is active, download and add to carousel
         if (carousel.searchFocused && carousel.selectedSearchUrl !== "") {
-            downloadAndAdd(carousel.selectedSearchUrl, "")
+            var sr = filterBar.resultsModel.get(carousel.selectedSearchIdx)
+            var dlTitle = sr ? sr.fname : ""
+            var dlSource = sr ? sr.source : ""
+
+            // Guard: check if alreay downloaded and navigate to it instead
+            var identifier
+            var isWpe = (dlSource === "wpe")
+            if (isWpe) {
+                identifier = carousel.selectedSearchUrl // WPE id
+            } else {
+                identifier = carousel.selectedSearchUrl.substring(
+                    carousel.selectedSearchUrl.lastIndexOf("/") + 1
+                )
+            }
+
+            if (root.localBasenames[identifier] === true)  {
+                var localIdx = root.findLocalIndex(identifier, isWpe)
+                if (localIdx >= 0) {
+                    // Close search panel, navigate to the existing card
+                    filterBar.closeSearch()
+                    carousel.searchFocused = false
+                    carousel.selectedSearchIdx = -1
+                    carousel.selectedSearchUrl = ""
+                    carousel.currentIndex = localIdx
+                    carousel.updateCards()
+                    // Trigger glitch animation on the matched card for visual feedback
+                    var matchedCard = repeater.itemAt(localIdx)
+                    if (matchedCard && matchedCard.reveal) matchedCard.reveal()
+                    return
+                }
+            }
+
+            downloadAndAdd(carousel.selectedSearchUrl, "", dlTitle, dlSource)
             return
         }
 
@@ -138,13 +221,57 @@ Scope {
         running: false
         stdout: SplitParser {
             onRead: data => {
+                if (data.startsWith("ERROR:")) {
+                    root.downloading = false
+                    root.downloadProgress = 0
+                    if (data === "ERROR:STEAM_AUTH") {
+                        root._pendingDownloadUrl = root.downloadingUrl
+                        root._pendingDownloadTitle = root.downloadingTitle
+                        root.downloadingUrl = ""
+                        steamAuthDialog.step = "password"
+                        steamAuthDialog.open = true
+                    } else {
+                        root.downloadingUrl = ""
+                    }
+                    return
+                }
+
                 if (data.startsWith("PROGRESS:")) {
                     root.downloadProgress = parseInt(data.substring(9)) / 100
+                } else if (data.startsWith("SAVED_WPE:")) {
+                    var wpeParts = data.substring(10).split("|")
+                    var wpePath = wpeParts[0]
+                    var wpeType = wpeParts.length >= 2 ? wpeParts[1] : "scene"
+                    var wpeVideoFile = wpeParts.length >= 3 ? wpeParts[2] : ""
+                    var wpeThumb = wpeParts.length >= 4 ? wpeParts[3] : wpePath + "/preview.jpg"
+                    // Read title from project.json
+                    root._skipInit = true
+                    var wpeId = wpePath.substring(wpePath.lastIndexOf("/") + 1)
+                    wallpaperModel.append({
+                        path: wpePath,
+                        thumb: wpePath,
+                        title: root.downloadingTitle || wpeId,
+                        source: "wpe",
+                        type: wpeType,
+                        color: "#888888",
+                        videoFile: wpeVideoFile
+                    })
+                    root._skipInit = false
+                    carousel.updateCards()
+                    root.downloading = false
+                    root.downloadProgress = 0
+                    root.downloadingUrl = ""
+                    root.downloadCount++
+                    completionGlitch.start()
+                    // Regenerate catalog in background so new WPE persists
+                    bgRefreshProc.running = true
                 } else if (data.startsWith("SAVED:")) {
                     var savedPath = data.substring(6)
                     // Add to catalog and carousel
                     var fname = savedPath.substring(savedPath.lastIndexOf("/") + 1)
-                    var title = fname.substring(0, fname.lastIndexOf("."))
+                    var title = root.downloadingTitle !== ""
+                                ? root.downloadingTitle
+                                : fname.substring(0, fname.lastIndexOf("."))
                     root._skipInit = true
                     wallpaperModel.append({
                         path: savedPath,
@@ -162,6 +289,15 @@ Scope {
                     lb[bn] = true
                     root.localBasenames = lb
                     root.downloadCount++
+                    if (root.downloadingTitle !== "") {
+                        var bn = savedPath.substring(savedPath.lastIndexOf("/") + 1)
+                        var metaKey = bn.substring(0, bn.lastIndexOf("."))
+                        metadataProc.command = ["bash", "-c",
+                            "jq --arg k '" + metaKey + "' --arg v '" + root.downloadingTitle.replace(/'/g, "'\\''") + "' '. + {($k): $v}' " +
+                            "\"$HOME/.cache/wallpaper-picker/metadata.json\" > /tmp/meta_tmp.json && " +
+                            "mv /tmp/meta_tmp.json \"$HOME/.cache/wallpaper-picker/metadata.json\""]
+                        metadataProc.running = true
+                    }
                     root.downloading = false
                     completionGlitch.start()
                     root.downloadProgress = 0
@@ -171,10 +307,40 @@ Scope {
         }
     }
 
-    function downloadAndAdd(url, thumbPath) {
-        root.downloading        = true
+    function downloadAndAdd(url, thumbPath, title, source) {
+        root.downloadingTitle   = title || ""
         root.downloadProgress   = 0
-        root.downloadingUrl    = url
+        root.downloadingUrl     = url
+        root.downloading        = true
+
+        if (source === "wpe") {
+            downloadProc.command = ["bash", "-c",
+                "REAL_HOME=\"$HOME\"; " +
+                "printf 'PROGRESS:10\\n'; " +
+                "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login banditobad " +
+                "+workshop_download_item 431960 " + url + " +quit > /tmp/steamcmd_out.txt 2>&1; " +
+                "if grep -q 'Invalid Password\\|Cached credentials not found\\|Steam Guard\\|Two-factor' /tmp/steamcmd_out.txt; then " +
+                "  printf 'ERROR:STEAM_AUTH\\n'; exit 1; fi; " +
+                "if ! grep -q 'Success. Downloaded' /tmp/steamcmd_out.txt; then " +
+                "  printf 'ERROR:STEAM_FAIL\\n'; exit 1; fi; " +
+                "printf 'PROGRESS:100\\n'; " +
+                "WPE_DIR=\"$REAL_HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960/" + url + "\"; " +
+                "if [ -d \"$WPE_DIR\" ] && [ -f \"$WPE_DIR/project.json\" ]; then " +
+                "  TYPE=$(jq -r '.type // \"scene\"' \"$WPE_DIR/project.json\" 2>/dev/null | tr '[:upper:]' '[:lower:]'); " +
+                "  VFILE=''; " +
+                "  if [ \"$TYPE\" = \"video\" ]; then " +
+                "    VFILE=$(jq -r '.file // \"\"' \"$WPE_DIR/project.json\" 2>/dev/null); " +
+                "    [ -n \"$VFILE\" ] && VFILE=\"$WPE_DIR/$VFILE\"; " +
+                "  fi; " +
+                "  THUMB=\"$REAL_HOME/.cache/wallpaper-picker/thumbs/" + url + ".jpg\"; " +
+                "  PREV=$(find \"$WPE_DIR\" -name 'preview.*' -type f 2>/dev/null | head -1); " +
+                "  [ -n \"$PREV\" ] && { magick \"${PREV}[0]\" -resize x420 -quality 70 \"$THUMB\" 2>/dev/null || " +
+                "    ffmpeg -y -i \"$PREV\" -vframes 1 -q:v 2 -vf 'scale=-1:420' \"$THUMB\" 2>/dev/null; }; " +
+                "  printf 'SAVED_WPE:%s|%s|%s|%s\\n' \"$WPE_DIR\" \"$TYPE\" \"$VFILE\" \"$THUMB\"; " +
+                "fi"]
+            downloadProc.running = true
+            return
+        }
         downloadProc.command    = ["bash", "-c",
             "URL='" + url + "'; " +
             "DEST=\"$HOME/Pictures/wallpapers/$(basename \"$URL\")\"; " +
@@ -197,6 +363,12 @@ Scope {
         running: false
     }
 
+    Process {
+        id: metadataProc
+        command: ["true"]
+        running: false
+    }
+
     function deleteCurrentWallpaper() {
         var idx = carousel.currentIndex
         if (idx < 0 || idx >= wallpaperModel.count) return
@@ -204,7 +376,7 @@ Scope {
         var path = entry.path
 
         // Remove file
-        deleteProc.command = ["rm", "-f", path]
+        deleteProc.command = ["rm", "-rf", path]
         deleteProc.running = true
 
         // Remove from model
@@ -222,6 +394,9 @@ Scope {
         if (carousel.currentIndex >= wallpaperModel.count)
             carousel.currentIndex = wallpaperModel.count - 1
         carousel.updateCards()
+
+        // Regenerate catalog to persist deletion
+        bgRefreshProc.running = true
 
         root.deleteDialogOpen = false
     }
@@ -264,10 +439,15 @@ Scope {
 
     function updateSearchPreview(thumbPath, fullUrl) {
         var isGif = fullUrl.toLowerCase().endsWith(".gif")
+        var isWpe = /^\d+$/.test(fullUrl)
         // Thumbnail locale subito (instant)
         searchPreviewThumb.source = thumbPath ? "file://" + thumbPath : ""
-        // Full-res in background
-        if (isGif) {
+        // Full-res in background (skip for WPE IDs - thumbnail is all we have)
+        if (isWpe) {
+            searchPreviewImage.source = ""
+            var gifPath = thumbPath.replace(".jpg", ".gif")
+            searchPreviewGif.source = gifPath ? "file://" + gifPath : ""
+        } else if (isGif) {
             searchPreviewImage.source = ""
             searchPreviewGif.source = fullUrl
         } else {
@@ -321,10 +501,37 @@ Scope {
         color: "transparent"
         visible: root.isActiveScreen
 
+        MouseArea {
+            id: hoverTracker
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
+        }
+
         Item {
             id: mainLayout
             anchors.fill: parent
             focus: true
+            opacity: root.previewShown && !_hoveringElement ? 0.3 : 1.0
+
+            Behavior on opacity { NumberAnimation { duration: 300 } }
+
+            property real _mx: hoverTracker.mouseX
+            property real _my: hoverTracker.mouseY
+            property bool _hoveringElement: {
+                if (!hoverTracker.containsMouse) return false
+                var mx = _mx
+                var my = _my
+                var items = [filterBar, carousel, infoBar, searchResultsPanel, searchPreviewCard, deleteDialog]
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i]
+                    if (!item.visible) continue
+                    var p = mapToItem(item, mx, my)
+                    if (p.x >= 0 && p.x <= item.width && p.y >=0 && p.y <= item.height)
+                        return true
+                }
+                return false
+            }
 
             WallpaperFilterBar {
                 id: filterBar
@@ -358,7 +565,10 @@ Scope {
                 property int            visibleCount:       0
                 property int            rapidCount:         0
 
-                onCurrentIndexChanged: root.updateCurrentRes()
+                onCurrentIndexChanged: {
+                    root.updateCurrentRes()
+                }
+
 
                 onSelectedSearchIdxChanged: {
                     if (selectedSearchIdx >= 0 && filterBar.resultsModel && filterBar.resultsModel.count > 0) {
@@ -650,8 +860,8 @@ Scope {
                 Connections {
                     target: WallpaperState
                     function onMacroFilterChanged() { filterUpdateTimer.restart() }
+                    function onColorFilterChanged() { filterUpdateTimer.restart() }
                     function onSubFilterChanged()   { filterUpdateTimer.restart() }
-                    function onColorFilterChanged()  { filterUpdateTimer.restart() }
                 }
 
                 Connections {
@@ -666,6 +876,25 @@ Scope {
                                 root.updateSearchPreview(sr.thumbPath, sr.fullUrl)
                                 carousel.selectedSearchUrl = sr.fullUrl
                             }
+                        }
+                    }
+                }
+
+                Connections {
+                    target: filterBar
+                    function onLocalFilterChanged(keywords) {
+                        root.localFilterKeywords = keywords
+                        carousel.refilterCards()
+                    }
+                }
+
+                Connections {
+                    target: filterBar
+                    function onSearchExpandedChanged() {
+                        if (!filterBar.searchExpanded) {
+                            carousel.searchFocused = false
+                            carousel.selectedSearchIdx = -1
+                            carousel.selectedSearchUrl = ""
                         }
                     }
                 }
@@ -690,6 +919,14 @@ Scope {
                             if (m === "wpe" && source !== "wpe") return false
                             if (s !== "" && type !== s) return false
                             if (c !== "" && !WallpaperState._colorMatches(color, c)) return false
+                            // Local keyword filter
+                            if (root.localFilterKeywords !== "") {
+                                var kws = root.localFilterKeywords.toLowerCase().split(" ")
+                                var t = title.toLowerCase()
+                                for (var i = 0; i < kws.length; i++) {
+                                    if (kws[i] !== "" && t.indexOf(kws[i]) === -1) return false
+                                }
+                            }
                             return true
                         }
 
@@ -946,6 +1183,7 @@ Scope {
 
             // Info bar
             Item {
+                id: infoBar
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 260
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -1031,6 +1269,7 @@ Scope {
                 z: 300
                 visible: root.deleteDialogOpen
                 opacity: root.deleteDialogOpen ? 1 : 0
+
                 Behavior on opacity { NumberAnimation { duration: 150 } }
 
                 CutShape {
@@ -1143,6 +1382,48 @@ Scope {
                 }
             }
 
+            SteamAuthDialog {
+                id: steamAuthDialog
+                anchors.centerIn: parent
+                width: 380
+                height: 200
+                z: 350
+
+                onLoginRequested: (password) => {
+                    steamAuthDialog.step = "working"
+                    steamAuthProc.command = ["bash", "-c",
+                        "HOME=$HOME/.config/steamcmd-isolated steamcmd +login banditobad " + password + " +quit 2>&1 | tr -d '\\033' | sed 's/\\[0m//g'"]
+                    steamAuthProc.running = true
+                }
+
+                onClosed: {
+                    root._pendingDownloadUrl = ""
+                    root._pendingDownloadTitle = ""
+                }
+            }
+
+            Timer {
+                id: steamAuthCloseTimer
+                interval: 1000
+                onTriggered: {
+                    steamAuthDialog.open = false
+                    if (root._pendingDownloadUrl !== "") {
+                        downloadAndAdd(root._pendingDownloadUrl, "", root._pendingDownloadTitle, "wpe")
+                        root._pendingDownloadUrl = ""
+                        root._pendingDownloadTitle = ""
+                    }
+                }
+            }
+
+            Connections {
+                target: steamAuthDialog
+                function onStepChanged() {
+                    if (steamAuthDialog.step === "success")
+                        steamAuthCloseTimer.restart()
+                }
+            }
+
+
             Keys.onPressed: event => {
                 switch (event.key) {
                     case Qt.Key_R:
@@ -1207,12 +1488,9 @@ Scope {
                         }
                         if (carousel.searchFocused) {
                             carousel.searchFocused = false
-                            // Clear search preview from current card
-                            var escCard = repeater.itemAt(carousel.currentIndex)
-                            if (escCard) {
-                                escCard.searchPreviewThumb = ""
-                                escCard.searchPreviewUrl = ""
-                            }
+                            carousel.selectedSearchIdx = -1
+                            carousel.selectedSearchUrl = ""
+                            filterBar.closeSearch()
                             event.accepted = true
                             break
                         }
@@ -1220,6 +1498,7 @@ Scope {
                             WallpaperState.subFilter !== "" ||
                             WallpaperState.colorFilter !== "") {
                             WallpaperState.resetFilters()
+                            root.localFilterKeywords = ""
                         } else {
                             root.restoreWallpaper()
                             WallpaperState.closePicker()
@@ -1246,15 +1525,15 @@ Scope {
                         var upEntry = wallpaperModel.get(upIdx)
                         var upCard = repeater.itemAt(upIdx)
 
-                        if (root.previewShown && upCard && upCard.videoPlaying
-                            && upEntry.type === "video" && !root.wpePreviewActive) {
-                            // Second press: WPE preview (temporary, not applied)
+                        if (upEntry.source === "wpe") {
+                            // WPE: always use live video preview
+                            root.previewShown = true
                             root.wpePreviewActive = true
                             Quickshell.execDetached(["bash", "-c",
                                 root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
                                 + root.screen.name + " '" + upEntry.path + "'"])
-                        } else if (!root.previewShown) {
-                            // First press: static preview
+                        } else {
+                            // Static wallpaper preview
                             root.previewShown = true
                             root.wpePreviewActive = false
                             Quickshell.execDetached(["bash", "-c",
@@ -1267,6 +1546,21 @@ Scope {
                         if (!carousel.searchFocused && filterBar.resultsModel && filterBar.resultsModel.count > 0) {
                             carousel.searchFocused = true
                             if (carousel.selectedSearchIdx < 0) carousel.selectedSearchIdx = 0
+                            event.accepted = true
+                            break
+                        }
+                        if (carousel.searchFocused && carousel.selectedSearchIdx >= 0
+                            && carousel.selectedSearchIdx < filterBar.resultsModel.count) {
+                            var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
+                            if (dlEntry) {
+                                root.previewShown = true
+                                root.wpePreviewActive = false
+                                Quickshell.execDetached(["bash", "-c",
+                                    "F=/tmp/qs-search-preview-$$-$RANDOM; " +
+                                    "curl -sL --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' && " +
+                                    root.scriptsDir + "/wallpaper-picker.sh preview "
+                                    + root.screen.name + " \"$F\""])
+                            }
                             event.accepted = true
                             break
                         }

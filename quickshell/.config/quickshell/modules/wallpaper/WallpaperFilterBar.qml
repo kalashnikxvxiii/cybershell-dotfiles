@@ -1,18 +1,20 @@
-import QtQuick
-import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
+import QtQuick.Layouts
+import QtQuick
 
 Item {
     id: root
     implicitHeight: 44
     implicitWidth: layout.implicitWidth + 24
 
-    readonly property alias resultsModel: wallpaperSearch.resultsModel
-    readonly property alias searchExpanded: wallpaperSearch.expanded
     readonly property alias searchInputFocused: wallpaperSearch.inputFocused
+    readonly property alias searchExpanded:     wallpaperSearch.expanded
+    readonly property alias isLocalFilter:      wallpaperSearch.isLocalFilter
+    readonly property alias resultsModel:       wallpaperSearch.resultsModel
     
     signal searchResultClicked(string thumbPath, string fullUrl)
+    signal localFilterChanged(string keywords)
     signal searchFirstResult()
 
     function activateSearch() {
@@ -22,6 +24,10 @@ Item {
 
     function loadMoreResults() {
         wallpaperSearch.loadMore()
+    }
+
+    function closeSearch() {
+        wallpaperSearch.closeSearch()
     }
 
     CutShape {
@@ -205,6 +211,7 @@ Item {
             id: wallpaperSearch
             Layout.preferredHeight: 32
             onFirstResultReady: root.searchFirstResult()
+            onLocalFilterChanged: keywords => root.localFilterChanged(keywords)
         }
     }
 }
