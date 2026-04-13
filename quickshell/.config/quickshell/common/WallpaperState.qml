@@ -1,14 +1,15 @@
 pragma Singleton
 
-import QtQuick
 import Quickshell.Io
+import QtQuick
+
 
 QtObject {
     id: root
 
     // ── Picker visibility ───────────────────────────────────
-    property bool pickerOpen: false
-    property string activeScreen: ""
+    property string activeScreen:   ""
+    property bool   pickerOpen:     false
 
     function togglePicker(screen) {
         if (pickerOpen) {
@@ -110,14 +111,39 @@ QtObject {
         return h >= bucket[0] || h < bucket[1]      // wrap-around (red)
     }
 
-    // ── Toggle via file watcher ─────────────────────────────
-    property var _toggleWatcher: FileView {
+    // ── Ensure toggle file exists before watcher starts ────────────────
+    property string _lastToggleContent: ""
+
+    Component.onCompleted: {
+        _toggleInitProc.running = true
+    }
+
+    property var _toggleInitProc: Process {
+        command: ["bash", "-c", "echo -n '' > /tmp/qs-wallpicker-toggle"]
+        running: false
+        onRunningChanged: {
+            if (!running) _togglePollTimer.running = true
+        }
+    }
+
+    property var _togglePollTimer: Timer {
+        interval: 150
+        repeat: true
+        running: false
+        onTriggered: {
+            _toggleReader.reload()
+        }
+    }
+
+    property var _toggleReader: FileView {
         path: "/tmp/qs-wallpicker-toggle"
-        watchChanges: true
-        onFileChanged: {
-            reload()
-            var screenName = text().trim()
-            if (screenName) root.togglePicker(screenName)
+        onLoaded: {
+            var content = text().trim()
+            if (content !== "" && content !==root._lastToggleContent) {
+                root._lastToggleContent = content
+                var screenName = content.split("_")[0]
+                root.togglePicker(screenName)
+            }
         }
     }
 }

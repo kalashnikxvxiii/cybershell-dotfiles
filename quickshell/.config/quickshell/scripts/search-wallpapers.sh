@@ -19,7 +19,7 @@ rm -f "$CONTROL"
 # Clear previous search results
 if [ "$PAGE" = "1" ]; then
     rm -f "$SEARCH_THUMBS"/*
-    > "$MAP_FILE"
+    true > "$MAP_FILE"
 fi
 
 python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" | while IFS= read -r line; do
@@ -38,6 +38,7 @@ python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" | while IFS= read -
 import sys,json; d=json.load(sys.stdin)
 print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h',0))
 ")"
+    title=$(echo "$line" | python3 -c "import sys,json; print(json.load(sys.stdin).get('title',''))" 2>/dev/null)
     [ -z "$url" ] && continue
 
     fname=$(echo "$url" | md5sum | cut -c1-16)
@@ -50,10 +51,14 @@ print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h'
         mime=$(file -b --mime-type "$thumb.tmp" 2>/dev/null)
         case "$mime" in
             image/jpeg|image/png|image/webp|image/gif)
-                magick "$thumb.tmp" -quality 85 "$thumb" 2>/dev/null
+                magick "$thumb.tmp[0]" -quality 85 "$thumb" 2>/dev/null
+                # Keep original GIF for animated preview (WPE thumbnails are animated GIFs)
+                if [ "$source" = "wpe" ] && [ "$mime" = "image/gif" ]; then
+                    cp "$thumb.tmp" "${thumb%.jpg}.gif"
+                fi
                 rm -f "$thumb.tmp"
                 echo "${fname}|${url}" >> "$MAP_FILE"
-                echo "THUMB:${fname}|${thumb}|${url}|${source}|${w}|${h}"
+                echo "THUMB:${fname}|${thumb}|${url}|${source}|${w}|${h}|${title}"
                 ;;
             *)
                 rm -f "$thumb.tmp" ;;

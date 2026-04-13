@@ -1,14 +1,16 @@
 #!/bin/bash
 # wallpaper-picker.sh - Catalog generation + toggle + preview for wallpaper picker
 
+WPE_DIR="$HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960"
 WALLPAPER_DIR="$HOME/Pictures/wallpapers"
-STEAM_BASE="$HOME/.var/app/com.valvesoftware.Steam"
-WPE_DIR="$STEAM_BASE/.local/share/Steam/steamapps/workshop/content/431960"
 CACHE_DIR="$HOME/.cache/wallpaper-picker"
+METADATA_FILE="$CACHE_DIR/metadata.json"
+CATALOG_FILE="$CACHE_DIR/catalog.jsonl"
+TOGGLE_FILE="/tmp/qs-wallpicker-toggle"
 THUMB_DIR="$CACHE_DIR/thumbs"
 COLOR_DIR="$CACHE_DIR/colors"
-TOGGLE_FILE="/tmp/qs-wallpicker-toggle"
-CATALOG_FILE="$CACHE_DIR/catalog.jsonl"
+
+[ -f "$METADATA_FILE" ] || echo '{}' > "$METADATA_FILE"
 
 mkdir -p "$THUMB_DIR" "$COLOR_DIR"
 
@@ -29,6 +31,23 @@ get_type_static() {
         gif|GIF) echo "gif" ;;
         *)       echo "image" ;;
     esac
+}
+
+get_title() {
+    local key="$1"
+    # Check metadata file first
+    local meta_title
+    meta_title=$(jq -r --arg k "$key" '.[$k] // ""' "$METADATA_FILE" 2>/dev/null)
+    if [ -n "$meta_title" ]; then
+        echo "$meta_title"
+        return
+    fi
+    # Clean up filename: remove wallhaven- prefix, resolution suffix, replace -_ with spaces
+    local clean="$key"
+    clean="${clean#wallhaven-}"
+    clean=$(echo "$clean" | sed -E 's/[_-]([0-9]{3,5}x[0-9]{3,5})$//')
+    clean=$(echo "$clean" | tr '_-' '  ')
+    echo "$clean"
 }
 
 json_escape() {
@@ -58,13 +77,17 @@ generate_thumb() {
                     ffmpeg -y -ss 5 -i "$entry/$file" -vframes 1 -q:v 2 \
                         -vf "scale=-1:420" "$thumb" 2>/dev/null
                 elif [ -f "$entry/preview.jpg" ]; then
-                    magick "$entry/preview.jpg" -resize x420 -quality 70 "$thumb" 2>/dev/null
+                    magick "$entry/preview.jpg[0]" -resize x420 -quality 70 "$thumb" 2>/dev/null || \
+                    ffmpeg -y -i "$entry/preview.jpg" -vframes 1 -q:v 2 -vf "scale=-1:420" "$thumb" 2>/dev/null
                 fi ;;
             *)
                 local preview=""
                 [ -f "$entry/preview.jpg" ] && preview="$entry/preview.jpg"
                 [ -z "$preview" ] && preview=$(find "$entry" -name "preview.*" -type f 2>/dev/null | head -1)
-                [ -n "$preview" ] && magick "$preview" -resize x420 -quality 70 "$thumb" 2>/dev/null ;;
+                if [ -n "$preview" ]; then
+                    magick "${preview}[0]" -resize x420 -quality 70 "$thumb" 2>/dev/null || \
+                    ffmpeg -y -i "$preview" -vframes 1 -q:v 2 -vf "scale=-1:420" "$thumb" 2>/dev/null
+                fi ;;
         esac
     else
         # Static file
@@ -80,7 +103,7 @@ generate_thumb() {
 # ── Color Extraction ─────────────────────────────────────────────────
 
 extract_color() {
-    local keys="$1" thumb="$2"
+    local key="$1" thumb="$2"
 
     # Check existing marker
     local existing
@@ -127,7 +150,8 @@ _generate_impl() {
         local thumb; thumb=$(generate_thumb "$entry" "$key")
         [ -z "$thumb" ] && continue
         local color; color=$(extract_color "$key" "$thumb")
-        local title; title=$(json_escape "${key}")
+        local raw_title; raw_title=$(get_title "$key")
+        local title; title=$(json_escape "$raw_title")
         local etype; etype=$(get_type_static "$entry")
         local videoFile=""
         [ "$etype" = "gif" ] && videoFile="$entry"
@@ -163,9 +187,7 @@ cmd_toggle() {
     local screen
     screen=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
     [ -z "$screen" ] && screen="DP-1"
-    > "$TOGGLE_FILE"
-    sleep 0.5
-    echo "$screen" > "$TOGGLE_FILE"
+    echo "${screen}_$(date +%s%N)" > "$TOGGLE_FILE"
 }
 
 cmd_preview() {
