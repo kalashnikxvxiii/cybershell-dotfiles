@@ -18,6 +18,7 @@ Item {
     property bool glitching: false
     property real offsetX: 2
     property real aberrationOpacity: 0.55
+    property real restOpacity:       0.0
 
     // ── Font (delegated to children) ──
     property alias font: _main.font
@@ -31,7 +32,7 @@ Item {
         x: root.glitching ? -root.offsetX : 0
         text: root.text
         font: _main.font
-        color: Colours.aberrationRed(root.glitching ? root.aberrationOpacity : 0)
+        color: Colours.aberrationRed(root.glitching ? root.aberrationOpacity : root.restOpacity)
     }
 
     // Cyan layer
@@ -40,7 +41,7 @@ Item {
         x: root.glitching ? root.offsetX : 0
         text: root.text
         font: _main.font
-        color: Colours.aberrationCyan(root.glitching ? root.aberrationOpacity : 0)
+        color: Colours.aberrationCyan(root.glitching ? root.aberrationOpacity : root.restOpacity)
     }
 
     // Main text

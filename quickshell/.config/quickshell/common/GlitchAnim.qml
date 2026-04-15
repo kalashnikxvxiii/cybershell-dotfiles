@@ -130,7 +130,7 @@ SequentialAnimation {
 
     // Step 3 (long mode only)
     ScriptAction { script: {
-        if (!root.sortMode) {
+        if (!root.shortMode) {
             if (root.labelTarget) root.labelTarget.color = root.c3
             if (root.shiftTarget) root.shiftTarget.x = Math.round(root.x3 * root.intensity)
         }

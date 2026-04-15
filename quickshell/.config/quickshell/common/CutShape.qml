@@ -35,6 +35,10 @@ import QtQuick.Shapes
 
 Shape {
     id: root
+    antialiasing: true
+    layer.enabled: true
+    layer.smooth: true
+    layer.samples: 4
 
     // Style
     property color fillColor: "transparent"
@@ -148,7 +152,7 @@ Shape {
         if (root.showLeft) {
             if (!penDown) d += `M ${blEx} `
             if      (cTL > 0)   d += `L ${i} ${i+cTL} L ${i+cTL} ${i} `
-            else if (rTL > 0)   d += `L ${i} ${i+rTL} ${rTL} 0 0 1 ${i+rTL} ${i} `
+            else if (rTL > 0)   d += `L ${i} ${i+rTL} A ${rTL} ${rTL} 0 0 1 ${i+rTL} ${i} `
             else                d += `L ${i} ${i} `
         }
 
