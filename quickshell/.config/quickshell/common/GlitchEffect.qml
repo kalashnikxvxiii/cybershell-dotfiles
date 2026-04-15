@@ -218,7 +218,7 @@ Item {
         repeat: true
         onTriggered: {
             if (root.tearSourceItem) {
-                root.tearSourceitem.x = root._tearSavedX
+                root.tearSourceItem.x = root._tearSavedX
                                         + (Math.random() - 0.5) * root.tearMaxDisplace * 2 * root.tearIntensity
             }
             tearCanvas.requestPaint()
