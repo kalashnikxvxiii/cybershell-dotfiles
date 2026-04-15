@@ -23,8 +23,11 @@ Scope {
     property string _pendingDownloadUrl:    ""
     property string originalWallpaper:      ""
     property string downloadingTitle:       ""
+    property string _searchFileSize:        ""
     property string downloadingUrl:         ""
+    property string _currentSize:           ""
     property string _currentRes:            ""
+    property bool   searchPreviewLoading:   false
     property bool   wpePreviewActive:       false
     property bool   deleteDialogOpen:       false
     property bool   previewShown:           false
@@ -34,9 +37,113 @@ Scope {
     property var    searchResultsModel:     null
     property var    localBasenames:         ({})
     property var    allEntries:             []
+    property var    favorites:              ({})
+    property int    _carouselPreviewIdx:    -1
+    property int    _searchPreviewIdx:      -1
+    property int    _previewMsgIdx:         0
     property int    downloadCount:          0
+    property int    favCount:               0
 
     ListModel { id: wallpaperModel }
+
+    Process {
+        id: searchPreviewProc
+        command: ["true"]
+        running: false
+        onRunningChanged: if (!running) root.searchPreviewLoading = false
+    }
+
+    Process {
+        id: searchSizeProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                var bytes = parseInt(data.trim())
+                root._searchFileSize = isNaN(bytes) ? "" : root.formatSize(bytes)
+            }
+        }
+    }
+
+    Process {
+        id: sizeProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                var bytes = parseInt(data.trim())
+                root._currentSize = isNaN(bytes) ? "" : root.formatSize(bytes)
+            }
+        }
+    }
+
+    function formatSize(bytes) {
+        if (!bytes || bytes <= 0) return ""
+        if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + " GB"
+        if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + " MB"
+        return Math.round(bytes / 1024) + " KB"
+    }
+
+    function updateCurrentSize() {
+        var idx = carousel.currentIndex
+        if (idx < 0 || idx >= wallpaperModel.count) {
+            _currentSize = ""
+            return
+        }
+        var entry = wallpaperModel.get(idx)
+        if (entry.source === "wpe" && entry.videoFile !== "") {
+            sizeProc.command = ["bash", "-c",
+                "stat -c%s '" + entry.videoFile + "' 2>/dev/null"]
+        } else if (entry.source === "wpe") {
+            sizeProc.command = ["bash", "-c",
+                "du -sb '" + entry.path + "' 2>/dev/null | awk '{print $1}'"]
+        } else {
+            sizeProc.command = ["bash", "-c",
+                "stat -c%s '" + entry.path + "' 2>/dev/null"]
+        }
+        sizeProc.running = false
+        sizeProc.running = true
+    }
+
+    Process {
+        id: favLoadProc
+        command: ["bash", "-c", "cat $HOME/.cache/wallpaper-picker/favorites.json 2>/dev/null || echo '{}'"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                try {
+                    root.favorites = JSON.parse(data)
+                    var c = 0; for (var k in root.favorites) c++
+                    root.favCount = c
+                } catch(e) {}
+            }
+        }
+    }
+
+    Process {
+        id: favSaveProc
+        command: ["true"]
+        running: false
+    }
+
+    function toggleFavorite() {
+        var idx = carousel.currentIndex
+        if (idx < 0 || idx >= wallpaperModel.count) return
+        var path = wallpaperModel.get(idx).path
+        var f = root.favorites
+        if (f[path]) {
+            delete f[path]
+        } else {
+            f[path] = true
+        }
+        root.favorites = f
+        var c = 0; for (var k in f) c++
+        root.favCount = c
+        favSaveProc.running = false
+        favSaveProc.command = ["bash", "-c",
+            "echo '" + JSON.stringify(f).replace(/'/g, "'\\''") + " | ..."]
+        favSaveProc.running = true
+    }
 
     Process {
         id: steamAuthProc
@@ -86,8 +193,9 @@ Scope {
             return
         } else {
             resProc.command = ["bash", "-c",
-                "identify -format '%wx%h\\n' '" + entry.path + "[0]' 2>/dev/null | head -1"]
+                "identify -ping -format '%wx%h\\n' '" + entry.path + "' 2>/dev/null | head -1"]
         }
+        resProc.running = false
         resProc.running = true
     }
 
@@ -107,6 +215,14 @@ Scope {
                     root.localBasenames = lb
                 } catch(e) {}
             }
+        }
+    }
+
+    Connections {
+        target: catalogProc
+        function onRunningChanged() {
+            if (!catalogProc.running)
+                root.localBasenames = Object.assign({}, root.localBasenames)
         }
     }
 
@@ -193,6 +309,17 @@ Scope {
         }
 
         var entry = wallpaperModel.get(idx)
+
+        // If WPE preview is already active, just adopt the running process
+        if (root.wpePreviewActive && entry.source === "wpe") {
+            Quickshell.execDetached(["bash", "-c",
+                root.themerDir + "/wallpaper-themer.sh adopt-wpe "
+                + root.screen.name + " '" + entry.path + "'"])
+            root.originalWallpaper = entry.path
+            root.previewShown = false
+            root.wpePreviewActive = false
+            return
+        }
         Quickshell.execDetached(["bash", "-c",
             root.themerDir + "/wallpaper-themer.sh set "
             + root.screen.name + " '" + entry.path + "'"])
@@ -415,7 +542,17 @@ Scope {
         var idx = carousel.currentIndex
         for (var i = 0; i < count; i++) {
             idx = (idx + 1) % count
-            if (WallpaperState.matchesFilter(wallpaperModel.get(idx))) {
+            var entry = wallpaperModel.get(idx)
+            if (WallpaperState.matchesFilter(entry)
+                && (!filterBar.favoritesOnly || root.favorites[entry.path] === true)
+                && (root.localFilterKeywords === "" || (function() {
+                    var kws = root.localFilterKeywords.toLowerCase().split(" ")
+                    var t = entry.title.toLowerCase()
+                    for (var k = 0; k < kws.length; k++) {
+                        if (kws[k] !== "" && t.indexOf(kws[k]) === -1) return false
+                    }
+                    return true
+                })())) {
                 carousel.currentIndex = idx
                 carousel.updateCards()
                 return
@@ -429,7 +566,17 @@ Scope {
         var idx = carousel.currentIndex
         for (var i = 0; i < count; i++) {
             idx = (idx - 1 + count) % count
-            if (WallpaperState.matchesFilter(wallpaperModel.get(idx))) {
+            var entry = wallpaperModel.get(idx)
+            if (WallpaperState.matchesFilter(entry)
+                && (!filterBar.favoritesOnly || root.favorites[entry.path] === true)
+                && (root.localFilterKeywords === "" || (function() {
+                    var kws = root.localFilterKeywords.toLowerCase().split(" ")
+                    var t = entry.title.toLowerCase()
+                    for (var k = 0; k < kws.length; k++) {
+                        if (kws[k] !== "" && t.indexOf(kws[k]) === -1) return false
+                    }
+                    return true
+                })())) {
                 carousel.currentIndex = idx
                 carousel.updateCards()
                 return
@@ -464,6 +611,8 @@ Scope {
             wallpaperModel.clear()
             carousel.currentIndex = 0
             catalogProc.running = true
+            favLoadProc.running = true
+            filterBar.favoritesOnly = false
             // Refresh cache in background for next open
             bgRefreshProc.running = true
             WallpaperState.resetFilters()
@@ -512,7 +661,7 @@ Scope {
             id: mainLayout
             anchors.fill: parent
             focus: true
-            opacity: root.previewShown && !_hoveringElement ? 0.3 : 1.0
+            opacity: root.previewShown && !_hoveringElement ? 0.2 : 1.0
 
             Behavior on opacity { NumberAnimation { duration: 300 } }
 
@@ -540,6 +689,8 @@ Scope {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: Math.min(implicitWidth, parent.width - 80)
 
+                favCount: root.favCount
+
                 Behavior on anchors.topMargin {
                     NumberAnimation { duration: 600; easing.type: Easing.OutExpo }
                 }
@@ -566,7 +717,7 @@ Scope {
                 property int            rapidCount:         0
 
                 onCurrentIndexChanged: {
-                    root.updateCurrentRes()
+                    metaUpdateTimer.restart()
                 }
 
 
@@ -577,6 +728,33 @@ Scope {
                         if (selectedSearchIdx >= filterBar.resultsModel.count - 3) {
                             filterBar.loadMoreResults()
                         }
+                        var sr = filterBar.resultsModel.get(selectedSearchIdx)
+                        if (sr.fileSize > 0) {
+                            root._searchFileSize = root.formatSize(sr.fileSize)
+                        } else {
+                            var bn = sr.fullUrl.substring(sr.fullUrl.lastIndexOf("/") + 1)
+                            if (root.localBasenames[bn] === true) {
+                                searchSizeProc.command = ["bash", "-c",
+                                    "stat -c%s \"$HOME/Pictures/wallpapers/" + bn + "\" 2>/dev/null"]
+                                searchSizeProc.running = true
+                            } else if (sr.source !== "wpe" && sr.fullUrl.startsWith("http")) {
+                                searchSizeProc.command = ["bash", "-c",
+                                    "curl -sIL --max-time 5 '" + sr.fullUrl + "' 2>/dev/null | grep -i '^content-length:' | tail -1 | awk '{print $2}' | tr -d '\\r'"]
+                                searchSizeProc.running = true
+                            } else if (sr.source === "wpe") {
+                                searchSizeProc.command = ["bash", "-c",
+                                    "curl -s --max-time 10 -X POST " +
+                                    "'https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/' " +
+                                    "-d 'itemcount=1&publishedfileids[0]=" + sr.fullUrl + "' 2>/dev/null | " +
+                                    "python3 -c \"import sys,json; d=json.load(sys.stdin); " +
+                                    "print(d['response']['publishedfiledetails'][0].get('file_size','0'))\" 2>/dev/null"]
+                                searchSizeProc.running = true
+                            } else {
+                                root._searchFileSize = ""
+                            }
+                        }
+                    } else {
+                        root._searchFileSize = ""
                     }
                 }
 
@@ -783,6 +961,17 @@ Scope {
                 function initCards() {
                     var center = width / 2 + 40
 
+                    // Start on the currently applie wallpaper
+                    if (root.originalWallpaper !== "") {
+                        for (var j = 0; j < repeater.count; j++) {
+                            var e = wallpaperModel.get(j)
+                            if (e && e.path === root.originalWallpaper) {
+                                currentIndex = j
+                                break
+                            }
+                        }
+                    }
+
                     // Position ALL cards at center, invisible, no animation
                     for (var i = 0; i < repeater.count; i++) {
                         var item = repeater.itemAt(i)
@@ -807,6 +996,7 @@ Scope {
                     // Schedule reveal
                     revealTimer.restart()
                     root.updateCurrentRes()
+                    root.updateCurrentSize()
                 }
 
                 function refilterCards() {
@@ -850,6 +1040,15 @@ Scope {
                     }
                 }
 
+                Timer {
+                    id: metaUpdateTimer
+                    interval: 180
+                    onTriggered: {
+                        root.updateCurrentRes()
+                        root.updateCurrentSize()
+                    }
+                }
+
                 // ── React to filter changes ─────────────────────
                 Timer {
                     id: filterUpdateTimer
@@ -866,6 +1065,7 @@ Scope {
 
                 Connections {
                     target: filterBar
+                    function onFavoritesOnlyChanged() { filterUpdateTimer.restart() }
                     function onSearchFirstResult() {
                         carousel.searchFocused = true
                         carousel.selectedSearchIdx = 0
@@ -908,9 +1108,10 @@ Scope {
                         y: 0
                         viewCurrentIndex: carousel.currentIndex
                         viewTotalVisible: carousel.visibleCount
-                        isCurrent: index === carousel.currentIndex
-                        videoVolume: isCurrent && carousel.audioEnabled ? carousel.savedVolume : 0
-                        resolution: isCurrent ? root._currentRes : ""
+                        isCurrent:  index === carousel.currentIndex
+                        isFavorite: { var _fc = root.favCount; return root.favorites[path] === true }
+                        videoVolume:    isCurrent && carousel.audioEnabled ? carousel.savedVolume : 0
+                        resolution:     isCurrent ? root._currentRes : ""
                         isVisible: {
                             var m = WallpaperState.macroFilter
                             var s = WallpaperState.subFilter
@@ -927,6 +1128,7 @@ Scope {
                                     if (kws[i] !== "" && t.indexOf(kws[i]) === -1) return false
                                 }
                             }
+                            if (filterBar.favoritesOnly && root.favorites[path] !== true) return false
                             return true
                         }
 
@@ -1170,6 +1372,127 @@ Scope {
                     }
                 }
 
+                // ── Search preview loading overlay ────────────────────────────────
+                Item {
+                    id: searchPreviewLoadingOverlay
+                    anchors.fill: parent
+                    visible: root.searchPreviewLoading
+                    z: 12
+
+                    onVisibleChanged: {
+                        if (visible) {
+                            root._previewMsgIdx = 0
+                            msgCycleAnim.restart()
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: CP.alpha("#000010", 0.78)
+                    }
+
+                    ScanlineOverlay { opacity: 0.07 }
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 16
+
+                        // Stepped spinner: outer static frame + inner rotating ring
+                        Item {
+                            width: 64; height: 64
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            CutShape {
+                                anchors.fill: parent
+                                fillColor: "transparent"
+                                strokeColor: CP.alpha(CP.magenta, 0.22)
+                                strokeWidth: 1
+                                inset: 0.5
+                                cutTopLeft: 18; cutTopRight: 18
+                                cutBottomLeft: 18; cutBottomRight: 18
+                            }
+
+                            CutShape {
+                                id: previewSpinRing
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                fillColor: "transparent"
+                                strokeColor: CP.magenta
+                                strokeWidth: 2
+                                inset: 1
+                                cutTopLeft: 10; cutTopRight: 10
+                                cutBottomLeft: 10; cutBottomRight: 10
+                            }
+
+                            SequentialAnimation {
+                                loops: Animation.Infinite
+                                running: root.searchPreviewLoading
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 0 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 45 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 90 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 135 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 180 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 225 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 270 }
+                                PauseAnimation { duration: 110 }
+                                PropertyAction { target: previewSpinRing; property: "rotation"; value: 315 }
+                                PauseAnimation { duration: 110 }
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "\uf06e"
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 22
+                                color: CP.magenta
+                                PulseAnim on opacity {
+                                    running: root.searchPreviewLoading
+                                    minOpacity: 0.2
+                                    duration: 700
+                                }
+                            }
+                        }
+
+                        // Cycling messages
+                        Text {
+                            id: previewLoadMsg
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            property var msgs: [
+                                "SCANNING MATRIX...",
+                                "INJECTING PIXELS...",
+                                "PATCHING RETINAS...",
+                                "CALIBRATING OPTICS...",
+                                "DECODING AESTHETIC...",
+                                "UPLOADING TO CORTEX...",
+                                "SYNCING NEURAL MAP...",
+                                "RENDERING SCENE..."
+                            ]
+                            text: msgs[root._previewMsgIdx % msgs.length]
+                            font.family: "Oxanium"
+                            font.pixelSize: 10
+                            font.letterSpacing: 2
+                            color: CP.magenta
+
+                            SequentialAnimation {
+                                id: msgCycleAnim
+                                loops: Animation.Infinite
+                                running: root.searchPreviewLoading
+                                PauseAnimation  { duration: 1500 }
+                                NumberAnimation { target: previewLoadMsg; property: "opacity"; to: 0; duration: 80 }
+                                ScriptAction    { script: root._previewMsgIdx++ }
+                                NumberAnimation { target: previewLoadMsg; property: "opacity"; to: 1; duration: 80 }
+                            }
+                        }
+                    }
+                }
+
                 CutShape {
                     id: searchPreviewMask
                     anchors.fill: parent
@@ -1225,6 +1548,17 @@ Scope {
                     }
 
                     Text {
+                        text: carousel.searchFocused
+                            ? root._searchFileSize
+                            : root._currentSize
+                        font.family: "Oxanium"
+                        font.pixelSize: 10
+                        font.letterSpacing: 1
+                        color: Colours.accentSecondary
+                        visible: text !== ""
+                    }
+
+                    Text {
                         text: carousel.searchFocused && filterBar.resultsModel
                             ? (carousel.selectedSearchIdx + 1) + " / " + filterBar.resultsModel.count
                             : root.currentVisiblePosition() + " / " + carousel.visibleCount
@@ -1251,6 +1585,9 @@ Scope {
                 downloadCount:      root.downloadCount
                 resultsModel:       filterBar.resultsModel
                 downloading:        root.downloading
+                searching:          filterBar.searching
+
+                onLoadMoreRequested: filterBar.loadMoreResults()
 
                 onResultSelected: (index, thumbPath, fullUrl) => {
                     carousel.selectedSearchIdx = index
@@ -1423,9 +1760,18 @@ Scope {
                 }
             }
 
-
             Keys.onPressed: event => {
                 switch (event.key) {
+                    case Qt.Key_F:
+                        if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
+                            if (event.modifiers & Qt.AltModifier) {
+                                filterBar.favoritesOnly = !filterBar.favoritesOnly
+                            } else {
+                                root.toggleFavorite()
+                            }
+                        }
+                        event.accepted = true
+                        break
                     case Qt.Key_R:
                         if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
                             if (carousel.currentIndex >= 0 && carousel.currentIndex < wallpaperModel.count) {
@@ -1523,22 +1869,46 @@ Scope {
                         var upIdx = carousel.currentIndex
                         if (upIdx < 0 || upIdx >= wallpaperModel.count) break
                         var upEntry = wallpaperModel.get(upIdx)
-                        var upCard = repeater.itemAt(upIdx)
 
-                        if (upEntry.source === "wpe") {
-                            // WPE: always use live video preview
-                            root.previewShown = true
-                            root.wpePreviewActive = true
-                            Quickshell.execDetached(["bash", "-c",
-                                root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
-                                + root.screen.name + " '" + upEntry.path + "'"])
-                        } else {
-                            // Static wallpaper preview
-                            root.previewShown = true
+                        if (root.previewShown && root._carouselPreviewIdx === upIdx) {
+                            // Same card - remove preview
+                            if (root.wpePreviewActive) {
+                                Quickshell.execDetached(["bash", "-c",
+                                root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                + root.screen.name])
+                            }
+                            if (root.originalWallpaper) {
+                                Quickshell.execDetached(["bash", "-c",
+                                root.scriptsDir + "/wallpaper-picker.sh preview "
+                                + root.screen.name + " '" + root.originalWallpaper + "'"])
+                            }
+                            root.previewShown = false
                             root.wpePreviewActive = false
-                            Quickshell.execDetached(["bash", "-c",
-                            root.scriptsDir + "/wallpaper-picker.sh preview "
-                            + root.screen.name + " '" + upEntry.path + "'"])
+                            root._carouselPreviewIdx = -1
+                        } else {
+                            // New or different card - set/replace preview
+                            root._carouselPreviewIdx = upIdx
+                            var stopCmd = root.wpePreviewActive
+                                        ? root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                        + root.screen.name + " && "
+                                        : ""
+                            if (upEntry.source === "wpe") {
+                                // WPE: stop previous (if any) then start new
+                                root.previewShown = true
+                                root.wpePreviewActive = true
+                                Quickshell.execDetached(["bash", "-c",
+                                    stopCmd
+                                    + root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
+                                    + root.screen.name + " '" + upEntry.path + "'"])
+                            } else {
+                                // Static stop WPE first if it was active
+                                root.previewShown = true
+                                root.wpePreviewActive = false
+                                Quickshell.execDetached(["bash", "-c",
+                                stopCmd
+                                + root.scriptsDir + "/wallpaper-picker.sh preview "
+                                + root.screen.name + " '" + upEntry.path + "'"])
+                            }
                         }
                         event.accepted = true
                         break
@@ -1551,15 +1921,31 @@ Scope {
                         }
                         if (carousel.searchFocused && carousel.selectedSearchIdx >= 0
                             && carousel.selectedSearchIdx < filterBar.resultsModel.count) {
-                            var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
-                            if (dlEntry) {
-                                root.previewShown = true
-                                root.wpePreviewActive = false
-                                Quickshell.execDetached(["bash", "-c",
-                                    "F=/tmp/qs-search-preview-$$-$RANDOM; " +
-                                    "curl -sL --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' && " +
-                                    root.scriptsDir + "/wallpaper-picker.sh preview "
-                                    + root.screen.name + " \"$F\""])
+                            if (root.previewShown && root._searchPreviewIdx === carousel.selectedSearchIdx) {
+                                // Same result - remove preview
+                                if (root.originalWallpaper) {
+                                    Quickshell.execDetached(["bash", "-c",
+                                        root.scriptsDir + "/wallpaper-picker.sh preview "
+                                        + root.screen.name + " '" + root.originalWallpaper + "'"])
+                                }
+                                root.previewShown = false
+                                root._searchPreviewIdx = -1
+                            } else {
+                                // New or different result - set/replace preview
+                                var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
+                                if (dlEntry) {
+                                    root.previewShown = true
+                                    root.wpePreviewActive = false
+                                    root._searchPreviewIdx = carousel.selectedSearchIdx
+                                    root.searchPreviewLoading = true
+                                    root._previewMsgIdx = 0
+                                    searchPreviewProc.command = ["bash", "-c",
+                                        "F=/tmp/qs-search-preview-$$-$RANDOM; " +
+                                        "curl -sL --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' && " +
+                                        root.scriptsDir + "/wallpaper-picker.sh preview "
+                                        + root.screen.name + " \"$F\""]
+                                    searchPreviewProc.running = true
+                                }
                             }
                             event.accepted = true
                             break

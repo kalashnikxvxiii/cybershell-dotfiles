@@ -77,7 +77,7 @@ generate_thumb() {
                     ffmpeg -y -ss 5 -i "$entry/$file" -vframes 1 -q:v 2 \
                         -vf "scale=-1:420" "$thumb" 2>/dev/null
                 elif [ -f "$entry/preview.jpg" ]; then
-                    magick "$entry/preview.jpg[0]" -resize x420 -quality 70 "$thumb" 2>/dev/null || \
+                    magick "$entry/preview.jpg[0]" -resize x600 -quality 95 "$thumb" 2>/dev/null || \
                     ffmpeg -y -i "$entry/preview.jpg" -vframes 1 -q:v 2 -vf "scale=-1:420" "$thumb" 2>/dev/null
                 fi ;;
             *)
@@ -85,15 +85,15 @@ generate_thumb() {
                 [ -f "$entry/preview.jpg" ] && preview="$entry/preview.jpg"
                 [ -z "$preview" ] && preview=$(find "$entry" -name "preview.*" -type f 2>/dev/null | head -1)
                 if [ -n "$preview" ]; then
-                    magick "${preview}[0]" -resize x420 -quality 70 "$thumb" 2>/dev/null || \
+                    magick "${preview}[0]" -resize x600 -quality 95 "$thumb" 2>/dev/null || \
                     ffmpeg -y -i "$preview" -vframes 1 -q:v 2 -vf "scale=-1:420" "$thumb" 2>/dev/null
                 fi ;;
         esac
     else
         # Static file
         case "${entry##*.}" in
-            gif|GIF) magick "${entry}[0]" -resize x420 -quality 70 "$thumb" 2>/dev/null ;;
-            *)       magick "$entry" -resize x420 -quality 70 "$thumb" 2>/dev/null ;;
+            gif|GIF) magick "${entry}[0]" -resize x600 -quality 95 "$thumb" 2>/dev/null ;;
+            *)       magick "$entry" -resize x600 -quality 95 "$thumb" 2>/dev/null ;;
         esac
     fi
 
@@ -232,6 +232,12 @@ cmd_preview_wpe() {
 
     local wpe_id
     wpe_id=$(basename "$entry")
+
+    # Set preview of the new WPE immediately to avoid flash of old wallpaper
+    local preview=""
+    [ -f "$entry/preview.jpg" ] && preview="$entry/preview.jpg"
+    [ -z "$preview" ] && preview=$(find "$entry" -name "preview.*" -type f 2>/dev/null | head -1)
+    [ -n "$preview" ] && awww img "$preview" --outputs "$screen" --transition-type none
 
     # Kill existing WPE on this screen
     local pid_file="$HOME/.cache/wallpaper-themer/pid_${screen}"

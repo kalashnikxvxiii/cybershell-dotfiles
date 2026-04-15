@@ -12,6 +12,10 @@ Item {
     readonly property alias searchExpanded:     wallpaperSearch.expanded
     readonly property alias isLocalFilter:      wallpaperSearch.isLocalFilter
     readonly property alias resultsModel:       wallpaperSearch.resultsModel
+    readonly property alias searching:          wallpaperSearch.searching
+
+    property bool   favoritesOnly:  false
+    property int    favCount:       0
     
     signal searchResultClicked(string thumbPath, string fullUrl)
     signal localFilterChanged(string keywords)
@@ -47,14 +51,57 @@ Item {
         anchors.rightMargin: 12
         spacing: 6
 
+        // ── Favorites filter ──────────────────────────────────────────
+        Item {
+            Layout.preferredWidth: favFilterVisible ? favLabel.implicitWidth + 20 : 0
+            Layout.preferredHeight: 28
+            Layout.rightMargin: favFilterVisible ? 0 : -6
+            opacity: favFilterVisible ? 1 : 0
+            clip: true
+
+            property bool favFilterVisible: root.favCount > 0 || root.favoritesOnly
+
+            readonly property bool active: root.favoritesOnly
+
+            Behavior on Layout.preferredWidth   { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+            Behavior on Layout.rightMargin      { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+            Behavior on opacity                 { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+
+            CutShape {
+                anchors.fill: parent
+                fillColor: parent.active ? CP.alpha(CP.red, 0.2) : "transparent"
+                strokeColor: parent.active ? CP.red : CP.alpha(CP.red, 0.3)
+                strokeWidth: 1
+                inset: 0.5
+                cutTopLeft: 4
+                cutBottomRight: 4
+            }
+
+            Text {
+                id: favLabel
+                anchors.centerIn: parent
+                text: "\u2665"
+                font.pixelSize: 12
+                color: parent.active ? CP.red : Colours.textMuted
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.favoritesOnly = !root.favoritesOnly
+            }
+        }
+
         // ── Macro filters ──────────────────────────────────────────
         Repeater {
             model: ["all", "awww", "wpe"]
             delegate: Item {
-                required property string modelData
-                required property int index
                 Layout.preferredWidth: macroLabel.implicitWidth + 20
                 Layout.preferredHeight: 28
+
+                required property string modelData
+                required property int index
+
                 readonly property bool active: WallpaperState.macroFilter === modelData
 
                 CutShape {
@@ -199,7 +246,7 @@ Item {
             }
         }
 
-        // ── Separator before search ─────────────────────────────────v
+        // ── Separator before search ─────────────────────────────────
         Rectangle {
             Layout.preferredWidth: 1
             Layout.preferredHeight: 28

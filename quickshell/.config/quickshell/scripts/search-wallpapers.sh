@@ -34,9 +34,9 @@ python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" | while IFS= read -
         done
     fi
 
-    read -r url thumb_url source w h <<< "$(echo "$line" | python3 -c "
+    read -r url thumb_url source w h file_size <<< "$(echo "$line" | python3 -c "
 import sys,json; d=json.load(sys.stdin)
-print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h',0))
+print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h',0), d.get('file_size',0))
 ")"
     title=$(echo "$line" | python3 -c "import sys,json; print(json.load(sys.stdin).get('title',''))" 2>/dev/null)
     [ -z "$url" ] && continue
@@ -58,7 +58,7 @@ print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h'
                 fi
                 rm -f "$thumb.tmp"
                 echo "${fname}|${url}" >> "$MAP_FILE"
-                echo "THUMB:${fname}|${thumb}|${url}|${source}|${w}|${h}|${title}"
+                echo "THUMB:${fname}|${thumb}|${url}|${source}|${w}|${h}|${title}|${file_size}"
                 ;;
             *)
                 rm -f "$thumb.tmp" ;;

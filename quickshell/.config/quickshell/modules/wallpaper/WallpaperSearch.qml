@@ -10,19 +10,19 @@ Item {
     clip:           true
 
     property string _placeholderPrefix: ""
-    property string _activePrefix:      ""
     property string currentQuery:       ""
     property bool   _prefixGlitching:   false
     property bool   _updatingPrefix:    false
-    property bool   isLocalFilter:      _activePrefix === "#"
+    property bool   isLocalFilter:      _activePrefixes.indexOf("#")
     property bool   searching:          false
     property bool   expanded:           false
     property bool   hasMore:            true
     property int    _pageResultCount:   0
     property int    currentPage:        1
+    property var    _activePrefixes:    []
 
     // ── Prefix system ────────────────────────────────────
-    readonly property var prefixes: ["@wh", "@a", "@r", "@wpe", "@gif", "@img", "#"]
+    readonly property var prefixes: ["@wh", "@a", "@r", "@wpe", "@gif", "@img", "@wc", "@rand", "#"]
     readonly property var prefixColors: ({
         "@wh":      CP.cyan,
         "@a":       CP.yellow,
@@ -30,9 +30,10 @@ Item {
         "@wpe":     CP.teal,
         "@gif":     CP.neon,
         "@img":     CP.cyan,
+        "@wc":      CP.orange,
+        "@rand":    CP.amber,
         "#":        CP.amber
     })
-
 
     signal resultClicked(string thumbPath, string fullUrl)
     signal localFilterChanged(string keywords)
@@ -44,7 +45,7 @@ Item {
     }
 
     function closeSearch() {
-        _activePrefix = ""
+        _activePrefixes = []
         _placeholderPrefix = ""
         if (searching) {
             controlProc.running = true
@@ -66,16 +67,17 @@ Item {
     }
 
     function submitSearch() {
-        if (searchInput.text.trim() === "" && _activePrefix) return
-        if (_activePrefix === "#") {
+        if (searchInput.text.trim() === "" && _activePrefixes.length === 0) return
+        if (_activePrefixes.indexOf("#") >= 0) {
             localFilterChanged(searchInput.text.trim())
             searchInput.focus = false
             root.parent.forceActiveFocus()
             return
         }
-        currentQuery = _activePrefix !== ""
-                    ? _activePrefix + " " + searchInput.text.trim()
-                    : searchInput.text.trim()
+        var prefixPart = _activePrefixes.length > 0
+                        ? "@" + _activePrefixes.map(function(p) { return p.substring(1) }).join("+") + " "
+                        : ""
+        currentQuery = prefixPart + searchInput.text.trim()
         currentPage = 1
         hasMore = true
         searching = true
@@ -89,20 +91,27 @@ Item {
     }
 
     function _randomPlaceholder() {
-        return prefixes[Math.floor(Math.random() * prefixes.length)]
+        var remaining = prefixes.filter(function(p) {
+            return p !== "#" && _activePrefixes.indexOf(p) === -1
+        })
+        if (remaining.length === 0) return ""
+        return remaining[Math.floor(Math.random() * remaining.length)]
     }
 
     function _updatePrefixState() {
         if (_updatingPrefix) return
         var txt = searchInput.text
-        // If prefix already active and text doeasn't start with @, keep it
-        if (_activePrefix !== "" && _activePrefix !== "#" && !txt.startsWith("@")) return
+        if (_activePrefixes.length > 0 && _activePrefixes.indexOf("#") === -1 && !txt.startsWith("@")) return
         // Check for completed prefix (prefix + space)
         for (var i = 0; i < prefixes.length; i++) {
             if (txt.startsWith(prefixes[i] + " ")) {
                 var query = txt.substring(prefixes[i].length + 1)
                 _updatingPrefix = true
-                _activePrefix = prefixes[i]
+                if (_activePrefixes.indexOf(prefixes[i]) === -1) {
+                    var np = _activePrefixes.filter(function(p) { return p !== "#" })
+                    np.push(prefixes[i])
+                    _activePrefixes = np
+                }
                 searchInput.text = query
                 searchInput.cursorPosition = query.length
                 _updatingPrefix = false
@@ -116,9 +125,9 @@ Item {
             _updatingPrefix = true
             searchInput.text = txt.substring(1)
             _updatingPrefix = false
-            if (_activePrefix !== "#") {
-                _activePrefix = "#"
-                placeholderPrefix = ""
+            if (_activePrefixes.indexOf("#") === -1) {
+                _activePrefixes = ["#"]
+                _placeholderPrefix = ""
                 prefixGlitchAnim.restart()
             }
             localFilterChanged(searchInput.text)
@@ -127,20 +136,20 @@ Item {
         // Check for partial match
         if (txt.startsWith("@") && txt.indexOf(" ") === -1) {
             for (var j = 0; j < prefixes.length; j++) {
-                if (prefixes[j].startsWith(txt) && prefixes[j] !== txt) {
+                if (prefixes[j].startsWith(txt) && prefixes[j] !== txt
+                    && _activePrefixes.indexOf(prefixes[j]) === -1
+                    && prefixes[j] !== "#") {
                     _placeholderPrefix = prefixes[j]
-                    _activePrefix = ""
                     return
                 }
             }
         }
         // Live local filter update
-        if (_activePrefix === "#") {
+        if (_activePrefixes.indexOf("#") >= 0) {
             localFilterChanged(txt)
             return
         }
         _placeholderPrefix = ""
-        _activePrefix = ""
     }
 
     function _autocompletePrefix() {
@@ -193,65 +202,42 @@ Item {
         anchors.margins: 6
         visible: root.expanded
 
-        // Prefix highlight badge
-        Rectangle {
-            id: prefixBadge
+        // Prefix chips
+        Row {
+            id: prefixRow
             x: 0
             anchors.verticalCenter: parent.verticalCenter
-            width: {
-                if (_activePrefix === "#")
-                    return hashMeasure.implicitWidth + 14
-                if (_activePrefix !== "")
-                    return prefixMeasure.implicitWidth + 10
-                return 0
-            }
-            height: 20
-            radius: 3
-            color: _activePrefix !== "" ? CP.alpha(prefixColors[_activePrefix] || CP.cyan, 0.15) : "transparent"
-            border.color: _activePrefix !== "" ? CP.alpha(prefixColors[_activePrefix] || CP.cyan, 0.6) : "transparent"
-            border.width: 1
-            visible: _activePrefix !== "" && !_prefixGlitching
+            spacing: 3
+            visible: _activePrefixes.length > 0 && !_prefixGlitching
             z: 5
 
-            Behavior on width { NumberAnimation { duration: 150 } }
+            Repeater {
+                model: _activePrefixes
+                Rectangle {
+                    height: 20
+                    radius: 3
+                    width: chipMeasure.implicitWidth + 10
+                    color: CP.alpha(root.prefixColors[modelData] || CP.cyan, 0.15)
+                    border.color: CP.alpha(root.prefixColors[modelData] || CP.cyan, 0.6)
+                    border.width: 1
 
-            Text {
-                anchors.centerIn: parent
-                text: _activePrefix === "#" ? "# " +searchInput.text : _activePrefix 
-                font.family: "Oxanium"
-                font.pixelSize: 12
-                font.letterSpacing: 1
-                color: prefixColors[_activePrefix] || CP.cyan
-                visible: _activePrefix !== "#"
-            }
+                    Text {
+                        anchors.centerIn: parent
+                        text: modelData
+                        font.family: "Oxanium"
+                        font.pixelSize: 12
+                        font.letterSpacing: 1
+                        color: root.prefixColors[modelData] || CP.cyan
+                    }
 
-            Text {
-                id: hashLabel
-                anchors.left: parent.left
-                anchors.leftMargin: 5
-                anchors.verticalCenter: parent.verticalCenter
-                text: "#"
-                font.family: "Oxanium"
-                font.pixelSize: 12
-                font.letterSpacing: 1
-                color: prefixColors["#"] || CP.cyan
-                visible: _activePrefix === "#"
-            }
-
-            Text {
-                id: prefixMeasure
-                visible: false
-                text: _activePrefix + " "
-                font.family: "Oxanium"
-                font.pixelSize: 12
-            }
-
-            Text {
-                id: hashMeasure
-                visible: false
-                text: "# " + searchInput.text
-                font.family: "Oxanium"
-                font.pixelSize: 12
+                    Text {
+                        id: chipMeasure
+                        visible: false
+                        text: modelData
+                        font.family: "Oxanium"
+                        font.pixelSize: 12
+                    }
+                }
             }
         }
 
@@ -263,7 +249,8 @@ Item {
             visible: _placeholderPrefix !== ""
                     && searchInput.text.length > 0
                     && searchInput.text.length < _placeholderPrefix.length
-                    && _activePrefix === ""
+                    && searchInput.text.startsWith("@")
+                    && _activePrefixes.indexOf("#") === -1
             text: _placeholderPrefix
             font.family: "Oxanium"
             font.pixelSize: 12
@@ -275,8 +262,14 @@ Item {
             id: emptyPlaceholder
             x: searchInput.x
             anchors.verticalCenter: searchInput.verticalCenter
-            visible: root.expanded && searchInput.text === "" && _activePrefix === ""
-            text: "@wh @a @r @gif @img @wpe #filter"
+            visible: root.expanded && searchInput.text === "" 
+                    && _activePrefixes.indexOf("#") === -1
+            text: {
+                var remaining = root.prefixes.filter(function(p) {
+                    return p !== "#" && root._activePrefixes.indexOf(p) === -1
+                })
+                return remaining.join(" ") + (root._activePrefixes.length === 0 ? " #filter" : "")
+            }
             font.family: "Oxanium"
             font.pixelSize: 12
             font.letterSpacing: 1
@@ -286,11 +279,7 @@ Item {
         // Text input — positioned after badge
         TextInput {
             id: searchInput
-            x: {
-                if (_activePrefix === "#") return hashLabel.x + hashLabel.implicitWidth + 2
-                if (_activePrefix !== "") return prefixBadge.width + 4
-                return 0
-            }
+            x: _activePrefixes.length > 0 ? prefixRow.width + 6 : 0
             width: parent.width - x - submitBtn.width - stopBtn.width - 12
             height: parent.height
             verticalAlignment: TextInput.AlignVCenter
@@ -320,19 +309,21 @@ Item {
                 }
             }
 
-            Keys.onLeftPressed: event => { event.accepted = true }
+            Keys.onLeftPressed: event => { event.accepted = false }
 
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) {
                     root.closeSearch()
                     root.parent.forceActiveFocus()
                     event.accepted = true
-                } else if (event.key === Qt.Key_Backspace && searchInput.cursorPosition === 0 && root._activePrefix !== "") {
+                } else if (event.key === Qt.Key_Backspace && searchInput.cursorPosition === 0 && root._activePrefixes.length > 0) {
                     prefixRemoveAnim.start()
                     root._updatingPrefix = true
-                    root._activePrefix = ""
+                    var newPrefixes = root._activePrefixes.slice()
+                    newPrefixes.pop()
+                    root._activePrefixes = newPrefixes
                     root._placeholderPrefix = root._randomPlaceholder()
-                    root.localFilterChanged("")
+                    if (newPrefixes.indexOf("#") === -1) root.localFilterChanged("")
                     root._updatingPrefix = false
                     event.accepted = true
                 }
@@ -378,52 +369,29 @@ Item {
     // Prefix glitch animation
     SequentialAnimation {
         id: prefixGlitchAnim
-        property color glitchColor: prefixColors[_activePrefix] || CP.cyan
-
         onStarted: _prefixGlitching = true
         onStopped: _prefixGlitching = false
 
-        PropertyAction { target: prefixBadge; property: "visible"; value: true }
-        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.magenta, 0.3) }
-        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.magenta }
-        PauseAnimation { duration: 60 }
-
-        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.yellow, 0.3) }
-        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.yellow }
-        PauseAnimation { duration: 60 }
-
-        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(prefixGlitchAnim.glitchColor, 0.15) }
-        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.alpha(prefixGlitchAnim.glitchColor, 0.6) }
-        PauseAnimation { duration: 60 }
-
-        PropertyAction { target: prefixBadge; property: "visible"; value: false }
-        PauseAnimation { duration: 40 }
-
-        PropertyAction { target: prefixBadge; property: "visible"; value: true }
+        PauseAnimation  { duration: 50 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: false }
+        PauseAnimation  { duration: 40 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: true }
+        PauseAnimation  { duration: 50 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: false }
+        PauseAnimation  { duration: 30 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: true }
     }
 
     // Prefix removal glitch animation
     SequentialAnimation {
         id: prefixRemoveAnim
-
-        PropertyAction { target: prefixBadge; property: "visible"; value: true }
-        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.magenta }
-        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.magenta, 0.3) }
-        PauseAnimation { duration: 50 }
-
-        PropertyAction { target: prefixBadge; property: "border.color"; value: CP.yellow }
-        PropertyAction { target: prefixBadge; property: "color"; value: CP.alpha(CP.yellow, 0.2) }
-        PauseAnimation { duration: 50 }
-
-        PropertyAction { target: prefixBadge; property: "visible"; value: true }
-        PauseAnimation { duration: 40 }
-
-        PropertyAction { target: prefixBadge; property: "visible"; value: true }
-        PropertyAction { target: prefixBadge; property: "color"; value: "transparent" }
-        PropertyAction { target: prefixBadge; property: "border.color"; value: "transparent" }
-        PauseAnimation { duration: 30 }
-
-        PropertyAction { target: prefixBadge; property: "visible"; value: false }
+        PropertyAction  { target: prefixRow; property: "visible"; value: false }
+        PauseAnimation  { duration: 50 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: true }
+        PauseAnimation  { duration: 40 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: false }
+        PauseAnimation  { duration: 30 }
+        PropertyAction  { target: prefixRow; property: "visible"; value: true }
     }
 
     Text {
@@ -468,7 +436,8 @@ Item {
                             fullUrl: parts[2],
                             source: parts.length >= 4 ? parts[3] : "wh",
                             w: parts.length >= 6 ? parseInt(parts[4]) : 0,
-                            h: parts.length >= 6 ? parseInt(parts[5]) : 0
+                            h: parts.length >= 6 ? parseInt(parts[5]) : 0,
+                            fileSize: parts.length >= 8 ? parseInt(parts[7]) : 0
                         })
                         root._pageResultCount++
                         if (isFirst) root.firstResultReady()

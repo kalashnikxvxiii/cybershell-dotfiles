@@ -25,6 +25,7 @@ Item {
     property bool   videoPlaying:       false
     property bool   animEnabled:        false
     property bool   _glitching:         false
+    property bool   isFavorite:         false
     property bool   isCurrent:          false
     property bool   isVisible:          true
     property real   videoVolume:        0.5
@@ -189,7 +190,7 @@ Item {
         layer.effect: MultiEffect {
             maskEnabled: true
             maskSource: cardMask
-            maskThresholdMin: 0.5
+            maskThresholdMin: 0.3
         }
 
         // ── Content + shader, all clipped by cardWrapper mask ────
@@ -366,6 +367,106 @@ Item {
             property var source: cardShaderSource
             property real iTime: 0
             fragmentShader: "../../shaders/glitch.frag.qsb"
+        }
+    }
+
+    // Favorite badge
+    Item {
+        id: favBadge
+        anchors.top: cardWrapper.top
+        anchors.right: cardWrapper.right
+        anchors.topMargin: 1
+        anchors.rightMargin: 1
+        width: 24 * _scale
+        height: 24 *_scale
+        visible: _favVisible
+        z: 200
+
+        property real _scale:       cardWrapper.height > 0 ? cardWrapper.height / 450 : 1
+        property bool _favVisible:  false
+
+        Component.onCompleted: {
+            if (root.isFavorite) {
+                _favVisible = true
+                opacity = 1
+            }
+        }
+
+        Connections {
+            target: root
+            function onIsFavoriteChanged() {
+                if (root.isFavorite) {
+                    favBadge._favVisible = true
+                    favExitAnim.stop()
+                    favEntryAnim.restart()
+                } else {
+                    favEntryAnim.stop()
+                    favExitAnim.restart()
+                }
+            }
+        }
+
+        // Background
+        CutShape {
+            anchors.fill: parent
+            fillColor: CP.alpha("#000000", 0.75)
+            strokeColor: CP.alpha(CP.red, 0.8)
+            strokeWidth: 1
+            inset: 0.5
+            cutBottomLeft: 8
+            showTop: false
+            showRight: false
+        }
+
+        // Icon with glow
+        Text {
+            anchors.centerIn: parent
+            text: "\uf004"
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 11 * parent._scale
+            color: CP.red
+
+            // Counter-skew to keep icon straight
+            transform: Matrix4x4 {
+                matrix: Qt.matrix4x4(
+                    1, -root.skewFactor, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1
+                )
+            }
+
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: CP.red
+                shadowBlur: 0.8
+                shadowOpacity: 0.6
+                shadowHorizontalOffset: 0
+                shadowVerticalOffset: 0
+            }
+        }
+
+        // Entry animation
+        SequentialAnimation {
+            id: favEntryAnim
+            NumberAnimation { target: favBadge; property: "opacity"; to: 0;   duration: 0 }
+            PauseAnimation  { duration: 100 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 1.2; duration: 80 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 0.6; duration: 60 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 1.0; duration: 100 }
+        }
+
+        // Exit animation
+        SequentialAnimation {
+            id: favExitAnim
+            NumberAnimation { target: favBadge; property: "opacity"; to: 0.3; duration: 60 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 1.0; duration: 40 }
+            PauseAnimation  { duration: 20 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 0.2; duration: 30 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 1.0; duration: 30 }
+            NumberAnimation { target: favBadge; property: "opacity"; to: 0;   duration: 80 }
+            ScriptAction    { script: favBadge._favVisible = false }
         }
     }
 }
