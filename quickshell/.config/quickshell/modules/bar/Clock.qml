@@ -82,7 +82,7 @@ Item {
         id: label
         anchors.centerIn: parent
         text:               root.timeStr
-        font.family:        "Cyberpunk"
+        font.family:        "Oxanium"
         font.pixelSize:     14
         font.bold:          true
         font.letterSpacing: 3

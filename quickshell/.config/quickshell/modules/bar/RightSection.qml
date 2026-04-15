@@ -93,39 +93,5 @@ Item {
             }
         }
 
-        // ── Secondary monitor modules ────────────────────────
-        Loader {
-        // Secondary monitor only
-            active: !BarConfig.isPrimary(root.barScreen)
-            height: innerRow.height
-
-            sourceComponent: Component {
-                Row {
-                    height: parent.height
-                    spacing: 0
-
-                    Submap { height: parent.height; showBackground: false }
-                    KeyboardModule { height: parent.height; showBackground: false }
-                    BluetoothModule { height: parent.height; showBackground: false }
-                    CpuModule { height: parent.height; showBackground: false }
-                    MemoryModule { height: parent.height; showBackground: false }
-                    LoadModule { height: parent.height; showBackground: false }
-                    TemperatureModule { height: parent.height; showBackground: false }
-                    DiskModule { height: parent.height; showBackground: false }
-                    GpuModule { height: parent.height; showBackground: false }
-                    NetworkModule { height: parent.height; showBackground: false }
-
-                    Item {
-                        width: 0; height: parent.height
-                        Component.onCompleted: root.powerAnchor = this
-                    }
-
-                    ExitModule {
-                        height: parent.height
-                        onLeftClick: function() { root.powerToggleRequested() }
-                    }
-                }
-            }
-        }
     }
 }
