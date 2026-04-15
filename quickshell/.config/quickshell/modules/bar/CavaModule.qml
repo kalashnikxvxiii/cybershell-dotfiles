@@ -38,7 +38,7 @@ Item {
     CutShape {
         visible: root.showBackground
         anchors.fill: parent
-        color: CP.moduleBg
+        fillColor: CP.moduleBg
         radiusBottomLeft: 10
         Rectangle { width: 2; height: parent.height; color: CP.cyan }
     }
