@@ -10,12 +10,14 @@ Item {
     required property string    downloadingUrl
     required property real      downloadProgress
     required property bool      downloading
+    required property bool      searching
     required property int       selectedSearchIdx
     required property int       downloadCount
     required property var       localBasenames
     required property var       resultsModel
 
     signal resultSelected(int index, string thumbPath, string fullUrl)
+    signal loadMoreRequested()
 
     visible: resultsModel ? resultsModel.count > 0 : false
 
@@ -38,9 +40,9 @@ Item {
 
     Text {
         anchors.top: parent.top
-        anchors.topMargin: 4
+        anchors.topMargin: 6
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: 28
         text: "SEARCH RESULTS"
         font.family: "Oxanium"
         font.pixelSize: 9
@@ -65,6 +67,11 @@ Item {
 
         model: searchResultsPanel.resultsModel
 
+        onAtXEndChanged: {
+            if (atXEnd && searchResultsPanel.resultsModel && searchResultsPanel.resultsModel.count > 0)
+                searchResultsPanel.loadMoreRequested()
+        }
+
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
@@ -75,13 +82,26 @@ Item {
         }
 
         delegate: Item {
+            id: resultCard
             width: 100
             height: searchGrid.height
+            opacity: 0
+
             required property string fname
             required property string thumbPath
             required property string fullUrl
             required property int index
             required property string source
+
+            Component.onCompleted: cardFadeIn.running = true
+
+            NumberAnimation {
+                id: cardFadeIn
+                target: resultCard
+                property: "opacity"
+                from: 0; to: 1; duration: 200
+                easing.type: Easing.OutQuad
+            }
 
             // Masked content (image clipped to cut shape)
             Item {
@@ -100,8 +120,28 @@ Item {
                     source: thumbPath ? "file://" + thumbPath : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
+                    onStatusChanged: {
+                        if (status === Image.Ready) {
+                            resultContent.layer.enabled = false
+                            resultContent.layer.enabled = true
+                        }
+                    }
                 }
             }
+
+            // Image {
+            //     id: resultContent
+            //     anchors.fill: parent
+            //     source: thumbPath ? "file://" + thumbPath : ""
+            //     fillMode: Image.PreserveAspectCrop
+            //     asynchronous: true
+            //     layer.enabled: true
+            //     layer.effect: MultiEffect {
+            //         maskEnabled: true
+            //         maskSource: resultCardMask
+            //         maskThresholdMin: 0.5
+            //     }
+            // }
 
             // Source badge
             CutShape {
@@ -123,6 +163,7 @@ Item {
                             case "rg": return "\uf281"
                             case "a":  return "A"
                             case "ag": return "AG"
+                            case "wc": return "WC"
                             default:   return parent.parent.source.toUpperCase()
                         }
                     }
@@ -138,6 +179,7 @@ Item {
                             case "r":   return CP.orange
                             case "rg":  return CP.orange
                             case "wpe": return CP.teal
+                            case "wc":  return CP.neon
                             default:    return CP.cyan
                         }
                     }
@@ -176,8 +218,9 @@ Item {
                 cutTopRight: 8
                 visible: {
                     var _dc = searchResultsPanel.downloadCount
+                    var _lb = searchResultsPanel.localBasenames
                     var bn = parent.fullUrl.substring(parent.fullUrl.lastIndexOf("/") + 1)
-                    return searchResultsPanel.localBasenames[bn] === true
+                    return _lb[bn] === true
                 }
 
                 Text {
@@ -194,6 +237,12 @@ Item {
                 anchors.fill: parent
                 visible: searchResultsPanel.downloading && searchResultsPanel.downloadingUrl === parent.fullUrl
                 z: 6
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    maskEnabled: true
+                    maskSource: resultCardMask
+                    maskThresholdMin: 0.5
+                }
 
                 // Darken
                 Rectangle {
@@ -278,6 +327,21 @@ Item {
                 onClicked: {
                     searchResultsPanel.resultSelected(index, thumbPath, fullUrl)
                 }
+            }
+        }
+
+        footer: Item {
+            width: searchResultsPanel.searching && searchResultsPanel.resultsModel
+                && searchResultsPanel.resultsModel.count > 0 ? 48 : 0
+            height: searchGrid.height
+            Text {
+                anchors.centerIn: parent
+                text: "•••"
+                font.family: "Oxanium"
+                font.pixelSize: 14
+                color: Colours.accentSecondary
+                visible: parent.width > 0
+                PulseAnim on opacity { running: parent.visible; minOpacity: 0.15; duration: 350 }
             }
         }
     }

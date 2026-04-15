@@ -122,27 +122,22 @@ QtObject {
         command: ["bash", "-c", "echo -n '' > /tmp/qs-wallpicker-toggle"]
         running: false
         onRunningChanged: {
-            if (!running) _togglePollTimer.running = true
-        }
-    }
-
-    property var _togglePollTimer: Timer {
-        interval: 150
-        repeat: true
-        running: false
-        onTriggered: {
-            _toggleReader.reload()
+            if (!running) {
+                _toggleReader.reload()
+                root._lastToggleContent = _toggleReader.text()
+            }
         }
     }
 
     property var _toggleReader: FileView {
         path: "/tmp/qs-wallpicker-toggle"
+        watchChanges: true
+        onFileChanged: reload()
         onLoaded: {
             var content = text().trim()
             if (content !== "" && content !==root._lastToggleContent) {
                 root._lastToggleContent = content
-                var screenName = content.split("_")[0]
-                root.togglePicker(screenName)
+                root.togglePicker(content.split("_")[0])
             }
         }
     }

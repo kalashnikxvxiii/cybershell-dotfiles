@@ -451,7 +451,7 @@ start_screen() {
         fi
 
         # Health check: se WPE crasha entro 3s, riprova con un altro wallpaper
-        _wpe_health_check "$screen" "$entry" &
+        # _wpe_health_check "$screen" "$entry" &
     else
         awww img "$entry" --outputs "$screen" --transition-type none
         kill_wpe_on_screen "$screen"
@@ -599,6 +599,25 @@ set_wallpaper() {
     [ "$screen" = "DP-1" ] && apply_colors &
     release_lock
     trap - EXIT
+}
+
+adopt_wpe_preview() {
+    local screen="$1"
+    local entry="$2"
+    # Transfer the preview PID to the themer's state
+    local preview_pid_file="/tmp/qs-wpe-preview-pid-${screen}"
+    local pid
+    pid=$(cat "$preview_pid_file" 2>/dev/null)
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+        echo "$pid" > "$STATE_DIR/pid_${screen}"
+        save_state "$screen" "$entry"
+        apply_colors
+        apply_audio_for_screen_async "$screen" "$entry" "$pid" "$(get_audio_volume)" &
+    else
+        # Preview died, do full start
+        start_screen "$screen" "$entry"
+    fi
+        rm -f "$preview_pid_file"
 }
 
 # ---------------------------------------------------------------------------
@@ -754,5 +773,6 @@ case "${1:-restore}" in
     audio-up)     audio_volume_up ;;
     audio-down)   audio_volume_down ;;
     set)          set_wallpaper "$2" "$3" ;;
+    adopt-wpe)    adopt_wpe_preview "$2" "$3" ;;
     *)            change_smart ;;
 esac
