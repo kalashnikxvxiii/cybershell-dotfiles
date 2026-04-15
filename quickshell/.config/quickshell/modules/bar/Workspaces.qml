@@ -343,10 +343,8 @@ Item {
                         var nextIdx = wheel.angleDelta.y > 0
                             ? currentIdx - 1
                             : currentIdx + 1
-                        // Circular wrap
-                        var nextIdx = (nextIdx + wsList.length) % wsList.length
 
-                        nextIdx = Math.max(0, Math.min(wsList.length - 1, nextIdx))
+                        nextIdx = (nextIdx + wsList.length) % wsList.length
                         if (nextIdx === currentIdx) return
 
                         Hyprland.dispatch("workspace name:" + wsList[nextIdx].name)

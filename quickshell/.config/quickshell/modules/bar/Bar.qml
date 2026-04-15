@@ -20,7 +20,6 @@ Item {
     property bool isDP1: BarConfig.isPrimary(screen)
     property int  barHeight: 24
     property bool volumePopupVisible: false
-    property bool powerPopupVisible: false
 
     // ── Background gradient (color from Colours / Wallust) ───────────────
     Rectangle {
@@ -135,7 +134,6 @@ Item {
             parentWindow: bar.parentWindow
             anchors { right: parent.right; verticalCenter: parent.verticalCenter }
             onVolumeToggleRequested: bar.volumePopupVisible = !bar.volumePopupVisible
-            onPowerToggleRequested:  bar.powerPopupVisible = !bar.powerPopupVisible
         }
     }
 
@@ -158,20 +156,4 @@ Item {
         }
     }
 
-    PopupWindow {
-        id: powerPopupWin
-        visible: !bar.isDP1 && bar.powerPopupVisible
-        anchor.window: bar.parentWindow
-        anchor.item: rightSection.powerAnchor
-        anchor.rect: Qt.rect(0, 4, 48, barHeight)
-        anchor.edges: 1 | 4
-        anchor.gravity: 8 | 4
-        implicitWidth: 160
-        implicitHeight: 118
-
-        PowerPopup {
-            id: powerPopupContent
-            onCloseRequested: bar.powerPopupVisible = false
-        }
-    }
 }

@@ -18,31 +18,23 @@ Item {
     property bool   isActive: submap.length > 0
     property color  accent: isActive ? CP.yellow : Qt.rgba(0, 1, 0.824, 0.7)
 
-    Rectangle {
+    CutShape {
         visible: root.showBackground
         anchors.fill: parent
-        color: CP.moduleBg
-        bottomRightRadius: 10
-        bottomLeftRadius:   5
+        fillColor: CP.moduleBg
+        radiusBottomRight: 10
+        radiusBottomLeft: 5
 
         Rectangle {
             width: 2; height: parent.height
-            color: Qt.rgba(
-                Qt.color(root.accent).r,
-                Qt.color(root.accent).g,
-                Qt.color(root.accent).b,
-                root.isActive ? 1.0 : 0.4
-            )
+            color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b,
+                           root.isActive ? 1.0 : 0.4)
         }
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width; height: 1
-            color: Qt.rgba(
-                Qt.color(root.accent).r,
-                Qt.color(root.accent).g,
-                Qt.color(root.accent).b,
-                root.isActive ? 0.4 : 0.25
-            )
+            color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b,
+                           root.isActive ? 0.4 : 0.25)
         }
     }
 

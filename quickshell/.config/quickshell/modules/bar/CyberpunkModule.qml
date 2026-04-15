@@ -45,13 +45,13 @@ Item {
         Rectangle {
             anchors.bottom: parent.bottom
             width: parent.width; height: 1
-            color: Qt.rgba(Qt.color(root.accent).r, Qt.color(root.accent).g, Qt.color(root.accent).b, 0.55)
+            color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.55)
         }
         Rectangle {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 1
             width: parent.width; height: 1
-            color: Qt.rgba(Qt.color(root.accent).r, Qt.color(root.accent).g, Qt.color(root.accent).b, 0.22)
+            color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.22)
         }
     }
 
@@ -90,7 +90,7 @@ Item {
         }
         text:  root.text
         font:  moduleLabel.font
-        color: Qt.rgba(Qt.color(root.accent).r, Qt.color(root.accent).g, Qt.color(root.accent).b, 0.20)
+        color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.20)
         z: 0
     }
     Text {
@@ -103,7 +103,7 @@ Item {
         }
         text:  root.text
         font:  moduleLabel.font
-        color: Qt.rgba(Qt.color(root.accent).r, Qt.color(root.accent).g, Qt.color(root.accent).b, 0.42)
+        color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.42)
         z: 0
     }
 

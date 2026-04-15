@@ -35,11 +35,11 @@ Item {
     }
 
     // ── Optional background ──────────────────────────────────────────────────
-    Rectangle {
+    CutShape {
         visible: root.showBackground
         anchors.fill: parent
         color: CP.moduleBg
-        bottomLeftRadius: 10
+        radiusBottomLeft: 10
         Rectangle { width: 2; height: parent.height; color: CP.cyan }
     }
 
