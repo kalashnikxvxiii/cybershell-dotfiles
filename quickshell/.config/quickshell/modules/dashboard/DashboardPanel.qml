@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Services.Mpris
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 import "."
 
 Item {
@@ -87,16 +88,7 @@ Item {
             anchors.fill: parent
             clip: true
             opacity: 0.08
-            Repeater {
-                model: Math.ceil(parent.height / 2) + 1
-                delegate: Rectangle {
-                    required property int index
-                    y: index * 2
-                    width: parent.width
-                    height: 1
-                    color: Colours.scanlineColor
-                }
-            }
+            ScanlineOverlay { opacity: 0.08 }
         }
 
         // VHS scanline band
@@ -299,16 +291,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 opacity: 0.08
-                Repeater {
-                    model: Math.ceil(parent.height / 2) + 1
-                    delegate: Rectangle {
-                        required property int index
-                        y: index * 2
-                        width: parent.width
-                        height: 1
-                        color: Colours.scanlineColor
-                    }
-                }
+                ScanlineOverlay { opacity: 0.08 }
             }
         }
 

@@ -20,7 +20,7 @@ Row {
     readonly property real fontSize: Math.min(width * 0.12, height * 0.12)
 
     Timer {
-        interval: 2000; running: true; repeat: true; triggeredOnStart: true
+        interval: 2000; running: root.visible; repeat: true; triggeredOnStart: true
         onTriggered: cpuProc.running = true
     }
     Process {
@@ -51,7 +51,7 @@ Row {
     property real memPerc: 0
 
     Timer {
-        interval: 2000; running: true; repeat: true; triggeredOnStart: true
+        interval: 2000; running: root.visible; repeat: true; triggeredOnStart: true
         onTriggered: memProc.running = true
     }
     Process {
@@ -69,7 +69,7 @@ Row {
     property real diskPerc: 0
 
     Timer {
-        interval: 10000; running: true; repeat: true; triggeredOnStart: true
+        interval: 10000; running: root.visible; repeat: true; triggeredOnStart: true
         onTriggered: diskProc.running = true
     }
     Process {
