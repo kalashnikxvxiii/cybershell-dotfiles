@@ -131,7 +131,7 @@ Item {
     Timer {
         id: glitchTrigger
         interval: 6000
-        running: true
+        running: root.tabActive
         repeat: true
         onTriggered: {
             headerGlitch.restart()
@@ -393,7 +393,7 @@ Item {
 
                                 // Layer cyan (convergence aberration)
                                 Text {
-                                    anchors.verticalCenter: parent.verticalCentere
+                                    anchors.verticalCenter: parent.verticalCenter
                                     x: 6
                                     text: searchInput.text || "SEARCH..."
                                     font.family: "Chakra Petch"
@@ -689,7 +689,7 @@ Item {
                                             layer.enabled: true
                                             layer.effect: MultiEffect {
                                                 maskEnabled: true
-                                                maskSource: procListMask
+                                                maskSource: procRowMask
                                             }
 
                                             Rectangle {
@@ -706,7 +706,7 @@ Item {
                                             }
 
                                             CutShape {
-                                                id: procListMask
+                                                id: procRowMask
                                                 anchors.fill: parent
                                                 layer.enabled: true
                                                 fillColor: "white"

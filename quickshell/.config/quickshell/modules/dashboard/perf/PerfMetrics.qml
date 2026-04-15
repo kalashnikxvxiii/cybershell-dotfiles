@@ -60,12 +60,6 @@ Item {
     property var    corePercs:      []
     property var    coreHistories: []
 
-    function formatBytes(b) {
-        if (b < 1024) return b.toFixed(0) + " B/s"
-        if (b < 1048576) return (b / 1024).toFixed(1) + " KB/s"
-        return (b / 1048576).toFixed(2) + " MB/s"
-    }
-
     // ── Sparkline alias (parent assigns via id) ──
     property alias sparkline: sparkline
 
@@ -588,14 +582,14 @@ Item {
                             font.pixelSize: 32
                             font.weight: Font.Bold
                             color: metricsRoot.memColor
-                            opacity: metricsRoot.memPerc > 0.9 ? metricsRoot.pulseValue : 1.0
+                            opacity: metricsRoot.memPerc > 90 ? metricsRoot.pulseValue : 1.0
 
                             layer.enabled: true
                             layer.effect: MultiEffect {
                                 shadowEnabled: true
                                 shadowColor: memPercText.color
                                 shadowBlur: 0.6
-                                shadowOpacity: metricsRoot.memPerc > 0.8 ? 0.5 : 0.25
+                                shadowOpacity: metricsRoot.memPerc > 80 ? 0.5 : 0.25
                             }
                         }
                     }
@@ -684,13 +678,13 @@ Item {
                     RowLayout {
                         spacing: 14
                         Text {
-                            text: "↓ " + metricsRoot.formatBytes(metricsRoot.netRxBps)
+                            text: "↓ " + perf.formatBytes(metricsRoot.netRxBps)
                             font.family: "Chakra Petch"
                             font.pixelSize: 12
                             color: Colours.accentSecondary
                         }
                         Text {
-                            text: "↑ " + metricsRoot.formatBytes(metricsRoot.netTxBps)
+                            text: "↑ " + perf.formatBytes(metricsRoot.netTxBps)
                             font.family: "Chakra Petch"
                             font.pixelSize: 12
                             color: Colours.accentPrimary

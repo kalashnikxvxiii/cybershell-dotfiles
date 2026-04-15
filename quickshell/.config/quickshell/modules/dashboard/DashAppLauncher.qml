@@ -203,7 +203,7 @@ Item {
     }
 
     Timer {
-        interval: 10000; running: true; repeat: true
+        interval: 10000; running: root.visible; repeat: true
         onTriggered: root.syncAppIds()
     }
 

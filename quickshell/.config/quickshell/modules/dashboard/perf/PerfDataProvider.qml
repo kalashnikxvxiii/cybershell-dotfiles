@@ -169,7 +169,7 @@ Item {
                     hists.push([0, 0])
                 }
                 root.corePercs = percs
-                root.coreHistories - hists
+                root.coreHistories = hists
             }
         }}
     }
@@ -229,7 +229,6 @@ Item {
             }
             if (p.length >= 18) {
                 root.gpuName = p[2].replace("NVIDIAGeForce", "").replace(/(\D)(\d)/, "$1 $2")
-                //root.gpuName = p[2].replace("NVIDIAGeForce", "").trim()
                 root.gpuVramUsedGb = (parseFloat(p[3]) || 0) / 1024
                 root.gpuVramTotalGb = (parseFloat(p[4]) || 0) /1024
                 root.gpuClockCur = parseInt(p[5]) || 0

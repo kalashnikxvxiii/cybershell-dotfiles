@@ -12,6 +12,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 Item {
     id: root
@@ -146,55 +147,19 @@ Item {
             spacing: 6
 
             // Username with permanent chromatic aberration
-            Item {
+            ChromaticText {
+                id: usernameLabel
                 Layout.fillWidth: true
-                implicitHeight: usernameLabel.implicitHeight
-
-                // Red channel (+3px right) — always visible at low opacity
-                Text {
-                    width: parent.width
-                    x: 3; y: 0
-                    text:  root.username || "user"
-                    font:  usernameLabel.font
-                    color: CP.aberrationRed(root._glitchingUser ? 0.65 : 0.28)
-                    elide: Text.ElideRight
-                    z: 0
-                    Behavior on color { ColorAnimation { duration: 30 } }
-                }
-                // Cyan channel (-3px left) — always visible at low opacity
-                Text {
-                    width: parent.width
-                    x: -3; y: 0
-                    text:  root.username || "user"
-                    font:  usernameLabel.font
-                    color: CP.aberrationCyan(root._glitchingUser ? 0.65 : 0.28)
-                    elide: Text.ElideRight
-                    z: 0
-                    Behavior on color { ColorAnimation { duration: 30 } }
-                }
-                // Diagonal glow shadow (faint)
-                Text {
-                    width: parent.width
-                    x: 1; y: 1
-                    text:  root.username || "user"
-                    font:  usernameLabel.font
-                    color: CP.aberrationCyan(0.30)
-                    elide: Text.ElideRight
-                    z: 0
-                }
-                // Main text
-                Text {
-                    id: usernameLabel
-                    anchors { left: parent.left; right: parent.right }
-                    text: root.username || "user"
-                    font.family: "Oxanium"
-                    font.pixelSize: root.fontSize * 1.8
-                    font.weight: Font.Bold
-                    color: CP.yellow
-                    elide: Text.ElideRight
-                    transform: Translate { id: labelShift; x: 0 }
-                    z: 2
-                }
+                text: root.username || "user"
+                font.family: "Oxanium"
+                font.pixelSize: root.fontSize * 1.8
+                font.weight: Font.Bold
+                color: CP.yellow
+                glitching: root._glitchingUser
+                aberrationOpacity: 0.65
+                restOpacity: 0.28
+                offsetX: 3
+                transform: Translate { id: labelShift; x: 0 }
             }
 
             // OS
@@ -253,7 +218,7 @@ Item {
 
     // ── Continuous stepped glitch with chromatic aberration ────────────────
     SequentialAnimation {
-        running: true; loops: Animation.Infinite
+        running: root.visible; loops: Animation.Infinite
 
         PropertyAction  { target: root;          property: "_glitchingUser"; value: false }
         PropertyAction  { target: usernameLabel; property: "color";          value: CP.yellow }
@@ -294,7 +259,7 @@ Item {
 
     // ── Opacity flicker (clock-pulse: breathing glow) ───────────────────
     SequentialAnimation {
-        running: true; loops: Animation.Infinite
+        running: root.visible; loops: Animation.Infinite
         PropertyAction  { target: root; property: "opacity"; value: 1.0 }
         PauseAnimation  { duration: 2400 }
         PropertyAction  { target: root; property: "opacity"; value: 0.85 }

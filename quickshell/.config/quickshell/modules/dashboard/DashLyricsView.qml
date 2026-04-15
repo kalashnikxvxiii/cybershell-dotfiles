@@ -152,7 +152,7 @@ Item {
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            Players.active?.positionChanged()
+            root.player?.positionChanged()
             if (!root.lyricsReady || !root.player || root.lyricsLines.length === 0) return
 
             const lastTime = root.lyricsLines[root.lyricsLines.length - 1].time

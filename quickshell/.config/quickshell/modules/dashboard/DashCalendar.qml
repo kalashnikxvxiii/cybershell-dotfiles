@@ -10,10 +10,10 @@ import "../../common"
 Item {
     id: root
 
-    required property var state
+    required property var calendarState
 
-    readonly property int currMonth: state.currentDate.getMonth()
-    readonly property int currYear: state.currentDate.getFullYear()
+    readonly property int currMonth: calendarState.currentDate.getMonth()
+    readonly property int currYear: calendarState.currentDate.getFullYear()
 
     anchors.left: parent.left
     anchors.right: parent.right
@@ -23,12 +23,12 @@ Item {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.MiddleButton
-        onClicked: root.state.currentDate = new Date()
+        onClicked: root.calendarState.currentDate = new Date()
         onWheel: wheel => {
             if (wheel.angleDelta.y > 0)
-                root.state.currentDate = new Date(root.currYear, root.currMonth - 1, 1)
+                root.calendarState.currentDate = new Date(root.currYear, root.currMonth - 1, 1)
             else if (wheel.angleDelta.y < 0)
-                root.state.currentDate = new Date(root.currYear, root.currMonth + 1, 1)
+                root.calendarState.currentDate = new Date(root.currYear, root.currMonth + 1, 1)
         }
     }
 
@@ -60,7 +60,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.state.currentDate = new Date(root.currYear, root.currMonth - 1, 1)
+                    onClicked: root.calendarState.currentDate = new Date(root.currYear, root.currMonth - 1, 1)
                 }
             }
 
@@ -77,7 +77,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.state.currentDate = new Date()
+                    onClicked: root.calendarState.currentDate = new Date()
                 }
             }
 
@@ -97,7 +97,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.state.currentDate = new Date(root.currYear, root.currMonth + 1, 1)
+                    onClicked: root.calendarState.currentDate = new Date(root.currYear, root.currMonth + 1, 1)
                 }
             }
         }

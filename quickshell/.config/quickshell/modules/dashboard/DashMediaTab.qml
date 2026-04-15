@@ -64,7 +64,7 @@ Item {
 
     Item {
         id: mediaWrapper
-        x: root.lyricsOpen ? x : 0
+        x: root.lyricsOpen ? -root.lyricsW : 0
         width: root.mediaW
         height: parent.height
 

@@ -50,6 +50,7 @@ Item {
         }
 
         onRunningChanged: {
+            if (running) buffer = ""
             if (!running && buffer !== "") {
                 root.loading = false
                 if (buffer.startsWith("ERROR") || buffer.length < 10) {

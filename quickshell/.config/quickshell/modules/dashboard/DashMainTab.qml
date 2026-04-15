@@ -85,7 +85,7 @@ Item {
             Layout.preferredHeight: calendar.implicitHeight + 25
             cutBottomLeft: 24
 
-            DashCalendar { id: calendar; anchors.fill: parent; state: root.dashState }
+            DashCalendar { id: calendar; anchors.fill: parent; calendarState: root.dashState }
         }
 
         // Resources (row 1, col 4)
