@@ -29,6 +29,7 @@ Item {
 
     // ── Layer mask (optional) ──
     property bool maskEnabled: false
+    property alias mask: _mask
 
     // Fill
     CutShape {

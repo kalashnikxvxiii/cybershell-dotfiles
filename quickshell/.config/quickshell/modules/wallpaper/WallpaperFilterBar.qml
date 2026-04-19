@@ -14,12 +14,16 @@ Item {
     readonly property alias resultsModel:       wallpaperSearch.resultsModel
     readonly property alias searching:          wallpaperSearch.searching
 
+    property alias  currentSort:                wallpaperSearch.currentSort
+
     property bool   favoritesOnly:  false
     property int    favCount:       0
     
     signal searchResultClicked(string thumbPath, string fullUrl)
     signal localFilterChanged(string keywords)
     signal searchFirstResult()
+
+    function resubmit() { wallpaperSearch.resubmit() }
 
     function activateSearch() {
         wallpaperSearch.expanded = true
@@ -207,13 +211,14 @@ Item {
                 Layout.preferredHeight: 20
                 readonly property bool active: WallpaperState.colorFilter === modelData
 
-                Rectangle {
+                CutShape {
                     anchors.centerIn: parent
                     width: 12; height: 12
-                    radius: 6
-                    color: modelData
-                    border.color: parent.active ? "#ffffff" : "transparent"
-                    border.width: parent.active ? 2 : 0
+                    cutBottomRight: 3
+                    fillColor: modelData
+                    strokeColor: parent.active ? "#ffffff" : "transparent"
+                    strokeWidth: 2
+                    inset: 0.5
                 }
 
                 MouseArea {

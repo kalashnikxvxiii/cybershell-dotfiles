@@ -9,17 +9,25 @@ Item {
     anchors.fill: parent
     clip: true
 
-    property real lineSpacing: 2
     property color lineColor: "#000000"
+    property real lineSpacing: 2
 
-    Repeater {
-        model: root.height > 0 ? Math.ceil(root.height / root.lineSpacing) + 1 : 0
-        delegate: Rectangle {
-            required property int index
-            y: index * root.lineSpacing
-            width: root.width
-            height: 1
-            color: root.lineColor
+    Canvas {
+        anchors.fill: parent
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
+            ctx.strokeStyle = root.lineColor
+            ctx.lineWidth = 1
+            for (var y = 0; y < height; y += root.lineSpacing) {
+                ctx.beginPath()
+                ctx.moveTo(0, y + 0.5)
+                ctx.lineTo(width, y + 0.5)
+                ctx.stroke()
+            }
         }
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        Component.onCompleted: requestPaint()
     }
 }
