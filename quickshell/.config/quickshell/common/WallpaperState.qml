@@ -2,6 +2,7 @@ pragma Singleton
 
 import Quickshell.Io
 import QtQuick
+import "WallpaperConstants.js" as WC
 
 
 QtObject {
@@ -70,17 +71,6 @@ QtObject {
     }
 
     // ── Color matching (hue bucket) ──────────────────────────────────
-    readonly property var _colorBuckets: ({
-        "#ff0000": [0,    30],     // red
-        "#ff8800": [30,   55],     // orange
-        "#ffff00": [55,   80],     // yellow
-        "#00ff00": [80,  160],     // green
-        "#0088ff": [160, 250],     // blue
-        "#8800ff": [250, 290],     // purple
-        "#ff00ff": [290, 330],     // pink
-        "#888888": [-1,   -1],     // monochrome (saturation < 15%)
-    })
-
     function _hexToHsl(hex) {
         hex = hex.replace("#", "")
         var r = parseInt(hex.substr(0, 2), 16) / 255
@@ -99,7 +89,7 @@ QtObject {
     }
 
     function _colorMatches(entryColor, filterColor) {
-        var bucket = _colorBuckets[filterColor]
+        var bucket = WC.colorBuckets[filterColor]
         if (!bucket) return true
         var hsl = _hexToHsl(entryColor)
         // Monochrome check

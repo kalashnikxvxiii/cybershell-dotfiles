@@ -12,6 +12,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../../common"
 import "../../common/Colors.js" as CP
+import "./DashboardConst.js" as DC
 
 Item {
     id: root
@@ -54,14 +55,6 @@ Item {
     onAddBtnHoveredChanged: if (addBtnHovered) addGlitch.restart()
 
     HoverHandler { id: rootHover }
-
-    // Default apps — only used if the JSON doesn't exist yet (first launch)
-    readonly property var defaultApps: [
-        { icon: "discord",          exec: "discord",          pinned: false },
-        { icon: "steam",            exec: "steam",            pinned: false },
-        { icon: "spotify-launcher", exec: "spotify-launcher", pinned: false },
-        { icon: "kitty",            exec: "kitty",            pinned: false },
-    ]
 
     // Icon lookup via GTK icon theme (same pattern as Workspaces.qml)
     property var  iconCache:        ({})
@@ -152,7 +145,7 @@ Item {
 
     function populateModel(saved) {
         modelPopulated = true
-        var list = (saved && saved.length > 0) ? saved : root.defaultApps
+        var list = (saved && saved.length > 0) ? saved : DC.defaultApps
         for (var i = 0; i < list.length; i++) {
             var e = list[i]
             appsModel.append({
@@ -258,13 +251,14 @@ Item {
             Component.onCompleted: root.requestIcon(model.icon)
 
             // Slot highlight — visible when an icon hovers over this cell during drag
-            Rectangle {
+            CutShape {
                 anchors.fill: parent
                 anchors.margins: 5
-                radius: 8
-                color: "transparent"
-                border.width: 1
-                border.color: CP.alpha(CP.cyan, 0.55)
+                cutTopRight: 8
+                fillColor: "transparent"
+                strokeWidth: 1
+                strokeColor: CP.alpha(CP.cyan, 0.55)
+                inset: 0.5
                 visible: dropZone.containsDrag && !mouseArea.drag.active
             }
 
@@ -361,20 +355,22 @@ Item {
                     anchors.top:    parent.top
                     anchors.right:  parent.right
                     anchors.margins: 7
-                    width: 5; height: 5; radius: 3
+                    width: 5; height: 5
                     color: CP.cyan
                     visible: model.pinned ?? false
                 }
 
                 // Border during drag
-                Rectangle {
+                CutShape {
                     anchors.fill: parent
                     anchors.margins: 4
-                    radius: 8
-                    color: "transparent"
-                    border.width: mouseArea.drag.active ? 1 : 0
-                    border.color: CP.alpha(CP.cyan, 0.7)
-                    Behavior on border.width { Anim { duration: 80 } }
+                    cutTopRight: 12
+                    fillColor: "transparent"
+                    strokeWidth: mouseArea.drag.active ? 1 : 0
+                    strokeColor: CP.alpha(CP.cyan, 0.7)
+                    inset: 0.5
+
+                    Behavior on strokeColor { Anim { duration: 80 } }
                 }
             }
 
@@ -576,12 +572,13 @@ Item {
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(CP.cyan, 0.6)
                 }
-                Rectangle {
-                    width: parent.width; height: 24; radius: 3
-                    color: CP.alpha(CP.cyan, 0.07)
-                    border.width: 1
-                    border.color: execInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
-                    Behavior on border.color { CAnim {} }
+                CutShape {
+                    width: parent.width; height: 24; cutTopRight: 3
+                    fillColor: CP.alpha(CP.cyan, 0.07)
+                    strokeWidth: 1
+                    strokeColor: execInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
+
+                    Behavior on strokeColor { CAnim {} }
 
                     TextInput {
                         id: execInput
@@ -601,12 +598,13 @@ Item {
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(CP.cyan, 0.6)
                 }
-                Rectangle {
-                    width: parent.width; height: 24; radius: 3
-                    color: CP.alpha(CP.cyan, 0.07)
-                    border.width: 1
-                    border.color: iconInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
-                    Behavior on border.color { CAnim {} }
+                CutShape {
+                    width: parent.width; height: 24; cutTopRight: 3
+                    fillColor: CP.alpha(CP.cyan, 0.07)
+                    strokeWidth: 1
+                    strokeColor: iconInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
+
+                    Behavior on strokeColor { CAnim {} }
 
                     TextInput {
                         id: iconInput
@@ -624,11 +622,12 @@ Item {
                     width: parent.width
                     spacing: 6
 
-                    Rectangle {
-                        width: (parent.width - 6) / 2; height: 26; radius: 3
-                        color: cancelHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
-                        border.width: 1; border.color: CP.alpha(CP.red, 0.4)
-                        Behavior on color { CAnim {} }
+                    CutShape {
+                        width: (parent.width - 6) / 2; height: 26; cutBottomLeft: 3
+                        fillColor: cancelHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
+                        strokeWidth: 1; strokeColor: CP.alpha(CP.red, 0.4); inset: 0.5
+
+                        Behavior on fillColor { CAnim {} }
 
                         Text {
                             anchors.centerIn: parent
@@ -644,11 +643,12 @@ Item {
                         }
                     }
 
-                    Rectangle {
-                        width: (parent.width - 6) / 2; height: 26; radius: 3
-                        color: confirmHover.containsMouse ? CP.alpha(CP.cyan, 0.2) : CP.alpha(CP.cyan, 0.08)
-                        border.width: 1; border.color: CP.alpha(CP.cyan, 0.5)
-                        Behavior on color { CAnim {} }
+                    CutShape {
+                        width: (parent.width - 6) / 2; height: 26; cutBottomLeft: 3
+                        fillColor: confirmHover.containsMouse ? CP.alpha(CP.cyan, 0.2) : CP.alpha(CP.cyan, 0.08)
+                        strokeWidth: 1; strokeColor: CP.alpha(CP.cyan, 0.5)
+
+                        Behavior on fillColor { CAnim {} }
 
                         Text {
                             anchors.centerIn: parent
@@ -716,12 +716,13 @@ Item {
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(CP.cyan, 0.6)
                 }
-                Rectangle {
-                    width: parent.width; height: 24; radius: 3
-                    color: CP.alpha(CP.cyan, 0.07)
-                    border.width: 1
-                    border.color: iconEditInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
-                    Behavior on border.color { CAnim {} }
+                CutShape {
+                    width: parent.width; height: 24; cutTopRight: 3
+                    fillColor: CP.alpha(CP.cyan, 0.07)
+                    strokeWidth: 1
+                    strokeColor: iconEditInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
+
+                    Behavior on strokeColor { CAnim {} }
 
                     TextInput {
                         id: iconEditInput
@@ -739,11 +740,12 @@ Item {
                     width: parent.width
                     spacing: 6
 
-                    Rectangle {
-                        width: (parent.width - 6) / 2; height: 26; radius: 3
-                        color: ieCancel.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
-                        border.width: 1; border.color: CP.alpha(CP.red, 0.4)
-                        Behavior on color { CAnim {} }
+                    CutShape {
+                        width: (parent.width - 6) / 2; height: 26; cutTopRight: 3
+                        fillColor: ieCancel.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
+                        strokeWidth: 1; strokeColor: CP.alpha(CP.red, 0.4); inset: 0.5
+
+                        Behavior on fillColor { CAnim {} }
 
                         Text {
                             anchors.centerIn: parent
@@ -759,11 +761,12 @@ Item {
                         }
                     }
 
-                    Rectangle {
-                        width: (parent.width - 6) / 2; height: 26; radius: 3
-                        color: ieConfirm.containsMouse ? CP.alpha(CP.cyan, 0.2) : CP.alpha(CP.cyan, 0.08)
-                        border.width: 1; border.color: CP.alpha(CP.cyan, 0.5)
-                        Behavior on color { CAnim {} }
+                    CutShape {
+                        width: (parent.width - 6) / 2; height: 26; cutTopRight: 3
+                        fillColor: ieConfirm.containsMouse ? CP.alpha(CP.cyan, 0.2) : CP.alpha(CP.cyan, 0.08)
+                        strokeWidth: 1; strokeColor: CP.alpha(CP.cyan, 0.5); inset: 0.5
+
+                        Behavior on fillColor { CAnim {} }
 
                         Text {
                             anchors.centerIn: parent
