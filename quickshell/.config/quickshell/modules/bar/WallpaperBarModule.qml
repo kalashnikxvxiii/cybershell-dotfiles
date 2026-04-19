@@ -1,5 +1,6 @@
 import QtQuick
 import "../../common/Colors.js" as CP
+import "../../common/BarConfig.js" as BC
 import "../../common"
 
 CyberpunkModule {
@@ -8,6 +9,6 @@ CyberpunkModule {
     text: "\u25A3"      // ▣ wallpaper glyph
     accent: WallpaperState.pickerOpen ? CP.yellow : CP.cyan
     onLeftClick: function() {
-        WallpaperState.togglePicker(BarConfig.primaryMonitorName)
+        WallpaperState.togglePicker(BC.primaryMonitorName)
     }
 }

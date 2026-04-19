@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import "../../common/Colors.js" as CP
+import "../../common/BarConfig.js" as BC
 import "."
 import "../../common"
 
@@ -43,7 +44,7 @@ Item {
         Clock {
             id: clockItem
             height: innerRow.height
-            visible: !BarConfig.isPrimary(root.barScreen)
+            visible: !BC.isPrimary(root.barScreen)
         }
 
         // Primary monitor
@@ -51,7 +52,7 @@ Item {
             id: mprisWithCava
             height: innerRow.height
             width: mpris.implicitWidth + 24
-            visible: BarConfig.isPrimary(root.barScreen)
+            visible: BC.isPrimary(root.barScreen)
 
             MprisModule {
                 id: mpris

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import "../../common/Colors.js" as CP
+import "../../common/BarConfig.js" as BC
 import "."
 import "../../common"
 
@@ -48,7 +49,7 @@ Item {
 
         // ── DP-1 modules ─────────────────────────────────────
         Loader {
-            active: BarConfig.isPrimary(root.barScreen)
+            active: BC.isPrimary(root.barScreen)
             height: innerRow.height
 
             sourceComponent: Component {

@@ -8,6 +8,7 @@ import QtQuick
 import QtQuick.Effects
 import QtQml.Models
 import "../../common/Colors.js" as CP
+import "../../common/BarConfig.js" as BC
 import "."
 import "../../common"
 
@@ -17,7 +18,7 @@ Item {
     required property var screen
     required property var parentWindow
 
-    property bool isDP1: BarConfig.isPrimary(screen)
+    property bool isDP1: BC.isPrimary(screen)
     property int  barHeight: 24
     property bool volumePopupVisible: false
 
@@ -82,8 +83,8 @@ Item {
             Repeater {
                 id: leftRepeater
                 model: bar.isDP1
-                       ? BarConfig.entriesPrimaryLeft
-                       : BarConfig.entriesSecondaryLeft
+                       ? BC.entriesPrimaryLeft
+                       : BC.entriesSecondaryLeft
 
                 delegate: DelegateChooser {
                     role: "name"
@@ -109,8 +110,8 @@ Item {
             Repeater {
                 id: centerRepeater
                 model: bar.isDP1
-                       ? BarConfig.entriesPrimaryCenter
-                       : BarConfig.entriesSecondaryCenter
+                       ? BC.entriesPrimaryCenter
+                       : BC.entriesSecondaryCenter
                 
                 delegate: DelegateChooser {
                     role: "name"
