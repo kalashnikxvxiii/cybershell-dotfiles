@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import "../../common/Colors.js" as CP
+import "./DashboardConst.js" as DC
 import "../../common"
 
 // Tab bar with 3 tabs: CYBERDECK, MEDIA, CYBERWARE
@@ -12,7 +13,6 @@ Item {
     required property PersistentProperties dashState
 
     readonly property int tabCount: 3
-    readonly property var tabLabels: ["CYBERDECK", "MEDIA", "CYBERWARE"]
 
     implicitHeight: bar.height + indicator.height + indicator.anchors.topMargin + separator.height
 
@@ -25,18 +25,17 @@ Item {
         anchors.right: parent.right
 
         Repeater {
-            model: root.tabLabels
+            model: DC.tabLabels
 
             delegate: Item {
                 id: tab
+                width: bar.width / root.tabCount
+                height: 26
 
                 required property string modelData
                 required property int index
 
                 readonly property bool current: root.dashState.currentTab === index
-
-                width: bar.width / root.tabCount
-                height: 26
 
                 // Background hover/active
                 Rectangle {
@@ -58,9 +57,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-
                     onClicked: root.dashState.currentTab = tab.index
-
                     onWheel: wheel => {
                         if (wheel.angleDelta.y < 0)
                             root.dashState.currentTab = Math.min(root.dashState.currentTab + 1, root.tabCount - 1)
@@ -75,15 +72,11 @@ Item {
     // Sliding indicator under the active tab
     Rectangle {
         id: indicator
-
         anchors.top: bar.bottom
         anchors.topMargin: 3
-
         height: 2
         width: bar.width / root.tabCount
         color: CP.cyan
-        radius: 1
-
         x: root.dashState.currentTab * width
 
         Behavior on x {
@@ -94,11 +87,9 @@ Item {
     // Separator
     Rectangle {
         id: separator
-
         anchors.top: indicator.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-
         height: 1
         color: Colours.neonBorder(0.15)
     }
