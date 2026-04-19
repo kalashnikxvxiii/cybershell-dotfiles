@@ -44,18 +44,6 @@ Item {
     property real   _pressStartY:       0
 
     readonly property real _TAU: Math.PI * 2
-    readonly property var _rootInfoCmd: ["bash", "-c",
-                                        "echo \"$(hostname)|$(uname -r)|$(cat /proc/uptime | awk '{d=int($1/86400); " +
-                                        "h=int(($1%86400)/3600); m=int(($1%3600)/60);" +
-                                        "printf \"%dd %dh %dm\",d,h,m}')|$(cat /proc/loadavg | awk " +
-                                        "'{print $1,$2,$3}')|$(nproc)|$(free -m | awk '/^Mem:/" +
-                                        "{printf \"%d/%dMB (%.0f%%)\", $3, $2, $3/$2*100}')|" +
-                                        "$(free -m | awk '/^Swap:/{printf \"%d/%dMB\", $3, $2}')|" +
-                                        "$(df -h / | awk 'NR==2{print $3\"/\"$2\" (\"$5\")\"}')|" +
-                                        "$(cat /proc/cpuinfo | grep 'model name' | head -1 | sed 's/.*: //')|" +
-                                        "$(nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,driver.version " +
-                                        "--format=csv,noheader,nounits 2>/dev/null || echo 'N/A')\""]
-
     signal interactionActive(bool active)
 
     // ── Update the graph ──────────────────────────────────
@@ -338,7 +326,17 @@ Item {
         let name = nodes[idx].name
         graphRoot.expandedInfo = null
         if (graphRoot.nodes[idx].isRoot) {
-            infoProc.command = graphRoot._rootInfoCmd
+            infoProc.command = ["bash", "-c",
+                "echo \"$(hostname)|$(uname -r)|$(cat /proc/uptime | awk '{d=int($1/86400); " +
+                "h=int(($1%86400)/3600); m=int(($1%3600)/60);" +
+                "printf \"%dd %dh %dm\",d,h,m}')|$(cat /proc/loadavg | awk " +
+                "'{print $1,$2,$3}')|$(nproc)|$(free -m | awk '/^Mem:/" +
+                "{printf \"%d/%dMB (%.0f%%)\", $3, $2, $3/$2*100}')|" +
+                "$(free -m | awk '/^Swap:/{printf \"%d/%dMB\", $3, $2}')|" +
+                "$(df -h / | awk 'NR==2{print $3\"/\"$2\" (\"$5\")\"}')|" +
+                "$(cat /proc/cpuinfo | grep 'model name' | head -1 | sed 's/.*: //')|" +
+                "$(nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,driver.version " +
+                "--format=csv,noheader,nounits 2>/dev/null || echo 'N/A')\""]
             infoProc.running = true
             return
         }
@@ -970,7 +968,17 @@ Item {
         onTriggered: {
             if (graphRoot.expandedNode < 0 || !graphRoot.expandedInfo) return
             if (graphRoot.nodes[graphRoot.expandedNode].isRoot) {
-                infoProc.command = graphRoot._rootInfoCmd
+                infoProc.command = ["bash", "-c",
+                    "echo \"$(hostname)|$(uname -r)|$(cat /proc/uptime | awk '{d=int($1/86400); " +
+                    "h=int(($1%86400)/3600); m=int(($1%3600)/60);" +
+                    "printf \"%dd %dh %dm\",d,h,m}')|$(cat /proc/loadavg | awk " +
+                    "'{print $1,$2,$3}')|$(nproc)|$(free -m | awk '/^Mem:/" +
+                    "{printf \"%d/%dMB (%.0f%%)\", $3, $2, $3/$2*100}')|" +
+                    "$(free -m | awk '/^Swap:/{printf \"%d/%dMB\", $3, $2}')|" +
+                    "$(df -h / | awk 'NR==2{print $3\"/\"$2\" (\"$5\")\"}')|" +
+                    "$(cat /proc/cpuinfo | grep 'model name' | head -1 | sed 's/.*: //')|" +
+                    "$(nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,driver.version " +
+                    "--format=csv,noheader,nounits 2>/dev/null || echo 'N/A')\""]
                 infoProc.running = true
                 return
             }

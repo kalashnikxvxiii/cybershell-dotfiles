@@ -31,6 +31,7 @@ Item {
         stdout: SplitParser { onRead: data => { weatherProc.buffer += data } }
 
         onRunningChanged: {
+            if (running) { buffer = ""; return }
             if (!running && buffer !== "") {
                 root.loading = false
                 if (!buffer.startsWith("ERROR") && buffer.length > 10) {

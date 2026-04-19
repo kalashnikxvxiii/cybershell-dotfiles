@@ -861,11 +861,11 @@ Item {
                 implicitHeight: seekArea.containsMouse || seekArea.pressed ? 8 : 4
                 Behavior on implicitHeight { NumberAnimation { duration: 120 } }
 
-                Rectangle { anchors.fill: parent; radius: 2; color: CP.alpha(CP.cyan, 0.18) }
+                Rectangle { anchors.fill: parent; color: CP.alpha(CP.cyan, 0.18) }
                 Rectangle {
                     anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
                     width: (seekArea.pressed ? seekArea._seekProgress : root.playerProgress) * parent.width
-                    radius: 2; color: CP.cyan
+                    color: CP.cyan
                     Behavior on width { enabled: !seekArea.pressed; Anim { duration: 400; easing.type: Easing.Linear } }
                 }
 

@@ -88,8 +88,8 @@ Row {
         id: res
 
         required property string icon
-        required property real value
         required property color colour
+        required property real value
 
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -104,18 +104,17 @@ Row {
             anchors.top: labelWrapper.bottom
             anchors.topMargin: 8
             implicitWidth: 16
-            radius: 4
             color: Qt.rgba(res.colour.r, res.colour.g, res.colour.b, 0.2)
             clip: true
 
-            property real prevValue: res.value
-
-            readonly property int _N: 10
             readonly property real tension: 0.025
             readonly property real damping: 0.985
+            readonly property int _N: 10
+
+            property real prevValue: res.value
+            property bool _simActive: false
             property var _h: (function(){ var a=[]; for(var i=0;i<10;i++) a.push(0); return a })()
             property var _v: (function(){ var a=[]; for(var i=0;i<10;i++) a.push(0); return a })()
-            property bool _simActive: false
 
             Timer {
                 interval: 16
@@ -146,15 +145,15 @@ Row {
             }
 
             // Fill body (below the wavy surface)
-            Rectangle {
+            CutShape {
                 id: fillBody
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 height: res.value * parent.height - waveCanvas.waveAmp
-                color: res.colour
-                bottomRightRadius: 4
-                bottomLeftRadius: 4
+                fillColor: res.colour
+                radiusBottomRight: 4
+                radiusBottomLeft: 4
 
                 Behavior on height {
                     Anim { duration: 600 }
