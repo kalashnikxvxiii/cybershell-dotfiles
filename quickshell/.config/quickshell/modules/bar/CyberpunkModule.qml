@@ -132,47 +132,14 @@ Item {
     }
 
     // ── Glitch stepped hover ──────────────────────────────────────────────
-    SequentialAnimation {
+    GlitchAnim {
         id: glitchAnim
-        running: false; loops: 1
-
-        // Aberration ON at first visible step
-        PropertyAction  { target: root;             property: "_glitching";  value: false }
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: 0 }
-        PauseAnimation  { duration: 30 }
-
-        PropertyAction  { target: root;             property: "_glitching";  value: true }
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root._c1 }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: 4 }
-        PauseAnimation  { duration: 42 }
-
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root._c2 }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: -4 }
-        PauseAnimation  { duration: 42 }
-
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: 3 }
-        PauseAnimation  { duration: 42 }
-
-        PropertyAction  { target: root;             property: "_glitching";  value: false }
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root._c1 }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: -2 }
-        PauseAnimation  { duration: 42 }
-
-        PropertyAction  { target: root;             property: "_glitching";  value: true }
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: 2 }
-        PauseAnimation  { duration: 42 }
-
-        // Aberration OFF — back to stable
-        PropertyAction  { target: root;             property: "_glitching";  value: false }
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: 0 }
-        PauseAnimation  { duration: 42 }
-
-        PropertyAction  { target: moduleLabel;      property: "color";       value: root.accent }
-        PropertyAction  { target: moduleLabelShift; property: "x";           value: 0 }
+        labelTarget: moduleLabel
+        shiftTarget: moduleLabelShift
+        baseColor: root.accent
+        c1: root._c1
+        c3: root.accent
+        aberrationTarget: root
     }
 
     HoverHandler { id: hoverHandler; onHoveredChanged: if (hovered) glitchAnim.restart() }

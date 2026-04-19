@@ -80,11 +80,13 @@ Item {
         }
     }
 
-    Timer {
-        interval: 5000
-        running: true; repeat: true; triggeredOnStart: true
-        onTriggered: overrideLoader.running = true
+    FileView {
+        path: Qt.resolvedUrl("../../modules/dashboard/applauncher-order.json").toString().replace("file://", "")
+        watchChanges: true
+        onFileChanged: overrideLoader.running = true
     }
+
+    Component.onCompleted: overrideLoader.running = true
 
     function requestIcon(cls) {
         if (!cls || cls.length === 0) return
@@ -246,20 +248,30 @@ Item {
                                 var win = wsBtn.modelData.toplevels.values[index]
                                 return win && win.wayland ? win.wayland.appId : ""
                             }
-                            
-                            property string iconPath: {
-                                var _ = root.iconCacheVersion // reactive dependency
-                                return root.iconCache[appClass] || ""
+
+                            property string iconPath: ""
+
+                            Connections {
+                                target: root
+                                function onIconCacheVersionChanged() {
+                                    iconSlot.iconPath = root.iconCache[iconSlot.appClass] || ""
+                                }
                             }
 
-                            Component.onCompleted: root.requestIcon(appClass)
-                            onAppClassChanged: root.requestIcon(appClass)
+                            Component.onCompleted: {
+                                iconSlot.iconPath = root.iconCache[appClass] || ""
+                                root.requestIcon(appClass)
+                            }
+                            onAppClassChanged: {
+                                iconSlot.iconPath = root.iconCache[appClass] || ""
+                                root.requestIcon(appClass)
+                            }
 
                             Image {
                                 anchors.fill: parent
                                 fillMode: Image.PreserveAspectFit
                                 smooth: true
-                                source: iconSlot.iconPath.length > 0 ? "file://" + iconSlot.iconPath : ""
+                                source: iconSlot.iconPath.startsWith("/") ? "file://" + iconSlot.iconPath : ""
                                 visible: status === Image.Ready
                                 sourceSize.width: width
                                 sourceSize.height: height

@@ -82,8 +82,6 @@ Item {
                 return
             }
 
-            root.player.positionChanged()
-
             var ratio = player.position / player.length
             ratio = Math.max(0, Math.min(1, ratio))
             root.progress = ratio
@@ -182,7 +180,6 @@ Item {
             bottomMargin: 1
         }
         height: 1
-        radius: 1
         color: Qt.rgba(1, 1, 1, 0)
         visible: player && player.lengthSupported
 
@@ -193,7 +190,6 @@ Item {
                 top: parent.top
                 bottom: parent.bottom
             }
-            radius: parent.radius
             color: CP.alpha(CP.yellow, 1)
         }
     }
