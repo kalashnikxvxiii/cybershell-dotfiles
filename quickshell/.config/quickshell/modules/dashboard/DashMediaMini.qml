@@ -286,6 +286,7 @@ Item {
 
                 function doToggle() {
                     coverImgOld.source = coverImg.source
+                    coverImgOld.spin = 0
                     coverImgOld.visible = true
                     coverImgOld.opacity = 1
                     coverOutAnim.restart()

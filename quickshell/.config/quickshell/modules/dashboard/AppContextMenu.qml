@@ -8,8 +8,8 @@ Item {
     id: ctxRoot
 
     // Parent must set these for position clamping
-    required property real parentWidth
     required property real parentHeight
+    required property real parentWidth
 
     // Signals to parent
     signal pinToggle(int index, bool currentlyPinned)
@@ -25,16 +25,17 @@ Item {
     }
 
     // Context menu
-    Rectangle {
+    CutShape {
         id: menu
         visible: false
         z: 10
-        width: 110
+        width: 90
         height: menuCol.implicitHeight + 8
-        color: Colours.moduleBg
-        border.width: 1
-        border.color: CP.alpha(CP.cyan, 0.45)
-        radius: 4
+        fillColor: Colours.moduleBg
+        strokeWidth: 1
+        strokeColor: CP.alpha(CP.cyan, 0.45)
+        inset: 0.5
+        cutTopRight: 12
 
         property int  targetIndex:  -1
         property bool targetPinned: false
@@ -53,10 +54,12 @@ Item {
             spacing: 2
 
             // Pin / Unpin
-            Rectangle {
-                width: parent.width; height: 26; radius: 3
-                color: pinHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
-                Behavior on color { CAnim {} }
+            CutShape {
+                width: parent.width; height: 26
+                cutTopRight: 3
+                fillColor: pinHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                
+                Behavior on fillColor { CAnim {} }
 
                 Text {
                     anchors.centerIn: parent
@@ -77,10 +80,11 @@ Item {
             }
 
             // Change Icon
-            Rectangle {
-                width: parent.width; height: 26; radius: 3
-                color: changeIconHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
-                Behavior on color { CAnim {} }
+            CutShape {
+                width: parent.width; height: 26
+                fillColor: changeIconHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
+
+                Behavior on fillColor { CAnim {} }
 
                 Text {
                     anchors.centerIn: parent
@@ -101,10 +105,11 @@ Item {
             }
 
             // Remove
-            Rectangle {
-                width: parent.width; height: 26; radius: 3
-                color: removeHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
-                Behavior on color { CAnim {} }
+            CutShape {
+                width: parent.width; height: 26
+                fillColor: removeHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
+
+                Behavior on fillColor { CAnim {} }
 
                 Text {
                     anchors.centerIn: parent

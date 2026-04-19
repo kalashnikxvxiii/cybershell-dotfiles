@@ -142,12 +142,12 @@ Item {
                     implicitHeight: dayText.implicitHeight + 4
 
                     // Today indicator
-                    Rectangle {
+                    CutShape {
                         anchors.centerIn: parent
                         width: parent.width
                         height: parent.height
-                        radius: 3
-                        color: dayItem.model.today ? CP.alpha(CP.cyan, 0.25) : "transparent"
+                        cutBottomRight: 6
+                        fillColor: dayItem.model.today ? CP.alpha(CP.cyan, 0.25) : "transparent"
                     }
 
                     Text {
@@ -162,7 +162,7 @@ Item {
                         color: {
                             if (dayItem.model.today)
                                 return CP.cyan
-                            const dayOfWeek = dayItem.model.date.getUTCDay()
+                            const dayOfWeek = dayItem.model.date.getDay()
                             if (dayOfWeek === 0 || dayOfWeek === 6)
                                 return CP.alpha(CP.cyan, 0.7)
                             return dayItem.model.month === grid.month ? Colours.textPrimary : CP.alpha(Colours.textSecondary, 0.4)

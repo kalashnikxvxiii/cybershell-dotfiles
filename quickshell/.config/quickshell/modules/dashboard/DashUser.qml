@@ -54,7 +54,7 @@ Item {
     }
 
     // Uptime updated every minute
-    Timer { interval: 60000; running: true; repeat: true; triggeredOnStart: true; onTriggered: uptimeProc.running = true }
+    Timer { interval: 60000; running: root.visible; repeat: true; triggeredOnStart: true; onTriggered: uptimeProc.running = true }
     Process {
         id: uptimeProc
         command: ["bash", "-c", "uptime -p | sed 's/up //'"]

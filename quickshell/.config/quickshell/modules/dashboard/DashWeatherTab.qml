@@ -113,7 +113,7 @@ Item {
     // Refresh timer every 30 minutes
     Timer {
         interval: 1800000
-        running: true
+        running: root.visible
         repeat: true
         onTriggered: root.loadWeather()
     }
@@ -166,14 +166,15 @@ Item {
         }
 
         // Main temperature + icon
-        Rectangle {
+        CutShape {
             Layout.fillWidth: true
             implicitHeight: bigRow.implicitHeight + 12
             visible: !root.loading && !root.hasError
-            radius: 8
-            color: Colours.moduleBg
-            border.width: 1
-            border.color: Colours.neonBorder(0.25)
+            fillColor: Colours.moduleBg
+            strokeColor: Colours.neonBorder(0.25)
+            strokeWidth: 1
+            inset: 0.5
+            cutTopRight: 8
 
             RowLayout {
                 id: bigRow
@@ -236,17 +237,18 @@ Item {
             Repeater {
                 model: root.forecast
 
-                Rectangle {
+                CutShape {
                     id: forecastItem
-                    required property int index
-                    required property var modelData
-
                     Layout.fillWidth: true
                     implicitHeight: fcCol.implicitHeight + 10
-                    radius: 6
-                    color: Colours.moduleBg
-                    border.width: 1
-                    border.color: Colours.neonBorder(0.2)
+                    fillColor: Colours.moduleBg
+                    strokeColor: Colours.neonBorder(0.2)
+                    strokeWidth: 1
+                    inset: 0.5
+                    cutTopRight: 6
+
+                    required property int index
+                    required property var modelData
 
                     Column {
                         id: fcCol
@@ -284,20 +286,20 @@ Item {
 
     // -- Inline components --
 
-    component DetailCard: Rectangle {
+    component DetailCard: CutShape {
         id: detailRoot
+        Layout.fillWidth: true
+        implicitHeight: 50        
+        fillColor: Colours.moduleBg
+        strokeColor: Colours.neonBorder(0.2)
+        strokeWidth: 1
+        inset: 0.5
+        cutBottomLeft: 6
 
-        property string icon
         property string label
         property string value
+        property string icon
         property color colour
-
-        Layout.fillWidth: true
-        implicitHeight: 50
-        radius: 6
-        color: Colours.moduleBg
-        border.width: 1
-        border.color: Colours.neonBorder(0.2)
 
         Row {
             anchors.centerIn: parent
