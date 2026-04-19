@@ -321,6 +321,35 @@ def search_reddit_gif(query, page=1, max_results=30, output=None):
         else:
             print(json.dumps(result), flush=True)
 
+def _fetch_wpe_compat(wpe_ids):
+    """Batch-fetch type tags for WPE items via Steam API"""
+    if not wpe_ids:
+        return {}
+    data = "itemcount=" + str(len(wpe_ids))
+    for i, wid in enumerate(wpe_ids):
+        data += f"&publishedfileids[{i}]={wid}"
+    req = urllib.request.Request(
+        "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
+        data=data.encode(),
+        headers={"Content-Type": "application/x-www-form-urlencoded",
+                "User-Agent": "Mozilla/5.0"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            items = json.loads(resp.read().decode()).get("response", {}).get("publishedfiledetails", [])
+    except Exception:
+        return {}
+    out = {}
+    for item in items:
+        wid = item.get("publishedfileid", "")
+        tags = {t.get("tag", "").lower() for t in item.get("tags", [])}
+        if "video" in tags:         out[wid] = "video"
+        elif "scene" in tags:       out[wid] = "scene"
+        elif "web" in tags:         out[wid] = "web"
+        elif "application" in tags: out[wid] = "app"
+        else:                       out[wid] = "unknown"
+    return out
+
 def search_wpe(query, page=1, max_results=30, output=None):
     """Search Steam Workshop for Wallpaper Engine items"""
     params = {
@@ -335,39 +364,37 @@ def search_wpe(query, page=1, max_results=30, output=None):
     req = urllib.request.Request(url, headers={
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
     })
-
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             body = resp.read().decode()
     except Exception:
         return
     
-    count = 0
+    results = []
     for match in re.finditer(
         r'data-publishedfileid="(\d+)".*?'
         r'workshopItemPreviewImage\s[^"]*"\s+src="([^"]+)".*?'
         r'workshopItemTitle[^>]*>([^<]+)<',
         body, re.DOTALL
     ):
-        wpe_id = match.group(1)
-        thumb = match.group(2)
-        title = match.group(3).strip()
-
-        result = {
-            "url": wpe_id,
-            "thumb": thumb,
-            "title": title,
-            "w": 0,
-            "h": 0,
+        results.append({
+            "url":      match.group(1),
+            "thumb":    match.group(2),
+            "title":    match.group(3).strip(),
+            "w": 0, "h": 0,
             "source": "wpe"
-        }
-        if output is not None:
-            output.append(result)
-        else:
-            print(json.dumps(result), flush=True)
-        count += 1
-        if count >= max_results:
+        })
+        if len(results) >= max_results:
             break
+
+    compat_map = _fetch_wpe_compat([r["url"] for r in results])
+
+    for r in results:
+        r["compat"] = compat_map.get(r["url"], "unknown")
+        if output is not None:
+            output.append(r)
+        else:
+            print(json.dumps(r), flush=True)
 
 def search_wallpaperscraft(query, page=1, max_results=30, output=None):
     """Search wallpaperscraft.com - derives 1920x1080 full URL from thumbnail slug"""
@@ -531,7 +558,7 @@ def search_multi(sources, query, page=1, max_results=30):
         for src in all_b:
             if i < len(src): print(json.dumps(src[i]), flush=True)
 
-def search_all(query, page=1, max_results=30):
+def search_all(query, page=1, max_results=30, sorting="relevance"):
     """Run ALL engines in parallel (images + GIF), interleaved."""
     buckets = {"wh": [], "a": [], "r": [], "ag": [], "rg": [], "wpe": [], "wc": []}
 
@@ -543,7 +570,7 @@ def search_all(query, page=1, max_results=30):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         futures = [
-            executor.submit(_safe_run, search_wallhaven,        buckets["wh"],  query, page, max_results),
+            executor.submit(_safe_run, search_wallhaven,        buckets["wh"],  query, page, max_results, sorting=sorting),
             executor.submit(_safe_run, search_wallpaperscraft,  buckets["wc"],  query, page, max_results),
             executor.submit(_safe_run, search_alphacoders,      buckets["a"],   query, page, max_results),
             executor.submit(_safe_run, search_reddit,           buckets["r"],   query, page, max_results),
@@ -594,13 +621,14 @@ if __name__ == "__main__":
 
     query = sys.argv[1]
     page = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+    sort = sys.argv[3] if len(sys.argv) > 3 else "relevance"
 
     if query.startswith("@") and "+" in query.split(" ")[0]:
         first_token = query[1:].split(" ")[0]
         rest = query[len(first_token) + 2:].strip() if " " in query else ""
         search_multi(first_token.split("+"), rest, page=page)
     elif query.startswith("@wh "):
-        search_wallhaven(query[4:].strip(), page=page)
+        search_wallhaven(query[4:].strip(), page=page, sorting=sort)
     elif query.startswith("@a "):
         search_alphacoders(query[3:].strip(), page=page)
     elif query.startswith("@r "):
@@ -631,4 +659,4 @@ if __name__ == "__main__":
             for src in all_b:
                 if i < len(src): print(json.dumps(src[i]), flush=True)
     else:
-        search_all(query, page=page)
+        search_all(query, page=page, sorting=sort)

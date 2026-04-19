@@ -1,4 +1,5 @@
 import "../../common/Colors.js" as CP
+import "./WallpaperConst.js" as WC
 import "../../common/effects"
 import "../../common"
 import Quickshell.Wayland
@@ -1282,7 +1283,7 @@ Scope {
                     // Darken
                     Rectangle {
                         anchors.fill: parent
-                        color: CP.alpha("#000000", 0.45)
+                        color: CP.alpha(CP.black, 0.45)
                         opacity: root.downloading ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 300 } }
                     }
@@ -1388,7 +1389,7 @@ Scope {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: CP.alpha("#000010", 0.78)
+                        color: CP.alpha(CP.void2, 0.78)
                     }
 
                     ScanlineOverlay { opacity: 0.07 }
@@ -1594,6 +1595,59 @@ Scope {
                     carousel.searchFocused = true
                     root.updateSearchPreview(thumbPath, fullUrl)
                     carousel.selectedSearchUrl = fullUrl
+                }
+            }
+
+            // ── Sort buttons (above search results) ────────────────────────────
+            Row {
+                id: sortBar
+                visible: searchResultsPanel.visible
+                anchors.bottom: searchResultsPanel.top
+                anchors.bottomMargin: 4
+                anchors.right: searchResultsPanel.right
+                spacing: 4
+
+                Repeater {
+                    model: WC.sortLabels
+                    delegate: Item {
+                        id: sortBtn
+                        width: sortBtnLabel.implicitWidth + 14
+                        height: 20
+
+                        required property string    modelData
+                        required property int       index
+
+                        property bool      active: filterBar.currentSort === WC.sortOptions[index]
+
+                        CutShape {
+                            anchors.fill: parent
+                            fillColor: sortBtn.active ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                            strokeColor: sortBtn.active ? Colours.accentSecondary : CP.alpha(CP.cyan, 0.2)
+                            strokeWidth: 1
+                            inset: 0.5
+                            cutTopLeft: 3
+                            cutBottomRight: 3
+                        }
+
+                        Text {
+                            id: sortBtnLabel
+                            anchors.centerIn: parent
+                            text: modelData
+                            font.family: "Oxanium"
+                            font.pixelSize: 9
+                            font.letterSpacing: 1
+                            color: sortBtn.active ? Colours.accentSecondary : Colours.textMuted
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                filterBar.currentSort = WC.sortOptions[index]
+                                filterBar.resubmit()
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1852,11 +1906,23 @@ Scope {
                         event.accepted = true
                         break
                     case Qt.Key_Tab:
-                        WallpaperState.cycleMacro()
+                        if (searchResultsPanel.visible) {
+                            var sidx = WC.sortOptions.indexOf(filterBar.currentSort)
+                            filterBar.currentSort = WC.sortOptions[(sidx + 1) % WC.sortOptions.length]
+                            filterBar.resubmit()
+                        } else {
+                            WallpaperState.cycleMacro()
+                        }
                         event.accepted = true
                         break
                     case Qt.Key_Backtab:
-                        WallpaperState.cycleSub()
+                        if (searchResultsPanel.visible) {
+                            var bidx = WC.sortOptions.indexOf(filterBar.currentSort)
+                            filterBar.currentSort = WC.sortOptions[(bidx + WC.sortOptions.length - 1) % WC.sortOptions.length]
+                            filterBar.resubmit()
+                        } else {
+                            WallpaperState.cycleSub()
+                        }
                         event.accepted = true
                         break
                     case Qt.Key_Up:

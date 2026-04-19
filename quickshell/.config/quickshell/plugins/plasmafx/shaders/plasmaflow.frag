@@ -115,7 +115,7 @@ void main() {
     innerFill *= cloud * smoothstep(0.15, 0.4, pwr) * pwr * 0.6;
 
     // ── Beam (bottom edge to ring) ───────────────
-    vec2 beamTop = ringCenter + vec2(0.0, -ringR * 1.4); // bottom of ring
+    vec2 beamTop = ringCenter + vec2(0.0, -ringR * 1.01); // bottom of ring
     vec2 beamBot = vec2(0.0, -0.5 / 1.0);          // bottom of card
 
     // Beam wobble with FBM
@@ -131,6 +131,7 @@ void main() {
     // Fade to zero near nucleus instead od widening
     hourglassWidth *= smoothstep(1.0, 0.75, beamT);
     dBeam = max(dBeam - hourglassWidth, 0.0);
+    float beamLengthFade = 1.0 - smoothstep(0.82, 1.0, beamT);
 
     // Beam: multi-layer glow
     float beamCoreForPulse = glow(dBeam, 4.0, 0.005);
@@ -215,35 +216,48 @@ void main() {
     }
 
     // ── Composite ────────────────────────────────────────────────────────
-    float beamI = 1.0 / (1.0 + dBeam * dBeam * 625.0);
-    beamI += pulses * 0.3;
+    float beamI = (1.0 / (1.0 + dBeam * dBeam * 625.0)) * beamLengthFade;
+    beamI += pulses * 0.3 * beamLengthFade;
     beamI += entryGlow;
 
-    // Beam fades out completely inside nucleus
-    beamI *= smoothstep(ringR * 1.0, ringR * 1.6, ringDist);
+    // Nucleus: activated only when beam reaches it, organic fill center → edge
+    float beamReachesNucleus = smoothstep(0.38, 0.50, pwr);
 
-    // Nucleus appears only after beam reaches it (heightT=1 at nucleus height)
-    float beamReachesNucleus = smoothstep(0.4, 0.7, pwr);       // beam need ~50% power to reach nucleus
+    float fillRatio = clamp((pwr - 0.40) / 0.38, 0.0, 1.0);
+    float fillAngle = atan(toRing.y, toRing.x);
+    float angNoise  = snoise(vec2(cos(fillAngle) * 4.0 + t * 0.30, sin(fillAngle) * 4.0 - t * 0.25)) * 0.12 * fillRatio
+                    + snoise(vec2(cos(fillAngle) * 9.0 - t * 0.50, sin(fillAngle) * 9.0 + t * 0.40)) * 0.05 * fillRatio;
+    float fillR     = clamp(ringR * (fillRatio + angNoise), 0.001, ringR * 1.05);
 
-    // Then fills from center outward
-    float nucleusFillDist = ringDist / ringR;           // 0 at center 1 at edge
-    float fillAmount = max(pwr - 0.4, 0.0) * 2.0;       // 0 below 40% power, 1.0 at 90%
-    float nucleusGrow = (1.0 - smoothstep(fillAmount - 0.1, fillAmount, nucleusFillDist)) * beamReachesNucleus;
-    float ringI = (1.0 / (1.0 + dNucleus * dNucleus * 500.0)) * nucleusGrow * fillAmount;
-    ringI += ringPulse * 0.5;
-    ringI += entrySplash;
-    ringI += innerFill * nucleusGrow;
+    float insideDisk = (1.0 - smoothstep(-0.01, 0.02, ringDist - fillR)) * beamReachesNucleus;
 
-    // Beam grows from bottom to top: lower pixels reach full intensity first
-    float heightT = clamp((p.y - beamBot.y) / (ringCenter.y - beamBot.y), 0.0, 1.0);    // 0 at bottom, 1 at nucleus
-    float growPwr = smoothstep(heightT * 0.6, heightT * 0.6 + 0.3, pwr);                // bottom needs less pwr to light up
-    float beamPwr = mix(growPwr, pwr, 0.3);                                             // blend: mostly growth-based, some global
+    // Hot gaussian core at center, rotating crossed spokes inside
+    float coreGlow = exp(-ringDist * ringDist * 110.0);
+    float tendrils  = pow(max(0.0, sin(fillAngle * 5.0 + t * 2.5)), 4.0)
+                    * pow(max(0.0, sin(fillAngle * 3.0 - t * 1.8 + 0.7)), 3.0);
+    float tendMask  = smoothstep(fillR + 0.01, max(fillR * 0.15, 0.001), ringDist) * insideDisk;
+
+    float nucleusI  = insideDisk * (coreGlow * 0.8 + cloud * 0.35 + tendrils * tendMask * 0.5) * pwr;
+
+    // Glowing ring that tracks the expanding fill front
+    float fillFrontGlow = exp(-pow(abs(ringDist - fillR) / 0.008, 2.0)) * beamReachesNucleus * pwr;
+    // Outer rim at ringR: appears only when fill is nearly complete
+    float nucleusEdge = exp(-pow(abs(ringDist - ringR) / 0.006, 2.0))
+                      * beamReachesNucleus * pwr * smoothstep(0.6, 1.0, fillRatio);
+    float entryFlash  = glow(length(p - (ringCenter + vec2(0.0, -ringR))), 2.0, 0.03)
+                      * beamReachesNucleus * pwr * 1.8;
+
+    ringPulse *= beamReachesNucleus;
+    float ringI = nucleusI + nucleusEdge + fillFrontGlow + entryFlash + ringPulse * 0.4;
+
+    // Beam grows bottom → top: lower pixels reach full intensity first
+    float heightT = clamp((p.y - beamBot.y) / (ringCenter.y - beamBot.y), 0.0, 1.0);
+    float growPwr = smoothstep(heightT * 0.6, heightT * 0.6 + 0.3, pwr);
+    float beamPwr = mix(growPwr, pwr, 0.3);
     float total = (beamI * beamPwr + ringI + particles) * (pwr * 1.0 + 0.08);
 
-    float intensity = clamp(total, 0.0, 1.5);
-
     // ── Color: single smooth ramp from distance ────────────────────────────────
-    float i2 = clamp(intensity, 0.0, 1.5);
+    float i2 = clamp(total, 0.0, 1.5);
 
     // Normalize to 0..1 for color mapping
     float colorT = clamp(i2 / 1.2, 0.0, 1.0);

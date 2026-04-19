@@ -19,7 +19,7 @@ Item {
     signal resultSelected(int index, string thumbPath, string fullUrl)
     signal loadMoreRequested()
 
-    visible: resultsModel ? resultsModel.count > 0 : false
+    visible: resultsModel ? (resultsModel.count > 0 || searching) : false
 
     layer.enabled: true
     layer.effect: MultiEffect {
@@ -87,11 +87,12 @@ Item {
             height: searchGrid.height
             opacity: 0
 
-            required property string fname
             required property string thumbPath
             required property string fullUrl
-            required property int index
             required property string source
+            required property string compat
+            required property string fname
+            required property int index
 
             Component.onCompleted: cardFadeIn.running = true
 
@@ -152,7 +153,7 @@ Item {
                 width: badgeText.implicitWidth + 8
                 height: 22
                 fillColor: CP.alpha("#000000", 0.6)
-                cutBottomLeft: typeBadge.visible ? 0 : 4
+                cutBottomLeft: compatBadge.visible || typeBadge.visible ? 0 : 4
 
                 Text {
                     id: badgeText
@@ -194,7 +195,7 @@ Item {
                 width: sourceBadge.implicitWidth
                 height: 14
                 fillColor: CP.alpha("#000000", 0.6)
-                cutBottomLeft: 4
+                cutBottomLeft: compatBadge.visible ? 0 : 4
                 visible: parent.fullUrl.toLowerCase().endsWith(".gif")
 
                 Text {
@@ -205,6 +206,43 @@ Item {
                     font.pixelSize: 9
                     font.letterSpacing: 1
                     color: Colours.accentOk
+                }
+            }
+
+            // Compat badge (WPE only)
+            CutShape {
+                id: compatBadge
+                anchors.top: typeBadge.visible ? typeBadge.bottom : sourceBadge.bottom
+                anchors.right: parent.right
+                width: sourceBadge.width
+                height: 14
+                fillColor: CP.alpha("#000000", 0.6)
+                cutBottomLeft: 4
+                visible: parent.source === "wpe" && parent.compat !== "" && parent.compat !== "unknown"
+
+                Text {
+                    anchors.centerIn: parent
+                    font.family: "Oxanium"
+                    font.pixelSize: 9
+                    font.letterSpacing: 1
+                    text: {
+                        switch (parent.parent.compat) {
+                            case "video": return "VID"
+                            case "scene": return "SCN"
+                            case "web":   return "WEB"
+                            case "app":   return "APP"
+                            default:      return ""
+                        }
+                    }
+                    color: {
+                        switch (parent.parent.compat) {
+                            case "video": return Colours.accentOk
+                            case "scene": return Colours.accentWarn
+                            case "web":   return CP.orange
+                            case "app":   return Colours.accentDanger
+                            default:      return Colours.textMuted
+                        }
+                    }
                 }
             }
 

@@ -1,4 +1,5 @@
 import "../../common/Colors.js" as CP
+import "./WallpaperConst.js" as WC
 import "../../common"
 import Quickshell.Io
 import QtQuick
@@ -11,29 +12,17 @@ Item {
 
     property string _placeholderPrefix: ""
     property string currentQuery:       ""
+    property string currentSort:        "relevance"
+    property bool   _waitingForStart:   false
     property bool   _prefixGlitching:   false
     property bool   _updatingPrefix:    false
-    property bool   isLocalFilter:      _activePrefixes.indexOf("#")
+    property bool   isLocalFilter:      _activePrefixes.indexOf("#") >= 0
     property bool   searching:          false
     property bool   expanded:           false
     property bool   hasMore:            true
     property int    _pageResultCount:   0
     property int    currentPage:        1
     property var    _activePrefixes:    []
-
-    // ── Prefix system ────────────────────────────────────
-    readonly property var prefixes: ["@wh", "@a", "@r", "@wpe", "@gif", "@img", "@wc", "@rand", "#"]
-    readonly property var prefixColors: ({
-        "@wh":      CP.cyan,
-        "@a":       CP.yellow,
-        "@r":       CP.magenta,
-        "@wpe":     CP.teal,
-        "@gif":     CP.neon,
-        "@img":     CP.cyan,
-        "@wc":      CP.orange,
-        "@rand":    CP.amber,
-        "#":        CP.amber
-    })
 
     signal resultClicked(string thumbPath, string fullUrl)
     signal localFilterChanged(string keywords)
@@ -47,6 +36,9 @@ Item {
     function closeSearch() {
         _activePrefixes = []
         _placeholderPrefix = ""
+        _waitingForStart = false
+        currentSort = "relevance"
+        sortDebounceTimer.stop()
         if (searching) {
             controlProc.running = true
             searching = false
@@ -56,13 +48,29 @@ Item {
         expanded = false
     }
 
+    function resubmit() { sortDebounceTimer.restart() }
+
+    function _doResubmit() {
+        if (currentQuery === "") return
+        if (searching) controlProc.running = true
+        currentPage = 1
+        hasMore = true
+        searching = true
+        _waitingForStart = true
+        searchProc.running = false
+        searchProc.command = ["bash",
+            Qt.resolvedUrl("../../scripts/search-wallpapers.sh").toString().replace("file://", ""),
+            currentQuery, "1", currentSort]
+        searchProc.running = true
+    }
+
     function loadMore() {
         if (searching || !hasMore || currentQuery === "") return
         currentPage++
         searching = true
         searchProc.command = ["bash",
-            "/home/kalashnikxv/.config/quickshell/scripts/search-wallpapers.sh",
-            currentQuery, String(currentPage)]
+            Qt.resolvedUrl("../../scripts/search-wallpapers.sh").toString().replace('file://', ""),
+            currentQuery, String(currentPage), currentSort]
         searchProc.running = true
     }
 
@@ -81,17 +89,19 @@ Item {
         currentPage = 1
         hasMore = true
         searching = true
+        _waitingForStart = true
         searchResultsModel.clear()
         searchProc.command = ["bash",
-            "/home/kalashnikxv/.config/quickshell/scripts/search-wallpapers.sh",
-            currentQuery, "1"]
+            Qt.resolvedUrl("../../scripts/search-wallpapers.sh").toString().replace("file://", ""),
+            currentQuery, "1", currentSort]
+        searchProc.running = false
         searchProc.running = true
         searchInput.focus = false
         root.parent.forceActiveFocus()
     }
 
     function _randomPlaceholder() {
-        var remaining = prefixes.filter(function(p) {
+        var remaining = WC.prefixes.filter(function(p) {
             return p !== "#" && _activePrefixes.indexOf(p) === -1
         })
         if (remaining.length === 0) return ""
@@ -103,13 +113,13 @@ Item {
         var txt = searchInput.text
         if (_activePrefixes.length > 0 && _activePrefixes.indexOf("#") === -1 && !txt.startsWith("@")) return
         // Check for completed prefix (prefix + space)
-        for (var i = 0; i < prefixes.length; i++) {
-            if (txt.startsWith(prefixes[i] + " ")) {
-                var query = txt.substring(prefixes[i].length + 1)
+        for (var i = 0; i < WC.prefixes.length; i++) {
+            if (txt.startsWith(WC.prefixes[i] + " ")) {
+                var query = txt.substring(WC.prefixes[i].length + 1)
                 _updatingPrefix = true
-                if (_activePrefixes.indexOf(prefixes[i]) === -1) {
+                if (_activePrefixes.indexOf(WC.prefixes[i]) === -1) {
                     var np = _activePrefixes.filter(function(p) { return p !== "#" })
-                    np.push(prefixes[i])
+                    np.push(WC.prefixes[i])
                     _activePrefixes = np
                 }
                 searchInput.text = query
@@ -135,11 +145,11 @@ Item {
         }
         // Check for partial match
         if (txt.startsWith("@") && txt.indexOf(" ") === -1) {
-            for (var j = 0; j < prefixes.length; j++) {
-                if (prefixes[j].startsWith(txt) && prefixes[j] !== txt
-                    && _activePrefixes.indexOf(prefixes[j]) === -1
-                    && prefixes[j] !== "#") {
-                    _placeholderPrefix = prefixes[j]
+            for (var j = 0; j < WC.prefixes.length; j++) {
+                if (WC.prefixes[j].startsWith(txt) && WC.prefixes[j] !== txt
+                    && _activePrefixes.indexOf(WC.prefixes[j]) === -1
+                    && WC.prefixes[j] !== "#") {
+                    _placeholderPrefix = WC.prefixes[j]
                     return
                 }
             }
@@ -213,13 +223,14 @@ Item {
 
             Repeater {
                 model: _activePrefixes
-                Rectangle {
+                CutShape {
                     height: 20
-                    radius: 3
+                    cutTopRight: 3
                     width: chipMeasure.implicitWidth + 10
-                    color: CP.alpha(root.prefixColors[modelData] || CP.cyan, 0.15)
-                    border.color: CP.alpha(root.prefixColors[modelData] || CP.cyan, 0.6)
-                    border.width: 1
+                    fillColor: CP.alpha(WC.prefixColors[modelData] || CP.cyan, 0.15)
+                    strokeColor: CP.alpha(WC.prefixColors[modelData] || CP.cyan, 0.6)
+                    strokeWidth: 1
+                    inset: 0.5
 
                     Text {
                         anchors.centerIn: parent
@@ -227,7 +238,7 @@ Item {
                         font.family: "Oxanium"
                         font.pixelSize: 12
                         font.letterSpacing: 1
-                        color: root.prefixColors[modelData] || CP.cyan
+                        color: WC.prefixColors[modelData] || CP.cyan
                     }
 
                     Text {
@@ -265,7 +276,7 @@ Item {
             visible: root.expanded && searchInput.text === "" 
                     && _activePrefixes.indexOf("#") === -1
             text: {
-                var remaining = root.prefixes.filter(function(p) {
+                var remaining = WC.prefixes.filter(function(p) {
                     return p !== "#" && root._activePrefixes.indexOf(p) === -1
                 })
                 return remaining.join(" ") + (root._activePrefixes.length === 0 ? " #filter" : "")
@@ -417,6 +428,14 @@ Item {
         running: false
         stdout: SplitParser {
             onRead: data => {
+                if (data === "START") {
+                    if (root._waitingForStart) {
+                        searchResultsModel.clear()
+                        root._waitingForStart = false
+                    }
+                    return
+                }
+                if (root._waitingForStart) return
                 if (!root.expanded) return
                 if (data === "DONE") {
                     root.searching = false
@@ -437,7 +456,8 @@ Item {
                             source: parts.length >= 4 ? parts[3] : "wh",
                             w: parts.length >= 6 ? parseInt(parts[4]) : 0,
                             h: parts.length >= 6 ? parseInt(parts[5]) : 0,
-                            fileSize: parts.length >= 8 ? parseInt(parts[7]) : 0
+                            fileSize: parts.length >= 8 ? parseInt(parts[7]) : 0,
+                            compat: parts.length >= 9 ? parts[8] : ""
                         })
                         root._pageResultCount++
                         if (isFirst) root.firstResultReady()
@@ -451,5 +471,12 @@ Item {
         id: controlProc
         command: ["bash", "-c", "echo stop > /tmp/wallpaper_search_control"]
         running: false
+    }
+
+    Timer {
+        id: sortDebounceTimer
+        interval: 300
+        repeat: false
+        onTriggered: root._doResubmit()
     }
 }

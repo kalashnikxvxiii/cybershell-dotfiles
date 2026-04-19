@@ -5,6 +5,8 @@
 
 QUERY="$1"
 PAGE="${2:-1}"
+SORT="${3:-relevance}"
+
 [ -z "$QUERY" ] && { echo "Usage: search-wallpapers.sh <query> [page]" >&2; exit 1; }
 
 CACHE_DIR="$HOME/.cache/wallpaper-picker"
@@ -14,6 +16,7 @@ CONTROL="/tmp/wallpaper_search_control"
 SCRIPTS_DIR="$(dirname "$0")"
 
 mkdir -p "$SEARCH_THUMBS"
+echo "START"
 rm -f "$CONTROL"
 
 # Clear previous search results
@@ -22,7 +25,7 @@ if [ "$PAGE" = "1" ]; then
     true > "$MAP_FILE"
 fi
 
-python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" | while IFS= read -r line; do
+python3 "$SCRIPTS_DIR/search-wallpapers.py" "$QUERY" "$PAGE" "$SORT" | while IFS= read -r line; do
     # Check control file
     if [ -f "$CONTROL" ]; then
         ctrl=$(cat "$CONTROL" 2>/dev/null)
@@ -39,6 +42,7 @@ import sys,json; d=json.load(sys.stdin)
 print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h',0), d.get('file_size',0))
 ")"
     title=$(echo "$line" | python3 -c "import sys,json; print(json.load(sys.stdin).get('title',''))" 2>/dev/null)
+    compat=$(echo "$line" | python3 -c "import sys,json; print(json.load(sys.stdin).get('compat',''))" 2>/dev/null)
     [ -z "$url" ] && continue
 
     fname=$(echo "$url" | md5sum | cut -c1-16)
@@ -58,7 +62,7 @@ print(d['url'], d.get('thumb',''), d.get('source','wh'), d.get('w',0), d.get('h'
                 fi
                 rm -f "$thumb.tmp"
                 echo "${fname}|${url}" >> "$MAP_FILE"
-                echo "THUMB:${fname}|${thumb}|${url}|${source}|${w}|${h}|${title}|${file_size}"
+                echo "THUMB:${fname}|${thumb}|${url}|${source}|${w}|${h}|${title}|${file_size}|${compat}"
                 ;;
             *)
                 rm -f "$thumb.tmp" ;;
