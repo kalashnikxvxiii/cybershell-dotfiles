@@ -254,6 +254,7 @@ cmd_preview_wpe() {
         --bg "$wpe_id" \
         --volume 0 \
         --noautomute \
+        --no-fullscreen-pause \
         --mpvparam=hwdec=auto &
     local new_pid=$!
 

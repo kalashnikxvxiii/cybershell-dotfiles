@@ -63,15 +63,18 @@ Item {
     property int distFromCurrent: 0
 
     // ── Dimensions set imperatively by carousel ─────────────────
-    property real cardWidth:  0
-    property real cardHeight: 0
+    property real cardWidth:        0
+    property real cardHeight:       0
+    property bool carouselFastMode: false
+    property bool anmimEnabled:     false
+    property bool isPreload:        false
 
-    Behavior on x          { enabled: root.animEnabled; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
-    Behavior on cardWidth  { enabled: root.animEnabled; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
-    Behavior on cardHeight { enabled: root.animEnabled; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+    Behavior on x          { enabled: root.animEnabled && !root.carouselFastMode; NumberAnimation { duration: 360; easing.type: Easing.OutCubic } }
+    Behavior on cardWidth  { enabled: root.animEnabled && !root.carouselFastMode; NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+    Behavior on cardHeight { enabled: root.animEnabled && !root.carouselFastMode; NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
     opacity: isVisible ? 1.0 : 0
-    Behavior on opacity { NumberAnimation { duration: 500; easing.type: Easing.InOutQuad } }
+    Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
 
     z: isCurrent ? 100 : (50 - distFromCurrent)
     clip: false
@@ -83,6 +86,7 @@ Item {
 
     // ── Start/Stop video/gif preview ────────────────────────────────
     onIsCurrentChanged: {
+        if (isCurrent && opacity < 0.5) opacity = 1
         if (isCurrent && (videoFile !== "" || type === "scene")) {
             videoDelayTimer.restart()
         } else {
@@ -413,7 +417,7 @@ Item {
             strokeColor: CP.alpha(CP.red, 0.8)
             strokeWidth: 1
             inset: 0.5
-            cutBottomLeft: 8
+            cutBottomLeft: playlistBadge.visible ? 0 : 8
             showTop: false
             showRight: false
         }
@@ -467,6 +471,80 @@ Item {
             NumberAnimation { target: favBadge; property: "opacity"; to: 1.0; duration: 30 }
             NumberAnimation { target: favBadge; property: "opacity"; to: 0;   duration: 80 }
             ScriptAction    { script: favBadge._favVisible = false }
+        }
+    }
+
+    // Playlist position badge
+    Item {
+        id: playlistBadge
+        anchors.top: cardWrapper.top
+        anchors.topMargin: 1
+        x: favBadge.x - _offset
+        width: Math.max(24 * _plScale, _plTxt.implicitWidth + 10)
+        height: 24 * _plScale
+        visible: root.path !== "" && root.searchPreviewThumb === "" && _plPos > 0
+        opacity: _hovered ? 1.0 : 0.45
+        z: 200
+
+        property real _plScale: cardWrapper.height > 0 ? cardWrapper.height / 450 : 1
+        property real _offset:  favBadge._favVisible ? width : (width - favBadge.width)
+        property bool _hovered: false
+        property int  _plPos:   {
+            if (PlaylistState.activeName === "") {
+                return PlaylistState.countInAll(root.path)
+            } else {
+                var arr = PlaylistState.entries
+                for (var i = 0; i < arr.length; i++)
+                    if (arr[i].path === root.path) return i + 1
+                return 0
+            }
+        }
+
+        Behavior on _offset { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 120 } }
+
+        CutShape {
+            anchors.fill: parent
+            fillColor: CP.alpha(CP.cyan, 0.6)
+            strokeColor: parent._hovered
+                        ? CP.alpha(CP.yellow, 0.9)
+                        : CP.alpha(CP.yellow, 0.6)
+            strokeWidth: 1; inset: 0.5
+            cutBottomLeft: 8
+            showTop: false
+            showRight: false
+        }
+
+        Text {
+            id: _plTxt
+            anchors.centerIn: parent
+            text: parent._plPos.toString()
+            font.family: "Oxanium"
+            font.pixelSize: 16 * parent._plScale
+            color: CP.yellow
+
+            transform: Matrix4x4 {
+                matrix: Qt.matrix4x4(
+                    1, -root.skewFactor, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1
+                )
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onEntered: playlistBadge._hovered = true
+            onExited:  playlistBadge._hovered = false
+            onClicked: {
+                if (PlaylistState.activeName === "")
+                    PlaylistState.setHighlightFilter(root.path)
+                else if (playlistBadge._plPos > 0)
+                    PlaylistState.highlightEntry(root.path)
+            }
         }
     }
 }

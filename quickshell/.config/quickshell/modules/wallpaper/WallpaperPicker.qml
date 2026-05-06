@@ -20,6 +20,7 @@ Scope {
     required property var screen
 
     property string _pendingDownloadTitle:  ""
+    property string _playlistPreviewPath:   ""
     property string localFilterKeywords:    ""
     property string _pendingDownloadUrl:    ""
     property string originalWallpaper:      ""
@@ -249,6 +250,36 @@ Scope {
         }
     }
 
+    Timer {
+        id: _panelReadyTimer
+        interval: 100
+        onTriggered: panelSlider._panelAnim = true
+    }
+
+    Timer {
+        id: _jumpTimer
+        interval: 15
+        repeat: true
+        
+        property int direction:    1
+        property int targetIdx:     -1
+
+        onTriggered: {
+            if (carousel.currentIndex === targetIdx) {
+                stop()
+                carousel.fastMode = false
+                for (var i = 0; i < repeater.count; i++) {
+                    var it = repeater.itemAt(i)
+                    if (it) it.animEnabled = true
+                }
+                carousel.updateCards()
+                return
+            }
+            if (direction > 0) root.nextVisible()
+            else root.prevVisible()
+        }
+    }
+
     // Find the wallpaperModel index matching a basename or WPE id
     function findLocalIndex(identifier, isWpe) {
         for (var i = 0; i < wallpaperModel.count; i++) {
@@ -341,6 +372,7 @@ Scope {
         }
         root.previewShown = false
         root.wpePreviewActive = false
+        _playlistPreviewPath = ""
     }
 
     Process {
@@ -385,7 +417,15 @@ Scope {
                         videoFile: wpeVideoFile
                     })
                     root._skipInit = false
+                    for (var i = 0; i < repeater.count; i++) {
+                        var it = repeater.itemAt(i)
+                        if (it) it.animEnabled = false
+                    }
                     carousel.updateCards()
+                    for (var i = 0; i < repeater.count; i++) {
+                        var it = repeater.itemAt(i)
+                        if (it) it.animEnabled = true
+                    }
                     root.downloading = false
                     root.downloadProgress = 0
                     root.downloadingUrl = ""
@@ -411,7 +451,15 @@ Scope {
                         videoFile: ""
                     })
                     root._skipInit = false
+                    for (var i = 0; i < repeater.count; i++) {
+                        var it = repeater.itemAt(i)
+                        if (it) it.animEnabled = false
+                    }
                     carousel.updateCards()
+                    for (var i = 0; i < repeater.count; i++) {
+                        var it = repeater.itemAt(i)
+                        if (it) it.animEnabled = true
+                    }
                     var bn = savedPath.substring(savedPath.lastIndexOf("/") + 1)
                     var lb = root.localBasenames
                     lb[bn] = true
@@ -537,6 +585,55 @@ Scope {
         return pos
     }
 
+    function jumpToFraction(n) {
+        // n in [0..9] -> fractionary position in the visible list
+        var vis = []
+        var count = wallpaperModel.count
+        for (var i = 0; i < count; i++) {
+            var entry = wallpaperModel.get(i)
+            if (!WallpaperState.matchesFilter(entry)) continue
+            if (filterBar.favoritesOnly && root.favorites[entry.path] !== true) continue
+            if (root.localFilterKeywords !== "") {
+                var kws = root.localFilterKeywords.toLowerCase().split(" ")
+                var t = entry.title.toLowerCase()
+                var ok = true
+                for (var k = 0; k < kws.length; k++) {
+                    if (kws[k] !== "" && t.indexOf(kws[k]) === -1) { ok = false; break }
+                }
+                if (!ok) continue
+            }
+            vis.push(i)
+        }
+        if (vis.length === 0) return
+
+        var targetVisIdx = Math.max(0, Math.min(vis.length - 1, Math.floor((n / 9) * (vis.length - 1))))
+        var targetIdx = vis[targetVisIdx]
+        if (targetIdx === carousel.currentIndex) return
+
+        var curVisIdx = vis.indexOf(carousel.currentIndex)
+        if (curVisIdx === -1) {
+            carousel.currentIndex = targetIdx
+            carousel.updateCards()
+            return
+        }
+
+        var rightSteps = (targetVisIdx - curVisIdx + vis.length) % vis.length
+        var leftSteps = (curVisIdx - targetVisIdx + vis.length) % vis.length
+
+        // Active fastMode smooth scroll
+        if (!carousel.fastMode) {
+            carousel.fastMode = true
+            for (var i = 0; i < repeater.count; i++) {
+                var it = repeater.itemAt(i)
+                if (it) it.animEnabled = false
+            }
+        }
+
+        _jumpTimer.targetIdx = targetIdx
+        _jumpTimer.direction = rightSteps <= leftSteps ? 1 : -1
+        _jumpTimer.start()
+    }
+
     function nextVisible() {
         var count = wallpaperModel.count
         if (count === 0) return
@@ -618,6 +715,9 @@ Scope {
             bgRefreshProc.running = true
             WallpaperState.resetFilters()
             root.previewShown = false
+            panelSlider._panelAnim = false
+            PlaylistState.panelOpen = false
+            _panelReadyTimer.restart()
         } else {
             // Stop all video/audio on close
             carousel.audioEnabled = false
@@ -672,7 +772,15 @@ Scope {
                 if (!hoverTracker.containsMouse) return false
                 var mx = _mx
                 var my = _my
-                var items = [filterBar, carousel, infoBar, searchResultsPanel, searchPreviewCard, deleteDialog]
+                var items = [
+                    filterBar,
+                    carousel,
+                    infoBar,
+                    searchResultsPanel,
+                    searchPreviewCard,
+                    deleteDialog,
+                    panelSlider
+                ]
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i]
                     if (!item.visible) continue
@@ -694,6 +802,50 @@ Scope {
 
                 Behavior on anchors.topMargin {
                     NumberAnimation { duration: 600; easing.type: Easing.OutExpo }
+                }
+            }
+
+            Item {
+                id: fractionBar
+                anchors.top: filterBar.bottom
+                anchors.topMargin: 8
+                anchors.horizontalCenter: filterBar.horizontalCenter
+                width: filterBar.width - 40
+                height: 16
+                visible: filterBar.visible && carousel.visibleCount > 0
+
+                readonly property int currentFraction: {
+                    var pos = root.currentVisiblePosition()
+                    var total = carousel.visibleCount
+                    if (total <= 1) return 0
+                    return Math.max(0, Math.min(9, Math.round(((pos - 1) / (total - 1)) * 9)))
+                }
+
+                Repeater {
+                    model: 10
+                    delegate: Item {
+                        required property int index
+                        width: fractionBar.width / 10
+                        height: fractionBar.height
+                        x: index * width
+
+                        readonly property bool active: index === fractionBar.currentFraction
+
+                        CutShape {
+                            anchors.centerIn: parent
+                            width: active ? 12 : 5
+                            height: active ? 12 : 5
+                            fillColor: active ? CP.cyan : CP.alpha(CP.cyan, 0.3)
+                            strokeColor: active ? CP.alpha(CP.cyan, 0.9) : "transparent"
+                            strokeWidth: 1; inset: 0.5
+                            cutTopLeft: 2; cutBottomRight: 2
+
+                            Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                            Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                            Behavior on fillColor { ColorAnimation { duration: 220 } }
+                            Behavior on strokeColor { ColorAnimation { duration: 220 } }
+                        }
+                    }
                 }
             }
 
@@ -766,10 +918,6 @@ Scope {
                         if (!carousel.fastMode) return
                         carousel.fastMode = false
                         carousel.rapidCount = 0
-                        for (var i = 0; i < repeater.count; i++) {
-                            var item = repeater.itemAt(i)
-                            if (item) item.animEnabled = true
-                        }
                         carousel.updateCards()
                     }
                 }
@@ -844,6 +992,7 @@ Scope {
                             item.cardWidth = 0
                             item.cardHeight = 0
                             item.x = centerX
+                            item.isPreload = false
                             continue
                         }
 
@@ -853,7 +1002,16 @@ Scope {
                         var offset = rightDist <= leftDist ? rightDist : -leftDist
 
                         var circDist = Math.min(rightDist, leftDist)
+                        if (circDist > 10) {
+                            item.distFromCurrent = 9999
+                            item.cardWidth = 0
+                            item.cardHeight = 0
+                            item.x = centerX
+                            continue
+                        }
                         item.distFromCurrent = circDist
+                        item.isPreload = (circDist > 7)
+                        if (item.opacity < 0.5) item.opacity = 1
                         item.cardWidth = cardW
                         item.cardHeight = cardH
                         item.x = centerX - cardW / 2 + offset * (cardW + sp)
@@ -892,7 +1050,7 @@ Scope {
                     var curVis = vis.indexOf(currentIndex)
                     var visCount = vis.length
                     var center = width / 2 + 40
-                    var halfCount = Math.floor(visCount / 2)
+                    var halfCount = Math.min(Math.floor(visCount / 2), 10)
 
                     // Calculate center X for each visible card
                     var centers = {}
@@ -933,11 +1091,14 @@ Scope {
                             item.cardWidth = 0
                             item.cardHeight = 0
                             item.x = center
+                            item.isPreload = false
                             continue
                         }
 
                         var dist = cardDists[i]
                         item.distFromCurrent = dist
+                        item.isPreload = (dist > 7)
+                        if (item.opacity < 0.5) item.opacity = 1
                         var w = widthForDist(dist)
                         var h = heightForDist(dist)
                         var newX = centers[i] - w / 2
@@ -1036,7 +1197,7 @@ Scope {
                         // Trigger glitch on each card
                         for (var i = 0; i < repeater.count; i++) {
                             var item = repeater.itemAt(i)
-                            if (item) item.reveal()
+                            if (item && item.distFromCurrent <= 7) item.reveal()
                         }
                     }
                 }
@@ -1107,6 +1268,7 @@ Scope {
 
                     delegate: WallpaperCard {
                         y: 0
+                        carouselFastMode: carousel.fastMode
                         viewCurrentIndex: carousel.currentIndex
                         viewTotalVisible: carousel.visibleCount
                         isCurrent:  index === carousel.currentIndex
@@ -1529,7 +1691,7 @@ Scope {
                     anchors.fill: parent
                     anchors.leftMargin: 12
                     anchors.rightMargin: 12
-                    spacing: 16
+                    spacing: 8
 
                     Text {
                         Layout.fillWidth: true
@@ -1546,6 +1708,62 @@ Scope {
                         font.letterSpacing: 2
                         color: Colours.textPrimary
                         elide: Text.ElideRight
+                    }
+
+                    // Source badge
+                    Item {
+                        property string _src: {
+                            if (carousel.searchFocused && filterBar.resultsModel && carousel.selectedSearchIdx >= 0
+                                && carousel.selectedSearchIdx < filterBar.resultsModel.count)
+                                return filterBar.resultsModel.get(carousel.selectedSearchIdx).source || ""
+                            if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count) return ""
+                            return wallpaperModel.get(carousel.currentIndex).source
+                        }
+                        visible: _src !== ""
+                        width: _srcLbl.implicitWidth + 10; height: 18
+                        Layout.alignment: Qt.AlignVCenter
+
+                        CutShape {
+                            anchors.fill: parent
+                            fillColor: CP.alpha(parent._src === "wpe" ? CP.yellow : CP.cyan, 0.12)
+                            strokeColor: CP.alpha(parent._src === "wpe" ? CP.yellow : CP.cyan, 0.55)
+                            strokeWidth: 1; inset: 0.5
+                            cutTopLeft: 3; cutBottomRight: 3
+                        }
+                        Text {
+                            id: _srcLbl
+                            anchors.centerIn: parent
+                            text: parent._src.toUpperCase()
+                            font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1
+                            color: parent._src === "wpe" ? Colours.accentPrimary : Colours.accentSecondary
+                        }
+                    }
+
+                    // Type badge
+                    Item {
+                        property string _typ: {
+                            if (carousel.searchFocused) return ""
+                            if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count) return ""
+                            return wallpaperModel.get(carousel.currentIndex).type
+                        }
+                        visible: _typ !== ""
+                        width: _typLbl.implicitWidth + 10; height: 18
+                        Layout.alignment: Qt.AlignVCenter
+
+                        CutShape {
+                            anchors.fill: parent
+                            fillColor: CP.alpha(CP.void2, 0.7)
+                            strokeColor: CP.alpha(Colours.textMuted, 0.35)
+                            strokeWidth: 1; inset: 0.5
+                            cutTopLeft: 3; cutBottomRight: 3
+                        }
+                        Text {
+                            id: _typLbl
+                            anchors.centerIn: parent
+                            text: parent._typ.toUpperCase()
+                            font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1
+                            color: Colours.textMuted
+                        }
                     }
 
                     Text {
@@ -1647,6 +1865,33 @@ Scope {
                                 filterBar.resubmit()
                             }
                         }
+                    }
+                }
+            }
+
+            // ── Playlist panel ───────────────────────────────────────────────────
+            Item {
+                id: panelSlider
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                width: parent.width / 3 - 180
+                clip: true
+                z: 50
+
+                property bool _panelAnim: false
+
+                PlaylistPanel {
+                    id: playlistPanel
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    x: PlaylistState.panelOpen ? 0 : -width
+                    wallpaperModel: wallpaperModel
+
+                    Behavior on x {
+                        enabled: panelSlider._panelAnim
+                        NumberAnimation { duration: 350; easing.type: Easing.OutCubic }
                     }
                 }
             }
@@ -1853,14 +2098,6 @@ Scope {
                             // Normal carousel navigation
                             if (event.isAutoRepeat) {
                                 carousel.rapidCount++
-                                if (carousel.rapidCount > 5 && !carousel.fastMode) {
-                                    carousel.fastMode = true
-                                    for (var i = 0; i < repeater.count; i++) {
-                                        var item = repeater.itemAt(i)
-                                        if (item) item.animEnabled = false
-                                    }
-                                    carousel.updateCardsFast()
-                                }
                             } else {
                                 carousel.rapidCount = 0
                             }
@@ -1868,6 +2105,11 @@ Scope {
 
                             if (event.key === Qt.Key_Right) root.nextVisible()
                             else root.prevVisible()
+
+                            if (event.isAutoRepeat && carousel.rapidCount > 5 && !carousel.fastMode) {
+                                carousel.updateCardsFast()
+                                carousel.fastMode = true
+                            }
                         }
                         event.accepted = true
                         break
@@ -1891,6 +2133,11 @@ Scope {
                             carousel.selectedSearchIdx = -1
                             carousel.selectedSearchUrl = ""
                             filterBar.closeSearch()
+                            event.accepted = true
+                            break
+                        }
+                        if (PlaylistState.panelOpen) {
+                            PlaylistState.panelOpen = false
                             event.accepted = true
                             break
                         }
@@ -2045,8 +2292,93 @@ Scope {
                             }
                         }
                         event.accepted = true
+                        break
+                    case Qt.Key_P:
+                        if (!filterBar.searchInputFocused)
+                            if (event.modifiers & Qt.ControlModifier) {
+                                PlaylistState.togglePanel()
+                            } else {
+                                var pIdx = carousel.currentIndex
+                                if (pIdx >= 0 && pIdx < wallpaperModel.count) {
+                                    var e = wallpaperModel.get(pIdx)
+                                    PlaylistState.toggleEntry(e.path, e.type, e.title || "", e.source, e.thumb || e.path)
+                                }
+                            }
+                        event.accepted = true
+                        break
+                    case Qt.Key_0:
+                    case Qt.Key_1:
+                    case Qt.Key_2:
+                    case Qt.Key_3:
+                    case Qt.Key_4:
+                    case Qt.Key_5:
+                    case Qt.Key_6:
+                    case Qt.Key_7:
+                    case Qt.Key_8:
+                    case Qt.Key_9:
+                        if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
+                            root.jumpToFraction(event.key - Qt.Key_0)
+                        }
+                        event.accepted = true
+                        break
                 }
             }
+        }
+    }
+
+    Connections {
+        target: PlaylistState
+        function onEntryApplyRequested(path) {
+            var mode = PlaylistState.screenMode
+            if (mode !== "both" && mode !== "sync" && mode !== root.screen.name) return
+            Quickshell.execDetached(["bash", "-c",
+                root.themerDir + "/wallpaper-themer.sh set "
+                + root.screen.name + " '" + path + "'"])
+        }
+    }
+
+    function setPreviewFromPlaylist(path, source) {
+        // Toggle: same card already in preview -> remove
+        if (_playlistPreviewPath === path) {
+            if (root.wpePreviewActive) {
+                Quickshell.execDetached(["bash", "-c",
+                    root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe " + root.screen.name])
+            }
+            if (root.originalWallpaper) {
+                Quickshell.execDetached(["bash", "-c",
+                    root.scriptsDir + "/wallpaper-picker.sh preview "
+                    + root.screen.name + " '" + root.originalWallpaper + "'"])
+            }
+            root.previewShown = false
+            root.wpePreviewActive = false
+            _playlistPreviewPath = ""
+            return
+        }
+
+        // New preview
+        var stopCmd = root.wpePreviewActive
+                    ? root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe " + root.screen.name + " && "
+                    : ""
+        root.previewShown = true
+        if (source === "wpe") {
+            root.wpePreviewActive = true
+            Quickshell.execDetached(["bash", "-c",
+                stopCmd + root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
+                + root.screen.name + " '" + path + "'"])
+        } else {
+            root.wpePreviewActive = false
+            Quickshell.execDetached(["bash", "-c",
+                stopCmd + root.scriptsDir + "/wallpaper-picker.sh preview "
+                + root.screen.name + " '" + path + "'"])
+        }
+        _playlistPreviewPath = path
+    }
+
+    Connections {
+        target: PlaylistState
+        function onPreviewRequested(path, source) {
+            if (!root.isActiveScreen) return
+            root.setPreviewFromPlaylist(path, source)
         }
     }
 }

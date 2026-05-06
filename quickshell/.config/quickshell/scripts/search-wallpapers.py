@@ -3,6 +3,7 @@
 
 import sys
 import json
+import html as _html
 import urllib.request
 import urllib.parse
 import re
@@ -321,8 +322,8 @@ def search_reddit_gif(query, page=1, max_results=30, output=None):
         else:
             print(json.dumps(result), flush=True)
 
-def _fetch_wpe_compat(wpe_ids):
-    """Batch-fetch type tags for WPE items via Steam API"""
+def _fetch_wpe_details(wpe_ids):
+    """Batch-fetch full metadata for WPE items via Steam API"""
     if not wpe_ids:
         return {}
     data = "itemcount=" + str(len(wpe_ids))
@@ -343,15 +344,21 @@ def _fetch_wpe_compat(wpe_ids):
     for item in items:
         wid = item.get("publishedfileid", "")
         tags = {t.get("tag", "").lower() for t in item.get("tags", [])}
-        if "video" in tags:         out[wid] = "video"
-        elif "scene" in tags:       out[wid] = "scene"
-        elif "web" in tags:         out[wid] = "web"
-        elif "application" in tags: out[wid] = "app"
-        else:                       out[wid] = "unknown"
+        if   "video" in tags:       compat = "video"
+        elif "scene" in tags:       compat = "scene"
+        elif "web" in tags:         compat = "web"
+        elif "application" in tags: compat = "app"
+        else:                       compat = "unknown"
+        out[wid] = {
+            "title":       item.get("title", "") or wid,
+            "preview_url": item.get("preview_url", ""),
+            "file_size":   item.get("file_size", 0),
+            "compat":      compat,
+        }
     return out
 
 def search_wpe(query, page=1, max_results=30, output=None):
-    """Search Steam Workshop for Wallpaper Engine items"""
+    """Search Steam Workshop — extract IDs from HTML, fetch metadata via JSON API"""
     params = {
         "appid": "431960",
         "searchtext": query,
@@ -362,39 +369,49 @@ def search_wpe(query, page=1, max_results=30, output=None):
     }
     url = "https://steamcommunity.com/workshop/browse/?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     })
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             body = resp.read().decode()
     except Exception:
         return
-    
-    results = []
-    for match in re.finditer(
-        r'data-publishedfileid="(\d+)".*?'
-        r'workshopItemPreviewImage\s[^"]*"\s+src="([^"]+)".*?'
-        r'workshopItemTitle[^>]*>([^<]+)<',
-        body, re.DOTALL
+
+    # Robust ID extraction: match either data-publishedfileid="..." or ?id=... in URLs.
+    # Both patterns are part of Steam's URL/API contract and rarely change.
+    ids = []
+    seen = set()
+    for m in re.finditer(
+        r'(?:data-publishedfileid="|sharedfiles/filedetails/\?id=)(\d+)', body
     ):
-        results.append({
-            "url":      match.group(1),
-            "thumb":    match.group(2),
-            "title":    match.group(3).strip(),
-            "w": 0, "h": 0,
-            "source": "wpe"
-        })
-        if len(results) >= max_results:
+        wid = m.group(1)
+        if wid not in seen:
+            seen.add(wid)
+            ids.append(wid)
+        if len(ids) >= max_results:
             break
 
-    compat_map = _fetch_wpe_compat([r["url"] for r in results])
+    if not ids:
+        return
 
-    for r in results:
-        r["compat"] = compat_map.get(r["url"], "unknown")
+    details = _fetch_wpe_details(ids)
+    for wid in ids:
+        d = details.get(wid)
+        if not d:
+            continue
+        result = {
+            "url":       wid,
+            "thumb":     d["preview_url"],
+            "title":     d["title"],
+            "w": 0, "h": 0,
+            "file_size": d["file_size"],
+            "source":    "wpe",
+            "compat":    d["compat"],
+        }
         if output is not None:
-            output.append(r)
+            output.append(result)
         else:
-            print(json.dumps(r), flush=True)
+            print(json.dumps(result), flush=True)
 
 def search_wallpaperscraft(query, page=1, max_results=30, output=None):
     """Search wallpaperscraft.com - derives 1920x1080 full URL from thumbnail slug"""
