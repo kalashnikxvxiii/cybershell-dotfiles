@@ -31,10 +31,7 @@ spicetify/**/Themes/
 # === OS / editor junk ===
 .DS_Store
 *.swp
-*.swogit commit -m "quickshell: C++ plugins — cyberaudio, cybergraphics, plasmafx
-
-CyberAudio: PipeWire + libcava + aubio (beat tracking, cava provider).
-CyberGraphics: QPainter sparkline charts for bar modules
+*.swo
 *~
 
 # Build artifacts
