@@ -119,6 +119,7 @@ start_wpe_on_screen() {
         --bg "$wpe_id"
         --volume 100
         --noautomute
+        --no-fullscreen-pause
         --mpvparam=hwdec=auto
         --mpvparam=demuxer-max-bytes=150MiB
         --mpvparam=demuxer-max-back-bytes=50MiB
@@ -144,6 +145,7 @@ start_wpe_direct() {
         --bg "$wpe_id"
         --volume 100
         --noautomute
+        --no-fullscreen-pause
         --mpvparam=hwdec=auto
         --mpvparam=demuxer-max-bytes=150MiB
         --mpvparam=demuxer-max-back-bytes=50MiB
@@ -450,10 +452,9 @@ start_screen() {
             apply_audio_for_screen_async "$screen" "$entry" "$wpe_pid" "$(get_audio_volume)"
         fi
 
-        # Health check: se WPE crasha entro 3s, riprova con un altro wallpaper
+        # Health check: if WPE crash in 3s, retry with another wallpaper
         # _wpe_health_check "$screen" "$entry" &
     else
-        awww img "$entry" --outputs "$screen" --transition-type none
         kill_wpe_on_screen "$screen"
         awww_transition "$screen" "$entry"
     fi
@@ -465,7 +466,7 @@ acquire_lock() {
     if [ -f "$LOCK_FILE" ]; then
         local lock_pid
         lock_pid=$(cat "$LOCK_FILE" 2>/dev/null)
-        # Stale lock (processo morto)
+        # Stale lock (dead process)
         if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
             return 1
         fi
@@ -484,7 +485,7 @@ change_both() {
     dp1_wp=$(pick_next_wp "$(get_current_wp "DP-1")")
     hdmi_wp=$(pick_next_wp "$dp1_wp")
 
-    # Aggiorna awww con i preview prima di killare (evita preview stale)
+    # Update awww with the previews before killing it (avoid preview stale)
     if is_wpe "$dp1_wp"; then
         local p; p=$(get_wpe_preview "$dp1_wp")
         [ -n "$p" ] && awww img "$p" --outputs "DP-1" --transition-type none &
@@ -494,7 +495,7 @@ change_both() {
         [ -n "$p" ] && awww img "$p" --outputs "HDMI-A-1" --transition-type none &
     fi
 
-    # Kill ALL WPE in un colpo, singolo wait (come vecchia implementazione)
+    # Kill ALL WPE in one-shot, single wait
     pkill -x linux-wallpaperengine 2>/dev/null
     rm -f "$STATE_DIR"/pid_*
     sleep 0.5
@@ -530,10 +531,10 @@ get_mode() {
 toggle_mode() {
     if [ "$(get_mode)" = "both" ]; then
         echo "cursor" > "$STATE_DIR/mode"
-        notify-send "Wallpaper" "Modalità: indipendente — Super+W cambia solo il monitor col cursore"
+        notify-send "Wallpaper" "Mode: single"
     else
         echo "both" > "$STATE_DIR/mode"
-        notify-send "Wallpaper" "Modalità: entrambi i monitor"
+        notify-send "Wallpaper" "Mode: both"
     fi
 }
 
@@ -643,13 +644,13 @@ toggle_auto() {
         if kill -0 "$pid" 2>/dev/null; then
             kill "$pid"
             rm -f "$DAEMON_PID_FILE"
-            notify-send "Wallpaper" "Auto-change disattivato"
+            notify-send "Wallpaper" "Auto-change disabled"
             return
         fi
     fi
     bash "$0" daemon &
     echo $! > "$DAEMON_PID_FILE"
-    notify-send "Wallpaper" "Auto-change attivato (${AUTO_INTERVAL}s)"
+    notify-send "Wallpaper" "Auto-change enabled (${AUTO_INTERVAL}s)"
 }
 
 # ---------------------------------------------------------------------------
@@ -677,7 +678,7 @@ audio_toggle() {
         while IFS= read -r sid; do
             [ -n "$sid" ] && pactl set-sink-input-volume "$sid" "0%"
         done < <(get_wpe_inputs_for_screen "$screen")
-        notify-send "Wallpaper Audio" "Muto [$screen]"
+        notify-send "Wallpaper Audio" "Muted [$screen]"
     fi
 }
 
@@ -713,7 +714,7 @@ audio_volume_down() {
         echo "$vol" > "$AUDIO_LAST_VOL_FILE"
         notify-send "Wallpaper Audio" "Volume: ${vol}% [$screen]"
     else
-        notify-send "Wallpaper Audio" "Muto [$screen]"
+        notify-send "Wallpaper Audio" "Muted [$screen]"
     fi
     while IFS= read -r sid; do
         [ -n "$sid" ] && pactl set-sink-input-volume "$sid" "${vol}%"
