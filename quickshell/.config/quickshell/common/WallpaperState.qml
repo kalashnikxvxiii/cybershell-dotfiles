@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell.Io
+import Quickshell
 import QtQuick
 import "WallpaperConstants.js" as WC
 
@@ -58,6 +59,73 @@ QtObject {
         }
     }
 
+    // ── Desktop wallpaper rendering ──────────────────────────
+    property var screenPaths:   ({})
+    property var screenKind:    ({})        // {screen: "static" | "wpe" | "none"}
+
+    function setScreenKind(screen, kind) {
+        var k = Object.assign({}, screenKind)
+        k[screen] = kind
+        screenKind = k
+    }
+
+    function kindForScreen(screen) {
+        return screenKind[screen] || "none"
+    }
+
+
+    property var _initProc: Process {
+        command: ["bash", "-c",
+            "shopt -s nullglob; " +
+            "for f in $HOME/.cache/wallpaper-themer/current_*; do " +
+            "  screen=$(basename \"$f\" | sed 's/^current_//'); " +
+            "  path=$(cat \"$f\" 2>/dev/null); " +
+            "  [ -z \"$path\" ] && continue; " +
+            "  if [[ \"$path\" == */steamcmd-isolated/* ]]; then " +
+            "    echo \"wpe|$screen|$path\"; " +
+            "  else " +
+            "    echo \"static|$screen|$path\"; " +
+            "  fi; " +
+            "done; " +
+            "for pid in $(pgrep -x linux-wallpaperengine); do " +
+            "  sn=$(tr '\\0' '\\n' </proc/$pid/cmdline 2>/dev/null | awk '/--screen-root/{getline;print;exit}'); " +
+            "  [ -z \"$sn\" ] && continue; " +
+            "  [ ! -f \"$HOME/.cache/wallpaper-themer/current_$sn\" ] && echo \"orphan|$sn|$pid\"; " +
+            "done"]
+        running: false
+        onRunningChanged: {
+            if (!running) console.log("[init] DONE - screenKind=", JSON.stringify(root.screenKind))
+        }
+        stdout: SplitParser {
+            onRead: line => {
+                console.log("[init]", line)
+                line = line.trim()
+                if (line === "") return
+                var parts = line.split("|")
+                if (parts.length < 3) return
+                var tag = parts[0], screen = parts[1], path = parts[2]
+                if (tag === "wpe") {
+                    root.setScreenKind(screen, "wpe")
+                } else if (tag === "static") {
+                    root.setScreenWallpaper(screen, path)
+                    root.setScreenKind(screen, "static")
+                } else if (tag === "orphan") {
+                    Quickshell.execDetached(["kill", "-TERM", path])
+                }
+            }
+        }
+    }
+
+    function setScreenWallpaper(screen, path) {
+        var p = Object.assign({}, screenPaths)
+        p[screen] = path || ""
+        screenPaths = p
+    }
+
+    function pathForScreen(screen) {
+        return screenPaths[screen] || ""
+    }
+
     // ── Filter matching ─────────────────────────────────────
     function matchesFilter(entry) {
         // Macro
@@ -106,6 +174,7 @@ QtObject {
 
     Component.onCompleted: {
         _toggleInitProc.running = true
+        _initProc.running = true
     }
 
     property var _toggleInitProc: Process {

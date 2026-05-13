@@ -12,6 +12,10 @@ FULLSCREEN_WHITELIST=("discord" "kitty" "foot" "alacritty")
 
 mkdir -p "$STATE_DIR"
 
+# Debug logging
+DEBUG_LOG="/tmp/wp-debug.log"
+LOG() { echo "[$(date + '%H:%M:%S.%3N')] [SCRIPT/$$] $*" >> "$DEBUG_LOG"; }
+
 # ---------------------------------------------------------------------------
 # Pool management
 # ---------------------------------------------------------------------------
@@ -129,8 +133,9 @@ start_wpe_on_screen() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
-    linux-wallpaperengine "${wpe_args[@]}" &
+    linux-wallpaperengine "${wpe_args[@]}" > "/tmp/wpe-${screen}.log" 2>&1 &
     local new_pid=$!
+    disown $new_pid
     echo "$new_pid" > "$STATE_DIR/pid_${screen}"
 }
 
@@ -155,8 +160,9 @@ start_wpe_direct() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
-    linux-wallpaperengine "${wpe_args[@]}" &
+    linux-wallpaperengine "${wpe_args[@]}" > "/tmp/wpe-${screen}.log" 2>&1 &
     local new_pid=$!
+    disown $new_pid
     echo "$new_pid" > "$STATE_DIR/pid_${screen}"
     if kill -0 "$new_pid" 2>/dev/null; then
         apply_audio_for_screen_async "$screen" "$entry" "$new_pid" "$(get_audio_volume)"
@@ -355,12 +361,83 @@ wait_for_awww() {
 awww_transition() {
     local screen="$1"
     local img="$2"
-    awww img "$img" \
-        --outputs "$screen" \
-        --transition-type wipe \
-        --transition-angle 30 \
-        --transition-duration 1.5 \
-        --transition-fps 60
+    local final_img
+    final_img=$(make_blur_composite "$screen" "$img")
+    awww img "$final_img" --outputs "$screen"
+}
+
+# Helper: generate a composite image (blurred backdrop + foreground fit)
+make_blur_composite() {
+    local screen="$1"
+    local img="$2"
+
+    local res
+    res=$(hyprctl monitors -j 2>/dev/null \
+        | jq -r --arg s "$screen" '.[] | select(.name==$s) | "\(.width)x\(.height)"')
+    [ -z "$res" ] && { echo "$img"; return; }
+
+    local mime
+    mime=$(file -b --mime-type "$img" 2>/dev/null)
+
+    local key
+    key=$(printf '%s|%s' "$img" "$res" | sha1sum | awk '{print $1}')
+
+    local screen_w=${res%x*}
+    local screen_h=${res#*x}
+    local small_w=480
+    local small_h=$((screen_h * small_w / screen_w))
+    local small="${small_w}x${small_h}"
+
+    # GIF animati: composite animato (backdrop statico blurrato + GIF fit foreground)
+    if [ "$mime" = "image/gif" ]; then
+        local out="/tmp/qs-wp-${screen}-${key}.gif"
+        [ -f "$out" ] && { echo "$out"; return; }
+
+        ls -t /tmp/qs-wp-${screen}-*.jpg /tmp/qs-wp-${screen}-*.gif 2>/dev/null | tail -n +6 | xargs -r rm -f
+
+        local backdrop
+        backdrop=$(mktemp /tmp/qs-wp-bg-XXXXXX.png)
+
+        # Backdrop statico dal primo frame
+        magick "${img}[0]" \
+            -thumbnail "${small}^" -gravity center -extent "$small" \
+            -blur 0x12 -modulate 85,75,100 \
+            -resize "${res}!" \
+            "$backdrop" 2>/dev/null
+
+        # Composite ogni frame del GIF sul backdrop
+        if magick "$backdrop" null: \
+            \( "$img" -coalesce -resize "${res}" \) \
+            -gravity center -compose over -layers composite \
+            -layers optimize \
+            "$out" 2>/dev/null; then
+            rm -f "$backdrop"
+            echo "$out"
+        else
+            rm -f "$backdrop"
+            echo "$img"
+        fi
+        return
+    fi
+
+    # Static image: logica esistente
+    local out="/tmp/qs-wp-${screen}-${key}.jpg"
+    [ -f "$out" ] && { echo "$out"; return; }
+
+    ls -t /tmp/qs-wp-${screen}-*.jpg /tmp/qs-wp-${screen}-*.gif 2>/dev/null | tail -n +6 | xargs -r rm -f
+
+    if magick "$img" \
+        \( -clone 0 -thumbnail "${small}^" -gravity center -extent "$small" \
+           -blur 0x12 -modulate 85,75,100 \
+           -resize "${res}!" \) \
+        \( -clone 0 -resize "${res}" \) \
+        -delete 0 \
+        -gravity center -compose over -composite \
+        -quality 88 "$out" 2>/dev/null; then
+        echo "$out"
+    else
+        echo "$img"
+    fi
 }
 
 # ---------------------------------------------------------------------------
@@ -390,6 +467,7 @@ _wpe_health_check() {
     local screen="$1"
     local expected_entry="$2"
     sleep 3
+    LOG "_wpe_health_check $screen $(basename "$expected_entry"): woke up, current=$(basename "$(get_current_wp "$screen")") pid=$(cat "$STATE_DIR/pid${screen}" 2>/dev/null) alive=$([ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && echo yeas || echo no)"
     # Se l'utente ha cambiato wallpaper nel frattempo, abortisci
     local current
     current=$(get_current_wp "$screen")
@@ -430,30 +508,21 @@ start_screen() {
     local screen="$1"
     local entry="$2"
 
-    local was_wpe=false
-    local current_wp
-    current_wp=$(get_current_wp "$screen")
-    is_wpe "$current_wp" && was_wpe=true
-
     save_state "$screen" "$entry"
 
     if is_wpe "$entry"; then
+        start_wpe_on_screen "$screen" "$entry"
+
         local preview
         preview=$(get_wpe_preview "$entry")
-        if $was_wpe; then
-            [ -n "$preview" ] && awww img "$preview" --outputs "$screen" --transition-type none
-        else
-            [ -n "$preview" ] && awww_transition "$screen" "$preview"
-        fi
-        start_wpe_on_screen "$screen" "$entry"
+        [ -n "$preview" ] && awww img "$(make_blur_composite "$screen" "$preview")" \
+            --outputs "$screen"
+
         local wpe_pid
         wpe_pid=$(cat "$STATE_DIR/pid_${screen}" 2>/dev/null)
         if [ -n "$wpe_pid" ] && kill -0 "$wpe_pid" 2>/dev/null; then
             apply_audio_for_screen_async "$screen" "$entry" "$wpe_pid" "$(get_audio_volume)"
         fi
-
-        # Health check: if WPE crash in 3s, retry with another wallpaper
-        # _wpe_health_check "$screen" "$entry" &
     else
         kill_wpe_on_screen "$screen"
         awww_transition "$screen" "$entry"
@@ -488,15 +557,18 @@ change_both() {
     # Update awww with the previews before killing it (avoid preview stale)
     if is_wpe "$dp1_wp"; then
         local p; p=$(get_wpe_preview "$dp1_wp")
-        [ -n "$p" ] && awww img "$p" --outputs "DP-1" --transition-type none &
+        [ -n "$p" ] && awww img "$p" --outputs "DP-1" &
     fi
     if is_wpe "$hdmi_wp"; then
         local p; p=$(get_wpe_preview "$hdmi_wp")
-        [ -n "$p" ] && awww img "$p" --outputs "HDMI-A-1" --transition-type none &
+        [ -n "$p" ] && awww img "$p" --outputs "HDMI-A-1" &
     fi
 
     # Kill ALL WPE in one-shot, single wait
-    pkill -x linux-wallpaperengine 2>/dev/null
+    for arg in "$@"; do
+        sn="${arg%%:*}"
+        [ -n "$sn" ] && pkill -9 -f "linux-wallpaperengine.*--screen-root $sn" 2>/dev/null
+    done
     rm -f "$STATE_DIR"/pid_*
     sleep 0.5
 
@@ -600,6 +672,71 @@ set_wallpaper() {
     [ "$screen" = "DP-1" ] && apply_colors &
     release_lock
     trap - EXIT
+}
+
+# Usage: Playlist_apply <screen1>:<path1> [<screen2>:<path2> ...]
+playlist_apply() {
+    LOG "playlist_apply START args=($*)"
+    [ $# -eq 0 ] && { LOG " empty args, return"; return 1; }
+    if ! acquire_lock; then
+        LOG " LOCK BUSY (pid_in_lock=$(cat "$LOCK_FILE" 2>/dev/null)), abort"
+        return
+    fi
+    LOG "   lock acquired"
+    trap release_lock EXIT
+
+    local arg s p preview
+
+    LOG "   PHASE 1 (awww previews): start"
+    # Phase 1: update awww preview for WPE (raw, instant — fallback while WPE inits)
+    for arg in "$@"; do
+        s="${arg%%:*}"; p="${arg#*:}"
+        if [ -n "$s" ] && [ -n "$p" ] && is_wpe "$p"; then
+            preview=$(get_wpe_preview "$p")
+            LOG "   awww $s -> preview=$(basename "$preview")"
+            [ -n "$preview" ] && awww img "$preview" --outputs "$s" &
+        fi
+    done
+    LOG "   PHASE 1 done"
+
+    local before_alive after_alive
+    before_alive=$(pgrep -c -x linux-wallpaperengine 2>/dev/null)
+    LOG "   PHASE 2 (kill all WPE): before_alive=$before_alive"
+    # Phase 2: kill ALL WPE in one-shot, then half second of settling
+    for arg in "$@"; do
+        sn="${arg%%:*}"
+        [ -n "$sn" ] && pkill -9 -f "linux-wallpaperengine.*--screen-root $sn" 2>/dev/null
+    done
+    rm -f "$STATE_DIR"/pid_*
+    sleep 0.5
+    after_alive=$(pgrep -c -x linux-wallpaperengine 2>/dev/null)
+    LOG "   PHASE 2 done (after_alive=$after_alive)"
+
+    LOG "   PHASE 3 (spawn WPE): start"
+    # Phase 3: spawn new WPE (via start_wpe_direct)
+    for arg in "$@"; do
+        s="${arg%%:*}"; p="${arg#*:}"
+        if [ -n "$s" ] && [ -n "$p" ] && is_wpe "$p"; then
+            LOG "   spawn $s -> $(basename "$p")"
+            save_state "$s" "$p"
+            start_wpe_direct "$s" "$p"
+            local new_pid
+            new_pid=$(cat "$STATE_DIR/pid_${s}" 2>/dev/null)
+            LOG "   spawned pid=$new_pid for $s, alive=$(kill -0 "$new_pid" 2>/dev/null && echo yes || echo no)"
+        fi
+    done
+    LOG "   PHASE 3 done"
+
+    LOG "   PHASE 4 (apply_colors): start"
+    # Phase 4: wallust (keep bash alive 1-3s —  init window for WPE)
+    apply_colors
+    LOG "   PHASE 4 done"
+
+    release_lock
+    trap - EXIT
+    local final_alive
+    finale_alive=$(pgrep -c -x linux-wallpaperengine 2>/dev/null)
+    LOG "playlist_apply END (final_alive=$final_alive)"
 }
 
 adopt_wpe_preview() {
@@ -761,19 +898,20 @@ get_video_remaining() {
 # ---------------------------------------------------------------------------
 
 case "${1:-restore}" in
-    restore)      restore ;;
-    smart)        change_smart ;;
-    both)         change_both ;;
-    cursor)       change_cursor ;;
-    toggle-mode)  toggle_mode ;;
-    toggle-order) toggle_order ;;
-    toggle-auto)  toggle_auto ;;
-    toggle-pool)  toggle_pool ;;
-    daemon)       run_daemon ;;
-    audio-toggle) audio_toggle ;;
-    audio-up)     audio_volume_up ;;
-    audio-down)   audio_volume_down ;;
-    set)          set_wallpaper "$2" "$3" ;;
-    adopt-wpe)    adopt_wpe_preview "$2" "$3" ;;
-    *)            change_smart ;;
+    restore)        restore ;;
+    smart)          change_smart ;;
+    both)           change_both ;;
+    cursor)         change_cursor ;;
+    toggle-mode)    toggle_mode ;;
+    toggle-order)   toggle_order ;;
+    toggle-auto)    toggle_auto ;;
+    toggle-pool)    toggle_pool ;;
+    daemon)         run_daemon ;;
+    audio-toggle)   audio_toggle ;;
+    audio-up)       audio_volume_up ;;
+    audio-down)     audio_volume_down ;;
+    set)            set_wallpaper "$2" "$3" ;;
+    adopt-wpe)      adopt_wpe_preview "$2" "$3" ;;
+    playlist-apply) shift; playlist_apply "$@" ;;
+    *)              change_smart ;;
 esac
