@@ -217,6 +217,7 @@ Item {
                 color: "#0a060e"
             }
 
+            // Background always filled, blur only if isCurrent
             Image {
                 anchors.fill: parent
                 source: root.searchPreviewThumb
@@ -224,6 +225,28 @@ Item {
                         : (root.thumb ? "file://" + root.thumb : "")
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
+                opacity: root.videoPlaying ? 0 : 1
+                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+
+                layer.enabled: root.isCurrent
+                layer.effect: MultiEffect {
+                    blurEnabled: true
+                    blurMax: 64
+                    blur: 1.0
+                    brightness: -0.15
+                    saturation: -0.2
+                }
+            }
+
+            // Foreground: fit, only on current card (keep proportions)
+            Image {
+                anchors.fill: parent
+                source: root.searchPreviewThumb
+                        ? "file://" + root.searchPreviewThumb 
+                        : (root.thumb ? "file://" + root.thumb : "")
+                fillMode: Image.PreserveAspectFit
+                asynchronous: true
+                visible: root.isCurrent
                 opacity: root.videoPlaying ? 0 : 1
                 Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
             }

@@ -16,6 +16,113 @@ mkdir -p "$THUMB_DIR" "$COLOR_DIR"
 
 # ── Helpers ───────────────────────────────────────────────────
 
+cmd_prepare_composite() {
+    local screen="$1" img="$2"
+    [ -n "$img" ] && [ -f "$img" ] || return
+    # Triggera il composite in background. Non scrive marker → niente auto-apply
+    make_blur_composite "$screen" "$img" >/dev/null 2>&1
+}
+
+_compose_gif_bg() {
+    local screen="$1" input="$2" out="$3" small="$4" res="$5"
+
+    ls -t /tmp/qs-wp-${screen}-*.jpg /tmp/qs-wp-${screen}-*.gif 2>/dev/null | tail -n +6 | xargs -r rm -f
+
+    local bg
+    bg=$(mktemp /tmp/qs-wp-bg-XXXXXX.png)
+
+    # Backdrop blurrato (single image, ~100ms)
+    magick "${input}[0]" \
+        -thumbnail "${small}^" -gravity center -extent "$small" \
+        -blur 0x12 -modulate 85,75,100 \
+        -resize "${res}!" \
+        "$bg" 2>/dev/null
+
+    local screen_w=${res%x*}
+    local screen_h=${res#*x}
+
+    # ffmpeg overlay: scale GIF a fit + composite su backdrop, tutto in una passata
+    local tmp="${out}.tmp"
+    local filter="[1:v]scale=w='min(${screen_w}\\,iw*${screen_h}/ih)':h='min(${screen_h}\\,ih*${screen_w}/iw)':flags=lanczos[fg];[0:v][fg]overlay=(W-w)/2:(H-h)/2"
+
+    if ffmpeg -y -loglevel error \
+        -i "$bg" -i "$input" \
+        -filter_complex "$filter" \
+        -loop 0 -f gif \
+        "$tmp" 2>/dev/null \
+        && [ -s "$tmp" ]; then
+        mv "$tmp" "$out"
+        local marker="/tmp/qs-wp-pending-${screen}"
+        if [ "$(cat "$marker" 2>/dev/null)" = "$out" ]; then
+            awww img "$out" --outputs "$screen" \
+                --transition-type none \
+                --resize fit --fill-color 00060eff
+        fi
+    fi
+
+    rm -f "$bg" "$tmp"
+}
+
+make_blur_composite() {
+    local screen="$1"
+    local img="$2"
+
+    local res
+    res=$(hyprctl monitors -j 2>/dev/null \
+        | jq -r --arg s "$screen" '.[] | select(.name==$s) | "\(.width)x\(.height)"')
+    [ -z "$res" ] && { echo "$img"; return; }
+
+    local mime
+    mime=$(file -b --mime-type "$img" 2>/dev/null)
+
+    local key
+    key=$(printf '%s|%s' "$img" "$res" | sha1sum | awk '{print $1}')
+
+    local screen_w=${res%x*}
+    local screen_h=${res#*x}
+    local small_w=480
+    local small_h=$((screen_h * small_w / screen_w))
+    local small="${small_w}x${small_h}"
+
+    # GIF animati: composite animato (backdrop statico blurrato + GIF fit foreground)
+    if [ "$mime" = "image/gif" ]; then
+        local out="/tmp/qs-wp-${screen}-${key}.gif"
+        [ -f "$out" ] && { echo "$out"; return; }
+
+        local input="$img"
+        if [[ "$img" != *.gif && "$img" != *.GIF ]]; then
+            local with_ext="${img}.gif"
+            cp -f "$img" "$with_ext" 2>/dev/null && input="$with_ext"
+        fi
+
+        # Background composite via subshell con I/O completamente staccati
+        ( _compose_gif_bg "$screen" "$input" "$out" "$small" "$res" ) </dev/null >/dev/null 2>&1 &
+        disown 2>/dev/null
+
+        echo "$input"
+        return
+    fi
+
+    # Static image: logica esistente
+    local out="/tmp/qs-wp-${screen}-${key}.jpg"
+    [ -f "$out" ] && { echo "$out"; return; }
+
+    ls -t /tmp/qs-wp-${screen}-*.jpg /tmp/qs-wp-${screen}-*.gif 2>/dev/null | tail -n +6 | xargs -r rm -f
+
+    if magick "$img" \
+        \( -clone 0 -thumbnail "${small}^" -gravity center -extent "$small" \
+           -blur 0x12 -modulate 85,75,100 \
+           -resize "${res}!" \) \
+        \( -clone 0 -resize "${res}" \) \
+        -delete 0 \
+        -gravity center -compose over -composite \
+        -quality 88 "$out" 2>/dev/null; then
+        echo "$out"
+    else
+        echo "$img"
+    fi
+}
+
 get_thumb_key() {
     local entry="$1"
     if [ -d "$entry" ]; then
@@ -201,14 +308,41 @@ cmd_preview() {
         rm -f "$pid_file"
     fi
     pkill -f "linux-wallpaperengine.*--screen-root $screen" 2>/dev/null
-
+    
+    local img=""
     if [ -d "$entry" ]; then
-        local preview=""
-        [ -f "$entry/preview.jpg" ] && preview="$entry/preview.jpg"
-        [ -z "$preview" ] && preview=$(find "$entry" -name "preview.*" -type f 2>/dev/null | head -1)
-        [ -n "$preview" ] && awww img "$preview" --outputs "$screen" --transition-type none
+        [ -f "$entry/preview.jpg" ] && img="$entry/preview.jpg"
+        [ -z "$img" ] && img=$(find "$entry" -name "preview.*" -type f 2>/dev/null | head -1)
     else
-        awww img "$entry" --outputs "$screen" --transition-type none
+        img="$entry"
+    fi
+
+    [ -n "$img" ] || return
+
+    # Marker: cache path attesa per questa preview
+    local res
+    res=$(hyprctl monitors -j 2>/dev/null \
+        | jq -r --arg s "$screen" '.[] | select(.name==$s) | "\(.width)x\(.height)"')
+    if [ -n "$res" ]; then
+        local key mime ext
+        key=$(printf '%s|%s' "$img" "$res" | sha1sum | awk '{print $1}')
+        mime=$(file -b --mime-type "$img" 2>/dev/null)
+        ext="jpg"
+        [ "$mime" = "image/gif" ] && ext="gif"
+        echo "/tmp/qs-wp-${screen}-${key}.${ext}" > "/tmp/qs-wp-pending-${screen}"
+    fi
+
+    local final
+    final=$(make_blur_composite "$screen" "$img")
+
+    local final_mime
+    final_mime=$(file -b --mime-type "$final" 2>/dev/null)
+    if [ "$final_mime" = "image/gif" ]; then
+        awww img "$final" --outputs "$screen" \
+            --transition-type none \
+            --resize fit --fill-color 00060eff
+    else
+        awww img "$final" --outputs "$screen" --transition-type none
     fi
 }
 
@@ -281,5 +415,6 @@ case "${1:-}" in
     catalog)            cmd_catalog ;;
     preview-wpe)        cmd_preview_wpe "$2" "$3" ;;
     stop-preview-wpe)   cmd_stop_preview_wpe "$2" ;;
+    prepare-composite) cmd_prepare_composite "$2" "$3" ;;
     *)                  echo "Usage: wallpaper-picker.sh {generate|toggle|preview}" >&2 ;;
 esac

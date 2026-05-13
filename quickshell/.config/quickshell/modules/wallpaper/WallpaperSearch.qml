@@ -12,7 +12,7 @@ Item {
 
     property string _placeholderPrefix: ""
     property string currentQuery:       ""
-    property string currentSort:        "relevance"
+    property string currentSort:        "random"
     property bool   _waitingForStart:   false
     property bool   _prefixGlitching:   false
     property bool   _updatingPrefix:    false
@@ -37,7 +37,7 @@ Item {
         _activePrefixes = []
         _placeholderPrefix = ""
         _waitingForStart = false
-        currentSort = "relevance"
+        currentSort = "random"
         sortDebounceTimer.stop()
         if (searching) {
             controlProc.running = true
