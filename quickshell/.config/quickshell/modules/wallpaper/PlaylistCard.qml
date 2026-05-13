@@ -1,5 +1,6 @@
 import "../../common/Colors.js" as CP
 import "../../common"
+import QtQuick.Effects
 import QtQuick
 import WpePreview 1.0
 
@@ -16,6 +17,12 @@ Item {
 
     property bool   _previewPlaying:    false
     property var    wallpaperModel:     null
+
+    layer.enabled: true
+    layer.effect: MultiEffect {
+        maskEnabled: true
+        maskSource: cardMask
+    }
 
     readonly property string    _resolvedTitle: {
         if (wallpaperModel) {
@@ -47,8 +54,8 @@ Item {
         strokeColor: PlaylistState.entryHighlightPath === root.path
                     ? CP.alpha(CP.cyan, 0.9)
                     : CP.alpha(CP.yellow, 0.2)
-        strokeWidth: PlaylistState.entryHighlightPath === root.path ? 2 : 1
-        inset: 0.5
+        strokeWidth: PlaylistState.entryHighlightPath === root.path ? 3 : 2
+        //inset: 0.5
         cutTopLeft: 4; cutBottomRight: 4
     }
 
@@ -121,6 +128,24 @@ Item {
             anchors.fill: parent
             source: root.thumb !== "" ? "file://" + root.thumb : ""
             fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            opacity: (root._previewPlaying && (root.type === "gif" || root.type === "scene")) ? 0 : 1
+            Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                blurEnabled: true
+                blurMax: 48
+                blur: 1.0
+                brightness: -0.15
+                saturation: -0.2
+            }
+        }
+
+        Image {
+            anchors.fill: parent
+            source: root.thumb !== "" ? "file://" + root.thumb : ""
+            fillMode: Image.PreserveAspectFit
             asynchronous: true
             opacity: (root._previewPlaying && (root.type === "gif" || root.type === "scene")) ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
@@ -346,5 +371,13 @@ Item {
                 color: _intervalBox._dirty ? Colours.accentPrimary : Colours.textMuted
             }
         }
+    }
+
+    CutShape {
+        id: cardMask
+        anchors.fill: parent
+        fillColor: "white"
+        visible: false
+        cutTopLeft: 4; cutBottomRight: 4
     }
 }

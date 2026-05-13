@@ -463,7 +463,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        spacing: 6
+                        spacing: 0
 
                         Item {
                             Layout.fillWidth: true
@@ -474,7 +474,8 @@ Item {
                                 fillColor: PlaylistState.shuffle ? CP.alpha(CP.yellow, 0.12) : "transparent"
                                 strokeColor: PlaylistState.shuffle ? Colours.accentPrimary : CP.alpha(CP.yellow, 0.2)
                                 strokeWidth: 1; inset: 0.5
-                                cutBottomRight: 9
+                                //cutBottomRight: 9
+                                cutTopLeft: 9
                             }
                             Text {
                                 id: _shufTxt
@@ -489,6 +490,33 @@ Item {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: PlaylistState.setPlaylistProp("shuffle", !PlaylistState.shuffle)
+                            }
+                        }
+
+                        // Sync toggle
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            visible: PlaylistState.screenMode === "both" && Quickshell.screens.length > 1
+
+                            CutShape {
+                                anchors.fill: parent
+                                fillColor: "transparent"
+                                strokeColor: CP.alpha(CP.cyan, 0.2)
+                                strokeWidth: 1; inset: 0.5
+                            }
+                            Text {
+                                anchors.centerIn: parent
+                                text: PlaylistState.sync ? "\u21c4 SYNC" : "\u21d4 INDEP"
+                                font.family: "Oxanium"
+                                font.pixelSize: 14
+                                font.letterSpacing: 2
+                                color: PlaylistState.sync ? Colours.accentSecondary : Colours.textMuted
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: PlaylistState.setPlaylistProp("sync", !PlaylistState.sync)
                             }
                         }
 
@@ -519,7 +547,8 @@ Item {
                                 fillColor: "transparent"
                                 strokeColor: CP.alpha(CP.cyan, _screenSel._dropdownOpen ? 0.4 : 0.2)
                                 strokeWidth: 1; inset: 0.5
-                                cutTopLeft: 9; cutBottomRight: 9
+                                //cutTopLeft: 9
+                                cutBottomRight: 9
                             }
                             Text {
                                 anchors.centerIn: parent
