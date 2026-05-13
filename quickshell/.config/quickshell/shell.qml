@@ -2,6 +2,8 @@
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
+import CyberWallpaper
 import QtQuick
 import "modules/core"
 import "common"
@@ -40,6 +42,25 @@ ShellRoot {
             required property var modelData
 
             DrawerState { id: ds }
+
+            // Wallpaper layer (background)
+            PanelWindow {
+                screen: modelData
+                WlrLayershell.layer: WlrLayer.Bottom
+                WlrLayershell.namespace: "cyberwallpaper"
+                anchors { top: true; bottom: true; left: true; right: true }
+                exclusiveZone: -1
+                color: "transparent"
+
+                WallpaperLayer {
+                    anchors.fill: parent
+                    source: WallpaperState.screenPaths[modelData.name] || ""
+                    backdropBlur: true
+                    backdropDarken: 0.15
+                    backdropSaturation: -0.2
+                    blurRadius: 40
+                }
+            }
 
             Exclusions {                
                 screen: modelData
