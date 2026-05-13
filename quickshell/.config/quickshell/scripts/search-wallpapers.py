@@ -479,7 +479,7 @@ def search_reddit(query, page=1, max_results=30, output=None):
         except FileNotFoundError:
             return
     
-    url = "https://www.reddit.com/r/wallpapers+wallpaper+WidescreenWallpaper+EarthPorn+ImaginaryLandscapes+AnimeWallpaper/search.json?" + urllib.parse.urlencode(params)
+    url = "https://www.reddit.com/r/wallpapers+wallpaper+WidescreenWallpaper+EarthPorn+ImaginaryLandscapes+AnimeWallpaper+Animewallpapers+comicwalls+MoviePosterPorn+LookatmyAnime+imaginarynetwork+anime_wallpapers/search.json?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={
         "User-Agent": "WallpaperPicker/1.0"
     })
@@ -537,6 +537,157 @@ def search_reddit(query, page=1, max_results=30, output=None):
         else:
             print(json.dumps(result), flush=True)
 
+def search_yandere(query, page=1, max_results=30, output=None):
+    """yande.re - Moebooru API. Anime, no auth"""
+    tags = (query.replace(" ", "_") + " rating:safe order:score").strip()
+    url = "https://yande.re/post.json?" + urllib.parse.urlencode(
+        {"tags": tags, "limit": max_results, "page": page})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception:
+        return
+    for post in data:
+        if not post.get("file_url"): continue
+        result = {
+            "url":      post["file_url"],
+            "thumb":    post.get("preview_url", ""),
+            "title":    " ".join(post.get("tags", "").split()[:4]) or str(post.get("id", "")),
+            "w":        post.get("width", 0),
+            "h":        post.get("height", 0),
+            "source":   "y"
+        }
+        if output is not None: output.append(result)
+        else: print(json.dumps(result), flush=True)
+
+def search_konachan(query, page=1, max_results=30, output=None):
+    """konachan.com - Moebooru API"""
+    tags = (query.replace(" ", "_") + " rating:safe order:score").strip()
+    url = "https://konachan.com/post.json?" + urllib.parse.urlencode(
+        {"tags": tags, "limit": max_results, "page": page})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception:
+        return
+    for post in data:
+        if not post.get("file_url"): continue
+        result = {
+            "url":      post["file_url"],
+            "thumb":    post.get("preview_url", ""),
+            "title":    " ".join(post.get("tags", "").split()[:4]) or str(post.get("id", "")),
+            "w":        post.get("width", 0),
+            "h":        post.get("height", 0),
+            "source":   "kc"
+        }
+        if output is not None: output.append(result)
+        else: print(json.dumps(result), flush=True)
+
+def search_safebooru(query, page=1, max_results=30, output=None):
+    """safebooru.org - Gelbooru-style JSON API. SFW guaranteed"""
+    tags = query.replace(" ", "_")
+    url = "https://safebooru.org/index.php?" + urllib.parse.urlencode({
+        "page": "dapi", "s": "post", "q": "index", "json": "1",
+        "tags": tags, "limit": max_results, "pid": page - 1
+    })
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception:
+        return
+    if not isinstance(data, list): return
+    for post in data:
+        directory = post.get("directory", "")
+        image = post.get("image", "")
+        if not (directory and image): continue
+        full = f"https://safebooru.org/images/{directory}/{image}"
+        base_no_ext = image.rsplit(".", 1)[0]
+        thumb = f"https://safebooru.org/thumbnails/{directory}/thumbnail_{base_no_ext}.jpg"
+        result = {
+            "url":      full,
+            "thumb":    thumb,
+            "title":    " ".join(post.get("tags", "").split()[:4]) or str(post.get("id", "")),
+            "w":        post.get("width", 0),
+            "h":        post.get("height", 0),
+            "source":   "sb"
+        }
+        if output is not None: output.append(result)
+        else: print(json.dumps(result), flush=True)
+
+def search_deviantart(query, page=1, max_results=30, output=None):
+    """DeviantArt — public RSS feed (no auth)."""
+    import xml.etree.ElementTree as ET
+    offset = (page - 1) * 30
+    url = "https://backend.deviantart.com/rss.xml?" + urllib.parse.urlencode({
+        "q": query + " sort:popular", "type": "deviation", "offset": offset
+    })
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = resp.read().decode()
+    except Exception:
+        return
+    try:
+        root = ET.fromstring(body)
+    except Exception:
+        return
+    ns = {"media": "http://search.yahoo.com/mrss/"}
+    count = 0
+    for item in root.findall(".//item"):
+        title_el = item.find("title")
+        title = title_el.text if title_el is not None else ""
+        full_url = ""; w = 0; h = 0
+        for c in item.findall("media:content", ns):
+            u = c.attrib.get("url", "")
+            if u and any(u.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
+                full_url = u
+                w = int(c.attrib.get("width", 0) or 0)
+                h = int(c.attrib.get("height", 0) or 0)
+                break
+        if not full_url: continue
+        thumbs = item.findall("media:thumbnail", ns)
+        thumb_url = thumbs[0].attrib.get("url", "") if thumbs else full_url
+        result = {
+            "url": full_url, "thumb": thumb_url, "title": title,
+            "w": w, "h": h, "source": "da"
+        }
+        if output is not None: output.append(result)
+        else: print(json.dumps(result), flush=True)
+        count += 1
+        if count >= max_results: break
+
+def search_artstation(query, page=1, max_results=30, output=None):
+    """ArtStation — public search API (no auth)."""
+    url = "https://www.artstation.com/api/v2/search/projects.json?" + urllib.parse.urlencode({
+        "query": query, "per_page": max_results, "page": page
+    })
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+        "Accept": "application/json",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception:
+        return
+    for project in data.get("data", []):
+        cover = project.get("cover", {}) or {}
+        full = cover.get("medium_image_url") or cover.get("small_image_url") or ""
+        thumb = cover.get("small_image_url") or cover.get("micro_square_image_url") or full
+        if not full: continue
+        result = {
+            "url": full, "thumb": thumb,
+            "title": project.get("title", ""),
+            "w": cover.get("width", 0) or 0,
+            "h": cover.get("height", 0) or 0,
+            "source": "as"
+        }
+        if output is not None: output.append(result)
+        else: print(json.dumps(result), flush=True)
+
 def search_multi(sources, query, page=1, max_results=30):
     """Run specified engines in parallel"""
     source_fn_map = {
@@ -545,11 +696,17 @@ def search_multi(sources, query, page=1, max_results=30):
         "r":    search_reddit,
         "wpe":  search_wpe,
         "gif":  [search_alphacoders_gif, search_reddit_gif],
-        "img":  [search_wallhaven, search_alphacoders, search_reddit, search_wallpaperscraft],
+        "img":  [search_wallhaven, search_alphacoders, search_reddit, search_wallpaperscraft,
+                search_yandere, search_konachan, search_safebooru, search_deviantart, search_artstation],
         "wc":   search_wallpaperscraft,
         "rand": _search_wallhaven_rand,
         "rg":   search_reddit_gif,
         "ag":   search_alphacoders_gif,
+        "y":    search_yandere,
+        "kc":   search_konachan,
+        "sb":   search_safebooru,
+        "da":   search_deviantart,
+        "as":   search_artstation,
     }
     fns = []
     for s in sources:
@@ -576,16 +733,12 @@ def search_multi(sources, query, page=1, max_results=30):
             if i < len(src): print(json.dumps(src[i]), flush=True)
 
 def search_all(query, page=1, max_results=30, sorting="relevance"):
-    """Run ALL engines in parallel (images + GIF), interleaved."""
-    buckets = {"wh": [], "a": [], "r": [], "ag": [], "rg": [], "wpe": [], "wc": []}
-
+    buckets = {"wh": [], "a": [], "r": [], "ag": [], "rg": [], "wpe": [], "wc": [],
+               "y": [], "kc": [], "sb": [], "da": [], "as": []}
     def _safe_run(fn, bucket, *args, **kwargs):
-        try:
-            fn(*args, output=bucket, **kwargs)
-        except Exception:
-            pass
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        try: fn(*args, output=bucket, **kwargs)
+        except Exception: pass
+    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
         futures = [
             executor.submit(_safe_run, search_wallhaven,        buckets["wh"],  query, page, max_results, sorting=sorting),
             executor.submit(_safe_run, search_wallpaperscraft,  buckets["wc"],  query, page, max_results),
@@ -594,15 +747,20 @@ def search_all(query, page=1, max_results=30, sorting="relevance"):
             executor.submit(_safe_run, search_alphacoders_gif,  buckets["ag"],  query, page, max_results),
             executor.submit(_safe_run, search_reddit_gif,       buckets["rg"],  query, page, max_results),
             executor.submit(_safe_run, search_wpe,              buckets["wpe"], query, page, max_results),
+            executor.submit(_safe_run, search_yandere,          buckets["y"],   query, page, max_results),
+            executor.submit(_safe_run, search_konachan,         buckets["kc"],  query, page, max_results),
+            executor.submit(_safe_run, search_safebooru,        buckets["sb"],  query, page, max_results),
+            executor.submit(_safe_run, search_deviantart,       buckets["da"],  query, page, max_results),
+            executor.submit(_safe_run, search_artstation,       buckets["as"],  query, page, max_results),
         ]
         concurrent.futures.wait(futures)
-
-    sources = [buckets["wh"], buckets["wc"], buckets["a"], buckets["r"], buckets["ag"], buckets["rg"], buckets["wpe"]]
+    sources = [buckets["wh"], buckets["wc"], buckets["a"], buckets["r"],
+               buckets["y"], buckets["kc"], buckets["sb"], buckets["da"], buckets["as"],
+               buckets["ag"], buckets["rg"], buckets["wpe"]]
     max_len = max((len(s) for s in sources), default=0)
     for i in range(max_len):
         for src in sources:
-            if i < len(src):
-                print(json.dumps(src[i]), flush=True)
+            if i < len(src): print(json.dumps(src[i]), flush=True)
 
 def search_all_img(query, page=1, max_results=30):
     """Run image-only engines in parallel (same as old search_all)."""
@@ -632,7 +790,7 @@ def search_all_img(query, page=1, max_results=30):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: search-wallpapers.py <query> [page]", file=sys.stderr)
-        print("  Prefixes: @wh (Wallhaven), @a (Alphacoders), @r (Reddit), @wpe (Workshop), @gif (GIFs), @img (images only)", file=sys.stderr)
+        print("  Prefixes: @wh @a @r @wpe @gif @img @wc @y(yande.re) @kc(konachan) @sb(safebooru) @da(deviantart) @as(artstation)", file=sys.stderr)
         print(" No prefix: all engines in parallel", file=sys.stderr)
         sys.exit(1)
 
@@ -644,21 +802,20 @@ if __name__ == "__main__":
         first_token = query[1:].split(" ")[0]
         rest = query[len(first_token) + 2:].strip() if " " in query else ""
         search_multi(first_token.split("+"), rest, page=page)
-    elif query.startswith("@wh "):
-        search_wallhaven(query[4:].strip(), page=page, sorting=sort)
-    elif query.startswith("@a "):
-        search_alphacoders(query[3:].strip(), page=page)
-    elif query.startswith("@r "):
-        search_reddit(query[3:].strip(), page=page)
-    elif query.startswith("@gif "):
+    elif query.startswith("@y "):   search_yandere(query[3:].strip(),  page=page)
+    elif query.startswith("@kc "):  search_konachan(query[4:].strip(), page=page)
+    elif query.startswith("@sb "):  search_safebooru(query[4:].strip(),page=page)
+    elif query.startswith("@da "):  search_deviantart(query[4:].strip(),page=page)
+    elif query.startswith("@as "):  search_artstation(query[4:].strip(),page=page)
+    elif query.startswith("@wh "):  search_wallhaven(query[4:].strip(), page=page, sorting=sort)
+    elif query.startswith("@a "):   search_alphacoders(query[3:].strip(), page=page)
+    elif query.startswith("@r "):   search_reddit(query[3:].strip(), page=page)
+    elif query.startswith("@gif "): 
         search_alphacoders_gif(query[5:].strip(), page=page)
         search_reddit_gif(query[5:].strip(), page=page)
-    elif query.startswith("@img "):
-        search_all_img(query[5:].strip(), page=page)
-    elif query.startswith("@wpe "):
-        search_wpe(query[5:].strip(), page=page)
-    elif query.startswith("@wc "):
-        search_wallpaperscraft(query[4:].strip(), page=page)
+    elif query.startswith("@img "): search_all_img(query[5:].strip(), page=page)
+    elif query.startswith("@wpe "): search_wpe(query[5:].strip(), page=page)
+    elif query.startswith("@wc "):  search_wallpaperscraft(query[4:].strip(), page=page)
     elif query.startswith("@rand "):
         rand_q = query[6:].strip()
         buckets = {"wh": [], "wc": []}

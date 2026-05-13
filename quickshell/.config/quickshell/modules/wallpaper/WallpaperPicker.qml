@@ -52,6 +52,16 @@ Scope {
         id: searchPreviewProc
         command: ["true"]
         running: false
+        stdout: SplitParser {
+            onRead: line => {
+                line = line.trim()
+                if (line.startsWith("OK:")) {
+                    var path = line.substring(3)
+                    WallpaperState.setScreenWallpaper(root.screen.name, path)
+                    WallpaperState.setScreenKind(root.screen.name, "static")
+                }
+            }
+        }
         onRunningChanged: if (!running) root.searchPreviewLoading = false
     }
 
@@ -280,6 +290,34 @@ Scope {
         }
     }
 
+    Timer {
+        id: _prewarmTimer
+        interval: 300
+        repeat: false
+        property string path: ""
+        onTriggered: {
+            if (!path) return
+            Quickshell.execDetached(["bash", "-c",
+                root.scriptsDir + "/wallpaper-picker.sh prepare-composite "
+                + root.screen.name + " '" + path + "'"])
+        }
+    }
+
+    Connections {
+        target: carousel
+        function onCurrentIndexChanged() {
+            var idx = carousel.currentIndex
+            if (idx < 0 || idx >= wallpaperModel.count) return
+            var entry = wallpaperModel.get(idx)
+            // Only for local GIF (not WPE, not static images already fast)
+            if (entry.source === "wpe") return
+            var p = entry.path.toLowerCase()
+            if (!p.endsWith(".gif")) return
+            _prewarmTimer.path = entry.path
+            _prewarmTimer.restart()
+        }
+    }
+
     // Find the wallpaperModel index matching a basename or WPE id
     function findLocalIndex(identifier, isWpe) {
         for (var i = 0; i < wallpaperModel.count; i++) {
@@ -365,14 +403,39 @@ Scope {
                 root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
                 + root.screen.name])
         }
-        if (root.previewShown && root.originalWallpaper) {
-            Quickshell.execDetached(["bash", "-c",
-                root.themerDir + "/wallpaper-themer.sh set "
-                + root.screen.name + " '" + root.originalWallpaper + "'"])
+        if (root.previewShown) {
+            _applyOriginalState()
         }
         root.previewShown = false
         root.wpePreviewActive = false
-        _playlistPreviewPath = ""
+    }
+
+    function _isWpePath(path) {
+        return path && path.indexOf("/steamcmd-isolated/") !== -1
+    }
+
+    function _applyOriginalState() {
+        var sn = root.screen.name
+        var path = ""
+        if (PlaylistState.isPlaying && PlaylistState.entries.length > 0
+            && PlaylistState.currentIndex >= 0
+            && PlaylistState.currentIndex < PlaylistState.entries.length) {
+            path = PlaylistState.entries[PlaylistState.currentIndex].path
+        } else if (root.originalWallpaper) {
+            path = root.originalWallpaper
+        }
+        if (!path) return
+
+        if (_isWpePath(path)) {
+            WallpaperState.setScreenWallpaper(sn, "")
+            WallpaperState.setScreenKind(sn, "wpe")
+            Quickshell.execDetached(["bash", "-c",
+                root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
+                + sn + " '" + path + "'"])
+        } else {
+            WallpaperState.setScreenWallpaper(sn, path)
+            WallpaperState.setScreenKind(sn, "static")
+        }
     }
 
     Process {
@@ -1352,11 +1415,27 @@ Scope {
                     color: "#0a060e"
                 }
 
+                // Blurred backdrop
+                Image {
+                    anchors.fill: parent
+                    source: searchPreviewThumb.source
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        blurEnabled: true
+                        blurMax: 64
+                        blur: 1.0
+                        brightness: -0.15
+                        saturation: -0.2
+                    }
+                }
+
                 Image {
                     id: searchPreviewThumb
                     anchors.fill: parent
                     source: ""
-                    fillMode: Image.PreserveAspectCrop
+                    fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     visible: searchPreviewImage.status !== Image.Ready
                             && searchPreviewGif.status !== AnimatedImage.Ready
@@ -1366,7 +1445,7 @@ Scope {
                     id: searchPreviewImage
                     anchors.fill: parent
                     source: ""
-                    fillMode: Image.PreserveAspectCrop
+                    fillMode: Image.PreserveAspectFit
                     asynchronous: true
                 }
 
@@ -1374,7 +1453,7 @@ Scope {
                     id: searchPreviewGif
                     anchors.fill: parent
                     source: ""
-                    fillMode: Image.PreserveAspectCrop
+                    fillMode: Image.PreserveAspectFit
                     playing: true
                     visible: source !== ""
                 }
@@ -1656,6 +1735,58 @@ Scope {
                     }
                 }
 
+                Item {
+                    id: _wpeWarn
+                    anchors.fill: parent
+                    visible: opacity > 0
+                    opacity: 0
+                    z: 20
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: CP.alpha(CP.red, 0.25)
+                    }
+
+                    CutShape {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        fillColor: "transparent"
+                        strokeColor: CP.red
+                        strokeWidth: 2
+                        inset: 1
+                        cutTopLeft: 28
+                        cutBottomRight: 28
+                    }
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 6
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "\uf071"      // warning icon
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 32
+                            color: CP.red
+                        }
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "WPE PREVIEW NOT SUPPORTED"
+                            font.family: "Oxanium"
+                            font.pixelSize: 11
+                            font.letterSpacing: 3
+                            color: Colours.accentDanger
+                        }
+                    }
+
+                    SequentialAnimation {
+                        id: _wpeWarnAnim
+                        NumberAnimation { target: _wpeWarn; property: "opacity"; to: 1.0; duration: 100 }
+                        PauseAnimation { duration: 1500 }
+                        NumberAnimation { target: _wpeWarn; property: "opacity"; to: 0.0; duration: 300 }
+                    }
+                }
+
                 CutShape {
                     id: searchPreviewMask
                     anchors.fill: parent
@@ -1817,52 +1948,86 @@ Scope {
             }
 
             // ── Sort buttons (above search results) ────────────────────────────
-            Row {
+            Item {
                 id: sortBar
                 visible: searchResultsPanel.visible
+                height: 24
                 anchors.bottom: searchResultsPanel.top
-                anchors.bottomMargin: 4
                 anchors.right: searchResultsPanel.right
-                spacing: 4
+                width: _sortRow.implicitWidth + 16
 
-                Repeater {
-                    model: WC.sortLabels
-                    delegate: Item {
-                        id: sortBtn
-                        width: sortBtnLabel.implicitWidth + 14
-                        height: 20
+                CutShape {
+                    anchors.fill: parent
+                    fillColor: CP.alpha(CP.void2, 0.85)
+                    strokeColor: CP.alpha(CP.cyan, 0.35)
+                    strokeWidth: 1
+                    inset: 0.5
+                    cutTopLeft: 8
+                    showBottom: false
+                }
 
-                        required property string    modelData
-                        required property int       index
+                Row {
+                    id: _sortRow
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    anchors.rightMargin: 8
+                    spacing: 0
 
-                        property bool      active: filterBar.currentSort === WC.sortOptions[index]
+                    Repeater {
+                        model: WC.sortLabels
+                        delegate: Row {
+                            id: _delRow
+                            spacing: 0
+                            height: sortBar.height
 
-                        CutShape {
-                            anchors.fill: parent
-                            fillColor: sortBtn.active ? CP.alpha(CP.cyan, 0.15) : "transparent"
-                            strokeColor: sortBtn.active ? Colours.accentSecondary : CP.alpha(CP.cyan, 0.2)
-                            strokeWidth: 1
-                            inset: 0.5
-                            cutTopLeft: 3
-                            cutBottomRight: 3
-                        }
+                            required property string    modelData
+                            required property int       index
 
-                        Text {
-                            id: sortBtnLabel
-                            anchors.centerIn: parent
-                            text: modelData
-                            font.family: "Oxanium"
-                            font.pixelSize: 9
-                            font.letterSpacing: 1
-                            color: sortBtn.active ? Colours.accentSecondary : Colours.textMuted
-                        }
+                            // Vertical separator (not on first)
+                            Rectangle {
+                                visible: _delRow.index > 0
+                                width: 1
+                                height: sortBar.height - 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: CP.alpha(CP.cyan, 0.3)
+                            }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                filterBar.currentSort = WC.sortOptions[index]
-                                filterBar.resubmit()
+                            Item {
+                                id: _btnItem
+                                width: _btnLabel.implicitWidth + 14
+                                height: sortBar.height
+
+                                readonly property bool _active: filterBar.currentSort === WC.sortOptions[_delRow.index]
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.margins: 2
+                                    color: _btnItem._active              ? CP.alpha(CP.cyan, 0.2)
+                                        : _btnMa.containsMouse  ? CP.alpha(CP.yellow, 0.12)
+                                                                : "transparent"
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                }
+                                Text {
+                                    id: _btnLabel
+                                    anchors.centerIn: parent
+                                    text: _delRow.modelData
+                                    font.family: "Oxanium"
+                                    font.pixelSize: 9
+                                    font.letterSpacing: 1
+                                    color: _btnItem._active              ? Colours.accentSecondary
+                                        : _btnMa.containsMouse  ? Colours.accentPrimary
+                                                                : Colours.textMuted
+                                }
+                                MouseArea {
+                                    id: _btnMa
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        filterBar.currentSort = WC.sortOptions[_delRow.index]
+                                        filterBar.resubmit()
+                                    }
+                                }
                             }
                         }
                     }
@@ -2184,43 +2349,49 @@ Scope {
                         var upEntry = wallpaperModel.get(upIdx)
 
                         if (root.previewShown && root._carouselPreviewIdx === upIdx) {
-                            // Same card - remove preview
+                            // Same card - remove preview, restore current state (original or playlist)
                             if (root.wpePreviewActive) {
                                 Quickshell.execDetached(["bash", "-c",
-                                root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
-                                + root.screen.name])
+                                    root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                    + root.screen.name])
                             }
-                            if (root.originalWallpaper) {
-                                Quickshell.execDetached(["bash", "-c",
-                                root.scriptsDir + "/wallpaper-picker.sh preview "
-                                + root.screen.name + " '" + root.originalWallpaper + "'"])
-                            }
+                            root._applyOriginalState()
                             root.previewShown = false
                             root.wpePreviewActive = false
                             root._carouselPreviewIdx = -1
                         } else {
-                            // New or different card - set/replace preview
+                            // New card - set/replace preview
                             root._carouselPreviewIdx = upIdx
-                            var stopCmd = root.wpePreviewActive
+                            var currentKind = WallpaperState.screenKind[root.screen.name] || "none"
+                            var needsWpeKill = root.wpePreviewActive || currentKind === "wpe"
+
+                            if (upEntry.source === "wpe") {
+                                // WPE: still via shell (step 5)
+                                var stopCmd = needsWpeKill
                                         ? root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
                                         + root.screen.name + " && "
                                         : ""
-                            if (upEntry.source === "wpe") {
+
                                 // WPE: stop previous (if any) then start new
                                 root.previewShown = true
                                 root.wpePreviewActive = true
+                                WallpaperState.setScreenWallpaper(root.screen.name, "")
+                                WallpaperState.setScreenKind(root.screen.name, "wpe")
                                 Quickshell.execDetached(["bash", "-c",
                                     stopCmd
                                     + root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
                                     + root.screen.name + " '" + upEntry.path + "'"])
                             } else {
-                                // Static stop WPE first if it was active
+                                // Static: plugin
+                                if (needsWpeKill) {
+                                    Quickshell.execDetached(["bash", "-c",
+                                        root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                        + root.screen.name])
+                                }
                                 root.previewShown = true
                                 root.wpePreviewActive = false
-                                Quickshell.execDetached(["bash", "-c",
-                                stopCmd
-                                + root.scriptsDir + "/wallpaper-picker.sh preview "
-                                + root.screen.name + " '" + upEntry.path + "'"])
+                                WallpaperState.setScreenWallpaper(root.screen.name, upEntry.path)
+                                WallpaperState.setScreenKind(root.screen.name, "static")
                             }
                         }
                         event.accepted = true
@@ -2234,44 +2405,64 @@ Scope {
                         }
                         if (carousel.searchFocused && carousel.selectedSearchIdx >= 0
                             && carousel.selectedSearchIdx < filterBar.resultsModel.count) {
+                            var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
+
+                            // WPE preview from results not supported -> warn
+                            if (dlEntry && dlEntry.source === "wpe") {
+                                _wpeWarnAnim.restart()
+                                event.accepted = true
+                                break
+                            }
                             if (root.previewShown && root._searchPreviewIdx === carousel.selectedSearchIdx) {
                                 // Same result - remove preview
-                                if (root.originalWallpaper) {
+                                if (root.wpePreviewActive) {
                                     Quickshell.execDetached(["bash", "-c",
-                                        root.scriptsDir + "/wallpaper-picker.sh preview "
-                                        + root.screen.name + " '" + root.originalWallpaper + "'"])
+                                        root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                        + root.screen.name])
                                 }
+                                root._applyOriginalState()
                                 root.previewShown = false
+                                root.wpePreviewActive = false
                                 root._searchPreviewIdx = -1
-                            } else {
-                                // New or different result - set/replace preview
-                                var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
-                                if (dlEntry) {
-                                    root.previewShown = true
-                                    root.wpePreviewActive = false
-                                    root._searchPreviewIdx = carousel.selectedSearchIdx
-                                    root.searchPreviewLoading = true
-                                    root._previewMsgIdx = 0
-                                    searchPreviewProc.command = ["bash", "-c",
-                                        "F=/tmp/qs-search-preview-$$-$RANDOM; " +
-                                        "curl -sL --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' && " +
-                                        root.scriptsDir + "/wallpaper-picker.sh preview "
-                                        + root.screen.name + " \"$F\""]
-                                    searchPreviewProc.running = true
+                            } else if (dlEntry) {
+                                // Set/replace preview
+                                var currentKind = WallpaperState.screenKind[root.screen.name] || "none"
+                                var needsWpeKill = root.wpePreviewActive || currentKind === "wpe"
+                                console.log("[search-preview] screen:", root.screen.name,
+                                            "currentKind:", currentKind,
+                                            "needsWpeKill:", needsWpeKill,
+                                            "allKinds:", JSON.stringify(WallpaperState.screenKind))
+                                if (needsWpeKill) {
+                                    Quickshell.execDetached(["bash", "-c",
+                                        root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                        + root.screen.name])
                                 }
+                                root.previewShown = true
+                                root.wpePreviewActive = false
+                                root._searchPreviewIdx = carousel.selectedSearchIdx
+                                root.searchPreviewLoading = true
+                                root._previewMsgIdx = 0
+                                searchPreviewProc.running = false
+                                searchPreviewProc.command = ["bash", "-c",
+                                    "F=/tmp/qs-search-preview-$$-$RANDOM; " +
+                                    "curl -sL -A 'Mozilla/5.0' --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' " +
+                                    "&& [ -s \"$F\" ] && { " +
+                                    "  if [ \"$(file -b --mime-type \"$F\")\" = \"image/gif\" ]; then mv \"$F\" \"$F.gif\"; F=\"$F.gif\"; fi; " +
+                                    "  echo \"OK:$F\"; " +
+                                    "}"]
+                                searchPreviewProc.running = true
                             }
                             event.accepted = true
                             break
                         }
-                        if (root.wpePreviewActive) {
-                            Quickshell.execDetached(["bash", "-c",
-                                root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
-                                + root.screen.name])
-                        }
-                        if (root.previewShown && root.originalWallpaper) {
-                            Quickshell.execDetached(["bash", "-c",
-                                root.scriptsDir + "/wallpaper-picker.sh preview "
-                                + root.screen.name + " '" + root.originalWallpaper + "'"])
+                        // Down - out from search context: dismiss preview
+                        if (root.wpePreviewShown) {
+                            if (root.wpePreviewActive) {
+                                Quickshell.execDetached(["bash", "-c",
+                                    root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
+                                    + root.screen.name])
+                            }
+                            root._applyOriginalState()
                         }
                         root.previewShown = false
                         root.wpePreviewActive = false
@@ -2330,7 +2521,13 @@ Scope {
         target: PlaylistState
         function onEntryApplyRequested(path) {
             var mode = PlaylistState.screenMode
-            if (mode !== "both" && mode !== "sync" && mode !== root.screen.name) return
+            if (mode !== "both" && mode !== root.screen.name) return
+            Quickshell.execDetached(["bash", "-c",
+                root.themerDir + "/wallpaper-themer.sh set "
+                + root.screen.name + " '" + path + "'"])
+        }
+        function onEntryApplyRequestedFor(screenName, path) {
+            if (screenName !== root.screen.name) return
             Quickshell.execDetached(["bash", "-c",
                 root.themerDir + "/wallpaper-themer.sh set "
                 + root.screen.name + " '" + path + "'"])
