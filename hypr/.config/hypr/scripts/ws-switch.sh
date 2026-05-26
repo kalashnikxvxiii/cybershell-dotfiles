@@ -38,12 +38,17 @@ ANIMATIONS=(
     "slidefade bottom,easeInOutQuart,6"
 )
 
+source "$(dirname "$0")/hyprctl-lua-compat.sh"
+# smw è il global esposto da hyprland.lua dopo `require("split-monitor-workspaces")`.
+# I metodi smw.workspace(N), smw.move_to_workspace(N), smw.cycle_workspaces(dir)
+# ritornano CLOSURES (function() ... end) — vanno passate a hl.dispatch() per fire-and-forget.
+
 IDX=$((RANDOM % ${#ANIMATIONS[@]}))
 ENTRY="${ANIMATIONS[$IDX]}"
 STYLE=$(echo "$ENTRY" | cut -d, -f1)
 CURVE=$(echo "$ENTRY" | cut -d, -f2)
 SPEED=$(echo "$ENTRY" | cut -d, -f3)
-hyprctl keyword animation "workspaces,1,$SPEED,$CURVE,$STYLE" 2>/dev/null
+he "hl.animation({leaf=\"workspaces\", enabled=true, speed=$SPEED, bezier=\"$CURVE\", style=\"$STYLE\"})" 2>/dev/null
 
 # ── Layout per-workspace ───────────────────────────────────────────────────────
 # Chiave: "MONITOR_NAME:SLOT" -> nome layout
@@ -74,11 +79,11 @@ get_current_slot() {
 # 2. Inietta workspace rule con il nome esatto (effettivo su workspace esistenti)
 apply_layout() {
     local layout="$1"
-    hyprctl keyword general:layout "$layout" >/dev/null 2>&1
+    he "hl.config({general = {layout = \"$layout\"}})" >/dev/null 2>&1
     local ws_name
     ws_name=$(hyprctl activeworkspace -j 2>/dev/null | jq -r '.name // empty')
     [ -n "$ws_name" ] && \
-        hyprctl keyword workspace "name:${ws_name}, layout:${layout}" >/dev/null 2>&1
+        he "hl.workspace_rule({workspace = \"name:${ws_name}\", layout = \"${layout}\"})" >/dev/null 2>&1
     local monitor
     monitor=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.focused) | .name' | head -1)
     [ -n "$monitor" ] && echo "$layout" > "/tmp/hypr-layout-${monitor}"
@@ -126,8 +131,26 @@ cleanup_and_compact() {
 
     [[ "$needs_compact" == "false" ]] && return
 
+    # Default per lo slot di destinazione dell'utente (3 casi):
+    #   A) current_ws è in `occupied` → sovrascritto nel loop con la sua nuova posizione
+    #   B) current_ws è uno slot vuoto DENTRO il range [1..len(occupied)] (es. ws
+    #      appena svuotato): la compaction riempirà quello slot col contenuto del ws
+    #      sopra → utente resta sul proprio slot.
+    #   C) current_ws è uno slot vuoto SOPRA tutti gli occupied (es. SUPER+N con
+    #      N > last_occupied — l'utente vuole "un nuovo workspace dopo l'ultimo")
+    #      → land sul primo slot vuoto post-compaction = len(occupied)+1.
+    #
+    # Bug fix: prima il default era hardcoded a 1, quindi nel caso C l'utente veniva
+    # sbattuto sul primo workspace (effetto "salto" osservato).
+    local current_slot=$((current_ws - offset))
+    local new_current_slot
+    if (( current_slot > ${#occupied[@]} )); then
+        new_current_slot=$((${#occupied[@]} + 1))
+    else
+        new_current_slot=$current_slot
+    fi
+
     # Esegui compattazione: sposta finestre per riempire i gap
-    local new_current_slot=1
     slot=1
     for ws_id in "${occupied[@]}"; do
         local target_id=$((offset + slot))
@@ -137,14 +160,18 @@ cleanup_and_compact() {
             readarray -t addrs < <(hyprctl clients -j 2>/dev/null | jq -r --argjson ws "$ws_id" \
                 '.[] | select(.workspace.id == $ws) | .address')
             for addr in "${addrs[@]}"; do
-                hyprctl dispatch movetoworkspacesilent "${target_id},address:${addr}" >/dev/null 2>&1
+                # movetoworkspacesilent N,address:X — il window selector si chiama `window`,
+                # NON `address` (l'errore API è: "Expected: direction, x+y(+relative),
+                # workspace, into_group, out_of_group" — address non esiste e viene IGNORATO,
+                # facendo muovere la finestra ATTIVA invece di quella specificata).
+                hd "hl.dsp.window.move({workspace = ${target_id}, window = \"address:${addr}\"})" >/dev/null 2>&1
             done
         fi
         slot=$((slot + 1))
     done
 
-    # Vai allo slot compattato
-    hyprctl dispatch split-workspace "$new_current_slot" >/dev/null 2>&1
+    # Vai allo slot finale (no-op se già lì)
+    hp "hl.dispatch(smw.workspace(\"$new_current_slot\"))" >/dev/null 2>&1
 }
 
 # ── Parse argomenti ───────────────────────────────────────────────────────────
@@ -155,14 +182,14 @@ SLOT="${2:-1}"
 case "$CMD" in
     goto)
         TARGET_MONITOR=$(get_focused_monitor)
-        hyprctl dispatch split-workspace "$SLOT"
+        hp "hl.dispatch(smw.workspace(\"$SLOT\"))"
         cleanup_and_compact "$TARGET_MONITOR"
         # Applica layout basato sullo slot compattato
         CUR_SLOT=$(get_current_slot)
         TARGET_LAYOUT=$(get_layout "$TARGET_MONITOR" "$CUR_SLOT")
         GOTO_WS_NAME=$(hyprctl activeworkspace -j 2>/dev/null | jq -r '.name // empty')
         [ -n "$GOTO_WS_NAME" ] && \
-            hyprctl keyword workspace "name:${GOTO_WS_NAME}, layout:${TARGET_LAYOUT}" >/dev/null 2>&1
+            he "hl.workspace_rule({workspace = \"name:${GOTO_WS_NAME}\", layout = \"${TARGET_LAYOUT}\"})" >/dev/null 2>&1
         echo "$TARGET_LAYOUT" > "/tmp/hypr-layout-${TARGET_MONITOR}"
         ;;
     move)
@@ -181,12 +208,12 @@ case "$CMD" in
                 '[.[] | select(.id == $id)] | .[0].windows // 0')
             [[ "$target_wins" -eq 0 ]] && exit 0
         fi
-        hyprctl dispatch split-movetoworkspace "$SLOT"
+        hp "hl.dispatch(smw.move_to_workspace(\"$SLOT\"))"
         cleanup_and_compact "$TARGET_MONITOR"
         ;;
     next)
         TARGET_MONITOR=$(get_focused_monitor)
-        hyprctl dispatch split-cycleworkspaces next
+        hp "hl.dispatch(smw.cycle_workspaces(\"next\"))"
         cleanup_and_compact "$TARGET_MONITOR"
         CUR_SLOT=$(get_current_slot)
         [[ -n "$CUR_SLOT" && "$CUR_SLOT" != "0" ]] && \
@@ -194,7 +221,7 @@ case "$CMD" in
         ;;
     prev)
         TARGET_MONITOR=$(get_focused_monitor)
-        hyprctl dispatch split-cycleworkspaces prev
+        hp "hl.dispatch(smw.cycle_workspaces(\"prev\"))"
         cleanup_and_compact "$TARGET_MONITOR"
         CUR_SLOT=$(get_current_slot)
         [[ -n "$CUR_SLOT" && "$CUR_SLOT" != "0" ]] && \

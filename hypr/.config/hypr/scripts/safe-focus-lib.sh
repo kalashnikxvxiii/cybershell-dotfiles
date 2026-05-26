@@ -3,6 +3,9 @@
 # CReservedArea con split-monitor-workspaces.
 # Usa focuswindow con rilevamento direzionale manuale.
 
+# Carica gli shim Lua-mode (hd / he). Disponibili anche agli script che ci sourcano.
+source "$(dirname "${BASH_SOURCE[0]}")/hyprctl-lua-compat.sh"
+
 # Trova e focalizza la finestra tiled piu' vicina in una direzione.
 # Se non trova candidati, usa focusmonitor per il cross-monitor.
 # Uso: safe_movefocus <dir> [cross_monitor_name]
@@ -19,7 +22,7 @@ safe_movefocus() {
 
     # Nessuna finestra attiva — cross-monitor se possibile
     if [ -z "$active_addr" ] || [ "$active_addr" = "null" ]; then
-        [ -n "$cross_target" ] && hyprctl dispatch focusmonitor "$cross_target"
+        [ -n "$cross_target" ] && hd "hl.dsp.focus({monitor = \"$cross_target\"})"
         return
     fi
 
@@ -54,9 +57,9 @@ safe_movefocus() {
         ] | sort_by([.p, .s]) | first | .a // empty')
 
     if [ -n "$candidate" ]; then
-        hyprctl dispatch focuswindow "address:$candidate"
+        hd "hl.dsp.focus({window = \"address:$candidate\"})"
     elif [ -n "$cross_target" ]; then
-        hyprctl dispatch focusmonitor "$cross_target"
+        hd "hl.dsp.focus({monitor = \"$cross_target\"})"
     fi
 }
 

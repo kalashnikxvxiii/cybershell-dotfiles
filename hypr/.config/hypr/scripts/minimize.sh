@@ -2,6 +2,8 @@
 # minimize.sh — gestione finestre minimizzate
 # Usage: minimize.sh [minimize|restore|status]
 
+source "$(dirname "$0")/hyprctl-lua-compat.sh"
+
 SPECIAL="special:minimized"
 
 get_minimized() {
@@ -12,8 +14,8 @@ case "${1:-status}" in
 
     minimize)
         ACTIVE_MON=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
-        hyprctl dispatch movetoworkspacesilent special:minimized
-        hyprctl dispatch focusmonitor "$ACTIVE_MON"
+        hd 'hl.dsp.window.move({workspace = "special:minimized", silent = true})'
+        hd "hl.dsp.focus({monitor = \"$ACTIVE_MON\"})"
         # special:minimized corrompe lo stato interno di hypr-local-workspaces —
         # riavvialo in background per resettarlo (< 150ms, trasparente all'utente)
         (pkill -f hypr-local-workspaces 2>/dev/null; sleep 0.1; hypr-local-workspaces init &) &
@@ -40,8 +42,8 @@ case "${1:-status}" in
                 jq -r --arg sel "$SELECTED" \
                 '.[] | select((.class + " — " + .title) == $sel) | .address' | head -1)
             ACTIVE_WS=$(hyprctl activeworkspace -j | jq -r '.id')
-            hyprctl dispatch movetoworkspace "$ACTIVE_WS,address:$ADDR"
-            hyprctl dispatch focuswindow "address:$ADDR"
+            hd "hl.dsp.window.move({workspace = $ACTIVE_WS, window = \"address:$ADDR\"})"
+            hd "hl.dsp.focus({window = \"address:$ADDR\"})"
         fi
         ;;
 

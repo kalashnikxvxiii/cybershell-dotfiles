@@ -4,6 +4,8 @@
 #   up      → +0.1  (max 1.0)
 #   down    → -0.1  (min 0.1)
 
+source "$(dirname "$0")/hyprctl-lua-compat.sh"
+
 STATE_DIR="/tmp/hypr-opacity"
 mkdir -p "$STATE_DIR"
 
@@ -20,7 +22,7 @@ set_opacity() {
     local val
     val=$(awk -v v="$1" 'BEGIN { x=v+0; if(x<0.1) x=0.1; else if(x>1.0) x=1.0; printf "%.1f", x }')
     echo "$val" > "$STATE_FILE"
-    hyprctl dispatch setprop address:"$ADDR" opacity "$val"
+    hd "hl.dsp.window.set_prop({prop = \"opacity\", value = $val, window = \"address:$ADDR\"})"
     hyprctl notify 1 1500 "rgb(0abdc6)" " opacity: $(awk -v v="$val" 'BEGIN{printf "%d%%", v*100}')"
 }
 
