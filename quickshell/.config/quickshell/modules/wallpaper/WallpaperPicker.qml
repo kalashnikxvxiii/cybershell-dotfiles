@@ -8,12 +8,14 @@ import Quickshell
 import QtQuick.Layouts
 import QtQuick.Effects
 import QtQuick
+import WpePreview 1.0
 
 Scope {
     id: root
 
     readonly property string scriptsDir: "/home/kalashnikxv/.config/quickshell/scripts"
     readonly property string themerDir: "/home/kalashnikxv/.config/hypr/scripts"
+    readonly property string wpeBaseDir: "/home/kalashnikxv/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960"
     readonly property bool isActiveScreen:
         WallpaperState.pickerOpen && screen.name === WallpaperState.activeScreen
     
@@ -46,6 +48,15 @@ Scope {
     property int    downloadCount:          0
     property int    favCount:               0
 
+    // Phase 2: WPE trial downloads from search preview
+    // Map of wpeId → true for WPEs downloaded just to preview (not promoted to catalog).
+    // Cleaned up on picker close unless promoted via apply (Enter).
+    property var    _trialDownloads:           ({})
+    property string _currentTrialId:           ""
+    property string _pendingTrialWpeId:        ""
+    property bool   _trialDownloading:         false
+    property real   _trialDownloadProgress:    0
+
     ListModel { id: wallpaperModel }
 
     Process {
@@ -57,6 +68,12 @@ Scope {
                 line = line.trim()
                 if (line.startsWith("OK:")) {
                     var path = line.substring(3)
+                    // Rotate: delete the previous /tmp download (never delete cache paths)
+                    if (root._lastSearchPreviewTmp !== "" && root._lastSearchPreviewTmp !== path
+                        && root._lastSearchPreviewTmp.startsWith("/tmp/")) {
+                        Quickshell.execDetached(["rm", "-f", root._lastSearchPreviewTmp])
+                    }
+                    if (path.startsWith("/tmp/")) root._lastSearchPreviewTmp = path
                     WallpaperState.setScreenWallpaper(root.screen.name, path)
                     WallpaperState.setScreenKind(root.screen.name, "static")
                 }
@@ -64,6 +81,8 @@ Scope {
         }
         onRunningChanged: if (!running) root.searchPreviewLoading = false
     }
+
+    property string _lastSearchPreviewTmp: ""
 
     Process {
         id: searchSizeProc
@@ -211,6 +230,55 @@ Scope {
         resProc.running = true
     }
 
+    // Batching state for catalog streaming. Catalog (~441 entries) arrives in
+    // ~5ms but Repeater delegate creation per entry is synchronous and slow.
+    // Strategy: first N entries go directly to the model (visible at open),
+    // the rest are queued and flushed in small batches per frame.
+    property var _catalogPending: []
+    property bool _carouselInitialized: false
+    readonly property int _catalogFirstBatch: 25
+    // Per-frame batch size kept low — each delegate creation is ~5ms of QML
+    // work; with 16ms per frame budget, large batches cause animations to lag.
+    readonly property int _catalogBatchSize: 3
+
+    // Set true when the picker opens before WallpaperState's catalog pre-load
+    // has finished. The Connections below kicks the bulk-load as soon as the
+    // shared cache is ready.
+    property bool _waitingForCatalog: false
+
+    function _bulkLoadFromCache() {
+        var cached = WallpaperState.catalogEntries
+        var lb = root.localBasenames
+        // Build the basename map without touching the carousel
+        for (var i = 0; i < cached.length; i++) {
+            var entry = cached[i]
+            root.allEntries.push(entry)
+            var bn = entry.path.substring(entry.path.lastIndexOf("/") + 1)
+            lb[bn] = true
+        }
+        root.localBasenames = lb
+        // ListModel.append accepts an array — single rowsInserted signal
+        // instead of 441 individual ones, which means Repeater builds the
+        // delegate set in one shot (large win vs per-entry append).
+        wallpaperModel.append(cached)
+        root._carouselInitialized = true
+        initTimer.stop()
+        carousel.initCards()
+        _waitingForCatalog = false
+    }
+
+    Connections {
+        target: WallpaperState
+        function onCatalogReadyChanged() {
+            if (root._waitingForCatalog
+                && WallpaperState.catalogReady
+                && WallpaperState.catalogEntries.length > 0
+                && root.isActiveScreen) {
+                root._bulkLoadFromCache()
+            }
+        }
+    }
+
     Process {
         id: catalogProc
         command: ["bash", "-c", root.scriptsDir + "/wallpaper-picker.sh catalog"]
@@ -220,12 +288,46 @@ Scope {
                 try {
                     var entry = JSON.parse(data)
                     root.allEntries.push(entry)
-                    wallpaperModel.append(entry)
                     var bn = entry.path.substring(entry.path.lastIndexOf("/") + 1)
                     var lb = root.localBasenames
                     lb[bn] = true
                     root.localBasenames = lb
+
+                    if (wallpaperModel.count < root._catalogFirstBatch) {
+                        // First batch: immediate append so picker shows content fast
+                        wallpaperModel.append(entry)
+                        // First batch complete → init carousel NOW, skipping the
+                        // 100ms initTimer debounce. Subsequent batches won't
+                        // restart initTimer (guarded by _carouselInitialized).
+                        if (wallpaperModel.count >= root._catalogFirstBatch
+                            && !root._carouselInitialized) {
+                            root._carouselInitialized = true
+                            initTimer.stop()
+                            carousel.initCards()
+                        }
+                    } else {
+                        // Rest: queue for batched flush
+                        root._catalogPending.push(entry)
+                        if (!catalogBatchTimer.running) catalogBatchTimer.start()
+                    }
                 } catch(e) {}
+            }
+        }
+    }
+
+    Timer {
+        id: catalogBatchTimer
+        interval: 16  // one frame at 60Hz — flush per frame
+        repeat: true
+        onTriggered: {
+            var batch = root._catalogPending.splice(0, root._catalogBatchSize)
+            for (var i = 0; i < batch.length; i++) {
+                wallpaperModel.append(batch[i])
+            }
+            // animEnabled=true is now set in Repeater.onItemAdded, which has
+            // the delegate ready synchronously after append.
+            if (root._catalogPending.length === 0 && !catalogProc.running) {
+                stop()
             }
         }
     }
@@ -372,6 +474,44 @@ Scope {
                     if (matchedCard && matchedCard.reveal) matchedCard.reveal()
                     return
                 }
+            }
+
+            // Phase 2: if WPE is trial-downloaded, promote to permanent catalog entry.
+            // Mirrors the awww SAVED: flow — search stays open, focus retained,
+            // completion glitch confirms the add. No re-download, no wallpaper apply.
+            if (isWpe && root._trialDownloads[identifier] === true) {
+                var wpeDir = root.wpeBaseDir + "/" + identifier
+                root._skipInit = true
+                wallpaperModel.append({
+                    path:       wpeDir,
+                    thumb:      wpeDir,
+                    title:      dlTitle || identifier,
+                    source:     "wpe",
+                    type:       "scene",
+                    color:      "#888888",
+                    videoFile:  ""
+                })
+                root._skipInit = false
+                for (var ai = 0; ai < repeater.count; ai++) {
+                    var ait = repeater.itemAt(ai)
+                    if (ait) ait.animEnabled = false
+                }
+                carousel.updateCards()
+                for (var ai2 = 0; ai2 < repeater.count; ai2++) {
+                    var ait2 = repeater.itemAt(ai2)
+                    if (ait2) ait2.animEnabled = true
+                }
+                var lb = root.localBasenames
+                lb[identifier] = true
+                root.localBasenames = lb
+                var td = Object.assign({}, root._trialDownloads)
+                delete td[identifier]
+                root._trialDownloads = td
+                root.downloadCount++
+                completionGlitch.start()
+                // Regen catalog so the new WPE persists across restarts
+                bgRefreshProc.running = true
+                return
             }
 
             downloadAndAdd(carousel.selectedSearchUrl, "", dlTitle, dlSource)
@@ -596,6 +736,87 @@ Scope {
         downloadProc.running = true
     }
 
+    // Phase 2: trial download process (steamcmd, doesn't add to catalog)
+    Process {
+        id: trialWpeDlProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.startsWith("ERROR:")) {
+                    root._trialDownloading = false
+                    root._trialDownloadProgress = 0
+                    if (data === "ERROR:STEAM_AUTH") {
+                        root._pendingTrialWpeId = root._currentTrialId
+                        root._currentTrialId = ""
+                        steamAuthDialog.step = "password"
+                        steamAuthDialog.open = true
+                    } else {
+                        root._currentTrialId = ""
+                    }
+                    return
+                }
+                if (data.startsWith("PROGRESS:")) {
+                    root._trialDownloadProgress = parseInt(data.substring(9)) / 100
+                } else if (data.startsWith("SAVED_WPE:")) {
+                    var wpeId = root._currentTrialId
+                    var td = Object.assign({}, root._trialDownloads)
+                    td[wpeId] = true
+                    root._trialDownloads = td
+                    root._trialDownloading = false
+                    root._trialDownloadProgress = 0
+                    root._currentTrialId = ""
+                    // If user is still on this result, activate the real preview
+                    if (carousel.searchFocused
+                        && carousel.selectedSearchIdx >= 0
+                        && filterBar.resultsModel
+                        && carousel.selectedSearchIdx < filterBar.resultsModel.count) {
+                        var sr = filterBar.resultsModel.get(carousel.selectedSearchIdx)
+                        if (sr && sr.fullUrl === wpeId) _activateWpePreview(wpeId)
+                    }
+                }
+            }
+        }
+    }
+
+    function _startTrialDownload(wpeId) {
+        // Cancel any in-progress trial first
+        trialWpeDlProc.running = false
+        root._currentTrialId = wpeId
+        root._trialDownloading = true
+        root._trialDownloadProgress = 0
+        trialWpeDlProc.command = ["bash", "-c",
+            "REAL_HOME=\"$HOME\"; " +
+            "printf 'PROGRESS:10\\n'; " +
+            "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login banditobad " +
+            "+workshop_download_item 431960 " + wpeId + " +quit > /tmp/steamcmd_out.txt 2>&1; " +
+            "if grep -q 'Invalid Password\\|Cached credentials not found\\|Steam Guard\\|Two-factor' /tmp/steamcmd_out.txt; then " +
+            "  printf 'ERROR:STEAM_AUTH\\n'; exit 1; fi; " +
+            "if ! grep -q 'Success. Downloaded' /tmp/steamcmd_out.txt; then " +
+            "  printf 'ERROR:STEAM_FAIL\\n'; exit 1; fi; " +
+            "printf 'PROGRESS:100\\n'; " +
+            "WPE_DIR=\"$REAL_HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960/" + wpeId + "\"; " +
+            "[ -d \"$WPE_DIR\" ] && [ -f \"$WPE_DIR/project.json\" ] && " +
+            "  printf 'SAVED_WPE:%s\\n' \"$WPE_DIR\""]
+        trialWpeDlProc.running = true
+    }
+
+    function _activateWpePreview(wpeId) {
+        var sn = root.screen.name
+        var wpeDir = root.wpeBaseDir + "/" + wpeId
+        root.previewShown = true
+        root.wpePreviewActive = true
+        root._searchPreviewIdx = carousel.selectedSearchIdx
+        // Overlay (search preview card) shows real WPE
+        root._wpeOverlayPath = wpeDir
+        // Desktop preview: plugin transparent + spawn linux-wallpaperengine
+        WallpaperState.setScreenWallpaper(sn, "")
+        WallpaperState.setScreenKind(sn, "wpe")
+        Quickshell.execDetached(["bash", "-c",
+            root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
+            + sn + " '" + wpeDir + "'"])
+    }
+
     Process {
         id: deleteProc
         command: ["true"]
@@ -698,6 +919,7 @@ Scope {
     }
 
     function nextVisible() {
+        carousel._userHasScrolled = true
         var count = wallpaperModel.count
         if (count === 0) return
         var idx = carousel.currentIndex
@@ -722,6 +944,7 @@ Scope {
     }
 
     function prevVisible() {
+        carousel._userHasScrolled = true
         var count = wallpaperModel.count
         if (count === 0) return
         var idx = carousel.currentIndex
@@ -745,21 +968,95 @@ Scope {
         }
     }
 
+    // Delayed GIF preview state (carousel-style: animate after settling ~1.5s)
+    property string _pendingGifLocalPath: ""
+    property string _pendingGifRemoteUrl: ""
+    // WPE scene preview in overlay (Phase 1: only for already-downloaded WPEs)
+    property string _pendingWpeScenePath: ""
+    property string _wpeOverlayPath: ""
+
+    Timer {
+        id: gifPreviewDelay
+        interval: 1500
+        repeat: false
+        onTriggered: {
+            if (root._pendingGifLocalPath !== "") {
+                searchPreviewGif.source = "file://" + root._pendingGifLocalPath
+            } else if (root._pendingGifRemoteUrl !== "") {
+                gifDlProc.running = false
+                gifDlProc.command = ["bash", "-c",
+                    "F=/tmp/qs-search-gif-$$-$RANDOM.gif; " +
+                    "curl -sL -A 'Mozilla/5.0' --max-time 15 -o \"$F\" '" + root._pendingGifRemoteUrl + "' " +
+                    "&& [ -s \"$F\" ] && echo \"OK:$F\""]
+                gifDlProc.running = true
+            }
+            // If a WPE scene is downloaded locally, activate the real WPE preview
+            // in the overlay alongside the gif. The gif acts as fallback while
+            // WpePreviewItem spins up.
+            if (root._pendingWpeScenePath !== "") {
+                root._wpeOverlayPath = root._pendingWpeScenePath
+            }
+        }
+    }
+
+    property string _lastGifDlPath: ""
+
+    Process {
+        id: gifDlProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: line => {
+                line = line.trim()
+                if (line.startsWith("OK:")) {
+                    var p = line.substring(3)
+                    // Rotate: delete the previous gif (only after the new one is ready)
+                    if (root._lastGifDlPath !== "" && root._lastGifDlPath !== p
+                        && root._lastGifDlPath.startsWith("/tmp/")) {
+                        Quickshell.execDetached(["rm", "-f", root._lastGifDlPath])
+                    }
+                    root._lastGifDlPath = p
+                    searchPreviewGif.source = "file://" + p
+                }
+            }
+        }
+    }
+
     function updateSearchPreview(thumbPath, fullUrl) {
         var isGif = fullUrl.toLowerCase().endsWith(".gif")
         var isWpe = /^\d+$/.test(fullUrl)
-        // Thumbnail locale subito (instant)
+
+        // Cancel any pending GIF/WPE load — rapid scrolling shouldn't queue downloads
+        gifPreviewDelay.stop()
+        gifDlProc.running = false
+        root._pendingGifLocalPath = ""
+        root._pendingGifRemoteUrl = ""
+        root._pendingWpeScenePath = ""
+        root._wpeOverlayPath = ""
+
+        // Static thumb shown immediately
         searchPreviewThumb.source = thumbPath ? "file://" + thumbPath : ""
-        // Full-res in background (skip for WPE IDs - thumbnail is all we have)
+        searchPreviewGif.source = ""
+
         if (isWpe) {
+            // WPE has an animated .gif thumbnail cached locally
             searchPreviewImage.source = ""
             var gifPath = thumbPath.replace(".jpg", ".gif")
-            searchPreviewGif.source = gifPath ? "file://" + gifPath : ""
+            if (gifPath) {
+                root._pendingGifLocalPath = gifPath
+            }
+            // If WPE is already on disk (catalog or trial), schedule real WPE scene preview
+            if (root.localBasenames[fullUrl] === true
+                || root._trialDownloads[fullUrl] === true) {
+                root._pendingWpeScenePath = root.wpeBaseDir + "/" + fullUrl
+            }
+            gifPreviewDelay.restart()
         } else if (isGif) {
+            // Remote GIF — download to /tmp, then AnimatedImage plays from file://
             searchPreviewImage.source = ""
-            searchPreviewGif.source = fullUrl
+            root._pendingGifRemoteUrl = fullUrl
+            gifPreviewDelay.restart()
         } else {
-            searchPreviewGif.source = ""
             searchPreviewImage.source = fullUrl ? fullUrl : ""
         }
     }
@@ -770,8 +1067,30 @@ Scope {
             originalWpReader.reload()
             allEntries = []
             wallpaperModel.clear()
+            // Reset catalog batching state
+            root._catalogPending = []
+            root._carouselInitialized = false
+            catalogBatchTimer.stop()
             carousel.currentIndex = 0
-            catalogProc.running = true
+            carousel._userHasScrolled = false
+
+            // Fast path: WallpaperState pre-loaded the catalog at QS startup.
+            // Bulk-append every entry in one shot so the Repeater builds the
+            // full delegate set before initCards() runs — currentIndex maps
+            // straight onto originalWallpaper, prev/next are the real
+            // adjacent entries, no later "reload" pop-in.
+            if (WallpaperState.catalogReady
+                && WallpaperState.catalogEntries.length > 0) {
+                _bulkLoadFromCache()
+            } else {
+                // Catalog not yet pre-loaded (rare: user opens picker
+                // within the first ~50ms of QS startup). Wait for it
+                // instead of falling back to streaming — streaming
+                // brings back the "wallpapers appearing on scroll" bug
+                // because the carousel positions itself before the
+                // full model is known.
+                _waitingForCatalog = true
+            }
             favLoadProc.running = true
             filterBar.favoritesOnly = false
             // Refresh cache in background for next open
@@ -784,17 +1103,57 @@ Scope {
         } else {
             // Stop all video/audio on close
             carousel.audioEnabled = false
+            // Stop catalog batching if still running
+            catalogBatchTimer.stop()
+            root._catalogPending = []
             for (var i = 0; i < repeater.count; i++) {
                 var item = repeater.itemAt(i)
                 if (item) item.videoPlaying = false
             }
+            // Phase 2: clean up trial WPE downloads that were not promoted to catalog
+            var trialIds = Object.keys(root._trialDownloads)
+            for (var t = 0; t < trialIds.length; t++) {
+                var tid = trialIds[t]
+                if (root.localBasenames[tid] !== true) {
+                    Quickshell.execDetached(["rm", "-rf",
+                        root.wpeBaseDir + "/" + tid])
+                }
+            }
+            root._trialDownloads = ({})
+            // Cancel any in-flight trial download
+            trialWpeDlProc.running = false
+            root._trialDownloading = false
+            root._trialDownloadProgress = 0
+            root._currentTrialId = ""
+            root._pendingTrialWpeId = ""
         }
     }
 
     FileView {
         id: originalWpReader
         path: ""
-        onLoaded: root.originalWallpaper = text().trim()
+        onLoaded: {
+            root.originalWallpaper = text().trim()
+            // Race: at first picker open after QS restart, this FileView
+            // load lands AFTER _bulkLoadFromCache → initCards() already ran
+            // with originalWallpaper still empty, so currentIndex defaulted
+            // to 0 (wrong card). Re-center now that we know the real path.
+            if (root.isActiveScreen
+                && root._carouselInitialized
+                && !carousel._userHasScrolled
+                && root.originalWallpaper !== "") {
+                for (var j = 0; j < wallpaperModel.count; j++) {
+                    var e = wallpaperModel.get(j)
+                    if (e && e.path === root.originalWallpaper) {
+                        if (carousel.currentIndex !== j) {
+                            carousel.currentIndex = j
+                            carousel.updateCards()
+                        }
+                        break
+                    }
+                }
+            }
+        }
     }
 
     PanelWindow {
@@ -922,10 +1281,22 @@ Scope {
                 clip: true
 
                 readonly property real  cardSpacing:        -12
+                // Cards within this distance from current get their wallpaper
+                // pre-loaded (image source set) without being positioned, so
+                // they're ready when the user scrolls and don't "reload"
+                // visibly. Must be >= WallpaperCard.inBuffer threshold.
+                readonly property int   preloadRange:       25
                 property string         selectedSearchUrl:  ""
                 property bool           searchFocused:      false
                 property bool           audioEnabled:       false
                 property bool           fastMode:           false
+                // True once the user navigates manually. Until then, if a
+                // late-arriving catalog batch contains originalWallpaper,
+                // we re-center on it so the wrap-around doesn't kick in
+                // from currentIndex=0 (which would shift prev cards as the
+                // catalog grows — visible as "wallpapers appearing on
+                // scroll").
+                property bool           _userHasScrolled:   false
                 property real           savedVolume:        0.5
                 property int            selectedSearchIdx:  -1
                 property int            currentIndex:       0
@@ -1066,10 +1437,20 @@ Scope {
 
                         var circDist = Math.min(rightDist, leftDist)
                         if (circDist > 10) {
-                            item.distFromCurrent = 9999
+                            // Preload-only: image source is gated by
+                            // distFromCurrent in WallpaperCard. Assign the
+                            // real distance (without positioning) so the
+                            // wallpaper loads in the background and the card
+                            // is ready when scrolled into view.
+                            if (circDist <= carousel.preloadRange) {
+                                item.distFromCurrent = circDist
+                            } else {
+                                item.distFromCurrent = 9999
+                            }
                             item.cardWidth = 0
                             item.cardHeight = 0
                             item.x = centerX
+                            item.isPreload = false
                             continue
                         }
                         item.distFromCurrent = circDist
@@ -1144,13 +1525,43 @@ Scope {
                         }
                     }
 
+                    // Preload walk: assign distFromCurrent (only) to cards
+                    // beyond halfCount up to preloadRange. These cards stay
+                    // invisible (cardWidth=0) but their image source is
+                    // gated by _shouldLoadImage so they load in advance.
+                    var preloadMax = Math.min(carousel.preloadRange, Math.floor(visCount / 2))
+                    for (var pd = halfCount + 1; pd <= preloadMax; pd++) {
+                        var prIdx = (curVis + pd) % visCount
+                        if (!(vis[prIdx] in cardDists)) cardDists[vis[prIdx]] = pd
+                        if (pd < visCount - pd) {
+                            var plIdx = (curVis - pd + visCount) % visCount
+                            if (!(vis[plIdx] in cardDists)) cardDists[vis[plIdx]] = pd
+                        }
+                    }
+
                     // Apply positions
                     for (var i = 0; i < count; i++) {
                         var item = repeater.itemAt(i)
                         if (!item) continue
 
-                        if (!item.isVisible || !(i in centers)) {
+                        if (!item.isVisible) {
                             item.distFromCurrent = 9999
+                            item.cardWidth = 0
+                            item.cardHeight = 0
+                            item.x = center
+                            item.isPreload = false
+                            continue
+                        }
+
+                        // Preload-only: outside the visible window but within
+                        // preloadRange. Set distance to trigger image load,
+                        // but keep size 0 so the card isn't rendered.
+                        if (!(i in centers)) {
+                            if (i in cardDists) {
+                                item.distFromCurrent = cardDists[i]
+                            } else {
+                                item.distFromCurrent = 9999
+                            }
                             item.cardWidth = 0
                             item.cardHeight = 0
                             item.x = center
@@ -1206,6 +1617,11 @@ Scope {
                         item.cardHeight = 0
                         item.x = center
                         item.opacity = 0
+                        // Default to "far" — preload pass below assigns the
+                        // real distance to cards within preloadRange so
+                        // their image decode kicks off during the 200ms
+                        // reveal delay rather than after updateCards().
+                        item.distFromCurrent = 9999
                     }
 
                     // Show current card immediately at full size
@@ -1216,6 +1632,32 @@ Scope {
                         curItem.x = center - widthForDist(0) / 2
                         curItem.opacity = 1
                         curItem.distFromCurrent = 0
+                    }
+
+                    // Pre-distance pass: build vis array and assign
+                    // distFromCurrent to cards within preloadRange so their
+                    // wallpapers start decoding NOW (before the 200ms
+                    // revealTimer fires updateCards). Positioning is left
+                    // to updateCards — this pass touches distance only.
+                    var initVis = []
+                    for (var ii = 0; ii < repeater.count; ii++) {
+                        var it = repeater.itemAt(ii)
+                        if (it && it.isVisible) initVis.push(ii)
+                    }
+                    var curInitVis = initVis.indexOf(currentIndex)
+                    if (curInitVis !== -1 && initVis.length > 1) {
+                        var preMax = Math.min(carousel.preloadRange,
+                                              Math.floor(initVis.length / 2))
+                        for (var pd = 1; pd <= preMax; pd++) {
+                            var rIdx = (curInitVis + pd) % initVis.length
+                            var rItem = repeater.itemAt(initVis[rIdx])
+                            if (rItem) rItem.distFromCurrent = pd
+                            if (pd < initVis.length - pd) {
+                                var lIdx = (curInitVis - pd + initVis.length) % initVis.length
+                                var lItem = repeater.itemAt(initVis[lIdx])
+                                if (lItem) lItem.distFromCurrent = pd
+                            }
+                        }
                     }
 
                     // Schedule reveal
@@ -1327,13 +1769,41 @@ Scope {
                 Repeater {
                     id: repeater
                     model: wallpaperModel
-                    onItemAdded: { if (!root._skipInit) initTimer.restart() }
+                    onItemAdded: (index, item) => {
+                        if (root._skipInit) return
+                        // Once the carousel has been initialized with the first
+                        // batch, don't restart initTimer for batched entries —
+                        // they arrive silently and just sit invisibly until
+                        // the user scrolls to them. But enable their scroll
+                        // animations so navigating to them doesn't jump.
+                        if (root._carouselInitialized) {
+                            if (item) {
+                                item.animEnabled = true
+                                // If the new entry is within preloadRange of
+                                // currentIndex (linear OR wrap), seed its
+                                // distance so the image decode kicks off
+                                // now — otherwise the first time the user
+                                // scrolls past, the card pops in visibly.
+                                var cnt = repeater.count
+                                var cur = carousel.currentIndex
+                                var linear = Math.abs(index - cur)
+                                var wrap = cnt - linear
+                                var dist = Math.min(linear, wrap)
+                                if (dist > 0 && dist <= carousel.preloadRange) {
+                                    item.distFromCurrent = dist
+                                }
+                            }
+                            return
+                        }
+                        initTimer.restart()
+                    }
 
                     delegate: WallpaperCard {
                         y: 0
                         carouselFastMode: carousel.fastMode
                         viewCurrentIndex: carousel.currentIndex
                         viewTotalVisible: carousel.visibleCount
+                        viewSearchFocused: carousel.searchFocused
                         isCurrent:  index === carousel.currentIndex
                         isFavorite: { var _fc = root.favCount; return root.favorites[path] === true }
                         videoVolume:    isCurrent && carousel.audioEnabled ? carousel.savedVolume : 0
@@ -1366,6 +1836,7 @@ Scope {
                                     if (carousel.audioEnabled && carousel.savedVolume <= 0)
                                         carousel.savedVolume = 0.5
                                 } else {
+                                    carousel._userHasScrolled = true
                                     carousel.currentIndex = index
                                     carousel.updateCards()
                                 }
@@ -1458,6 +1929,19 @@ Scope {
                     visible: source !== ""
                 }
 
+                // Real WPE rendered preview (only if WPE scene is downloaded locally).
+                // Spins up on top of the gif preview once activated, gif stays as
+                // fallback until WPE produces its first frame.
+                WpePreviewItem {
+                    id: searchPreviewWpe
+                    anchors.fill: parent
+                    scenePath: root._wpeOverlayPath
+                    fps: 15
+                    visible: scenePath !== ""
+                    opacity: ready ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+                }
+
                 // ── Resolution overlay ────────────────────────────────────────────
                 Item {
                     anchors.bottom: parent.bottom
@@ -1518,14 +2002,18 @@ Scope {
                 Item {
                     id: previewDownloadOverlay
                     anchors.fill: parent
-                    visible: root.downloading
+                    // Shown for both apply (downloadProc) and trial WPE preview (trialWpeDlProc)
+                    readonly property bool _active: root.downloading || root._trialDownloading
+                    readonly property real _progress: root._trialDownloading
+                            ? root._trialDownloadProgress : root.downloadProgress
+                    visible: _active
                     z: 10
 
                     // Darken
                     Rectangle {
                         anchors.fill: parent
                         color: CP.alpha(CP.black, 0.45)
-                        opacity: root.downloading ? 1 : 0
+                        opacity: previewDownloadOverlay._active ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 300 } }
                     }
 
@@ -1543,12 +2031,12 @@ Scope {
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 28
                             color: CP.cyan
-                            PulseAnim on opacity { running: root.downloading; minOpacity: 0.3; duration: 400 }
+                            PulseAnim on opacity { running: previewDownloadOverlay._active; minOpacity: 0.3; duration: 400 }
                         }
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "DOWNLOADING"
+                            text: root._trialDownloading ? "PROBING SCENE" : "DOWNLOADING"
                             font.family: "Oxanium"
                             font.pixelSize: 10
                             font.letterSpacing: 3
@@ -1557,7 +2045,7 @@ Scope {
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: Math.floor(root.downloadProgress * 100) + "%"
+                            text: Math.floor(previewDownloadOverlay._progress * 100) + "%"
                             font.family: "Oxanium"
                             font.pixelSize: 14
                             color: CP.yellow
@@ -1581,12 +2069,12 @@ Scope {
                             anchors.left: parent.left
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
-                            width: parent.width * root.downloadProgress
+                            width: parent.width * previewDownloadOverlay._progress
                             color: CP.cyan
 
                             SequentialAnimation on color {
                                 loops: Animation.Infinite
-                                running: root.downloading
+                                running: previewDownloadOverlay._active
                                 ColorAnimation { to: CP.cyan; duration: 500 }
                                 ColorAnimation { to: CP.magenta; duration: 60 }
                                 ColorAnimation { to: CP.yellow; duration: 60 }
@@ -2200,7 +2688,12 @@ Scope {
                 onClosed: {
                     root._pendingDownloadUrl = ""
                     root._pendingDownloadTitle = ""
+                    root._pendingTrialWpeId = ""
                 }
+            }
+
+            TransitionEditor {
+                // anchors.fill already explicit from component
             }
 
             Timer {
@@ -2212,6 +2705,12 @@ Scope {
                         downloadAndAdd(root._pendingDownloadUrl, "", root._pendingDownloadTitle, "wpe")
                         root._pendingDownloadUrl = ""
                         root._pendingDownloadTitle = ""
+                    }
+                    // Phase 2: retry trial download if pending from auth failure
+                    if (root._pendingTrialWpeId !== "") {
+                        var tid = root._pendingTrialWpeId
+                        root._pendingTrialWpeId = ""
+                        _startTrialDownload(tid)
                     }
                 }
             }
@@ -2225,6 +2724,48 @@ Scope {
             }
 
             Keys.onPressed: event => {
+                // ── Editor mode: handle only editor shortcuts, swallow everything else ──
+                if (TransitionConfig.editorOpen) {
+                    switch (event.key) {
+                        case Qt.Key_A:
+                        case Qt.Key_Escape:
+                            TransitionConfig.editorOpen = false
+                            event.accepted = true
+                            return
+                        case Qt.Key_S:
+                            if (event.modifiers & Qt.ControlModifier) {
+                                TransitionConfig.save()
+                                event.accepted = true
+                            } else {
+                                event.accepted = true       // swallow plain S
+                            }
+                            return
+                        case Qt.Key_Z:
+                            if (event.modifiers & Qt.ControlModifier) {
+                                TransitionConfig.revert()
+                                event.accepted = true
+                            } else {
+                                event.accepted = true
+                            }
+                            return
+                        case Qt.Key_R:
+                            TransitionConfig.previewReplayRequested()
+                            event.accepted = true
+                            return
+                        case Qt.Key_Left:
+                        case Qt.Key_Right:
+                            if (event.key === Qt.Key_Right) TransitionConfig.nextType()
+                            else                            TransitionConfig.prevType()
+                            event.accepted = true
+                            return
+                        default:
+                            // Swallow every other key - carousel must not react
+                            event.accepted = true
+                            return
+                    }
+                }
+
+                // ── Editor closed: original carousel handlers ──
                 switch (event.key) {
                     case Qt.Key_F:
                         if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
@@ -2237,6 +2778,11 @@ Scope {
                         event.accepted = true
                         break
                     case Qt.Key_R:
+                        if (TransitionConfig.editorOpen) {
+                            TransitionConfig.previewReplayRequested()
+                            event.accepted = true
+                            break
+                        }
                         if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
                             if (carousel.currentIndex >= 0 && carousel.currentIndex < wallpaperModel.count) {
                                 root.deleteDialogOpen = true
@@ -2246,6 +2792,12 @@ Scope {
                         break
                     case Qt.Key_Left:
                     case Qt.Key_Right:
+                        if (TransitionConfig.editorOpen && (event.modifiers & Qt.ControlModifier)) {
+                            if (event.key === Qt.Key_Right) TransitionConfig.nextType()
+                            else                            TransitionConfig.prevType()
+                            event.accepted = true
+                            break
+                        }
                         if (filterBar.searchInputFocused || root.deleteDialogOpen) break
                         if (carousel.searchFocused && filterBar.resultsModel && filterBar.resultsModel.count > 0) {
                             // Navigate search results
@@ -2290,6 +2842,11 @@ Scope {
                     case Qt.Key_Escape:
                         if (root.deleteDialogOpen) {
                             root.deleteDialogOpen = false
+                            event.accepted = true
+                            break
+                        }
+                        if (TransitionConfig.editorOpen) {
+                            TransitionConfig.editorOpen = false
                             event.accepted = true
                             break
                         }
@@ -2407,12 +2964,6 @@ Scope {
                             && carousel.selectedSearchIdx < filterBar.resultsModel.count) {
                             var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
 
-                            // WPE preview from results not supported -> warn
-                            if (dlEntry && dlEntry.source === "wpe") {
-                                _wpeWarnAnim.restart()
-                                event.accepted = true
-                                break
-                            }
                             if (root.previewShown && root._searchPreviewIdx === carousel.selectedSearchIdx) {
                                 // Same result - remove preview
                                 if (root.wpePreviewActive) {
@@ -2428,10 +2979,6 @@ Scope {
                                 // Set/replace preview
                                 var currentKind = WallpaperState.screenKind[root.screen.name] || "none"
                                 var needsWpeKill = root.wpePreviewActive || currentKind === "wpe"
-                                console.log("[search-preview] screen:", root.screen.name,
-                                            "currentKind:", currentKind,
-                                            "needsWpeKill:", needsWpeKill,
-                                            "allKinds:", JSON.stringify(WallpaperState.screenKind))
                                 if (needsWpeKill) {
                                     Quickshell.execDetached(["bash", "-c",
                                         root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
@@ -2443,13 +2990,31 @@ Scope {
                                 root.searchPreviewLoading = true
                                 root._previewMsgIdx = 0
                                 searchPreviewProc.running = false
-                                searchPreviewProc.command = ["bash", "-c",
-                                    "F=/tmp/qs-search-preview-$$-$RANDOM; " +
-                                    "curl -sL -A 'Mozilla/5.0' --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' " +
-                                    "&& [ -s \"$F\" ] && { " +
-                                    "  if [ \"$(file -b --mime-type \"$F\")\" = \"image/gif\" ]; then mv \"$F\" \"$F.gif\"; F=\"$F.gif\"; fi; " +
-                                    "  echo \"OK:$F\"; " +
-                                    "}"]
+                                if (dlEntry.source === "wpe") {
+                                    var wpeId = dlEntry.fullUrl
+                                    var isCached = root.localBasenames[wpeId] === true
+                                                || root._trialDownloads[wpeId] === true
+                                    if (isCached) {
+                                        // WPE on disk → spawn linux-wallpaperengine directly
+                                        root.searchPreviewLoading = false
+                                        _activateWpePreview(wpeId)
+                                    } else {
+                                        // Not yet on disk → trigger trial steamcmd download
+                                        root.searchPreviewLoading = false
+                                        _startTrialDownload(wpeId)
+                                    }
+                                    event.accepted = true
+                                    break
+                                } else {
+                                    // Regular result: download from URL, detect mime, rename .gif
+                                    searchPreviewProc.command = ["bash", "-c",
+                                        "F=/tmp/qs-search-preview-$$-$RANDOM; " +
+                                        "curl -sL -A 'Mozilla/5.0' --max-time 15 -o \"$F\" '" + dlEntry.fullUrl + "' " +
+                                        "&& [ -s \"$F\" ] && { " +
+                                        "  if [ \"$(file -b --mime-type \"$F\")\" = \"image/gif\" ]; then mv \"$F\" \"$F.gif\"; F=\"$F.gif\"; fi; " +
+                                        "  echo \"OK:$F\"; " +
+                                        "}"]
+                                }
                                 searchPreviewProc.running = true
                             }
                             event.accepted = true
@@ -2511,6 +3076,24 @@ Scope {
                             root.jumpToFraction(event.key - Qt.Key_0)
                         }
                         event.accepted = true
+                        break
+                    case Qt.Key_A:
+                        if (!filterBar.searchInputFocused && !carousel.searchFocused && !root.deleteDialogOpen) {
+                            TransitionConfig.editorOpen = !TransitionConfig.editorOpen
+                        }
+                        event.accepted = true
+                        break
+                    case Qt.Key_S:
+                        if ((event.modifiers & Qt.ControlModifier) && TransitionConfig.editorOpen) {
+                            TransitionConfig.save()
+                            event.accepted = true
+                        }
+                        break
+                    case Qt.Key_Z:
+                        if ((event.modifiers & Qt.ControlModifier) && TransitionConfig.editorOpen) {
+                            TransitionConfig.revert()
+                            event.accepted = true
+                        }
                         break
                 }
             }

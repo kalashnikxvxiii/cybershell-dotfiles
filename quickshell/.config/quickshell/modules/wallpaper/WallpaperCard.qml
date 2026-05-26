@@ -28,8 +28,13 @@ Item {
     property bool   isFavorite:         false
     property bool   isCurrent:          false
     property bool   isVisible:          true
+    property bool   viewSearchFocused:  false
     property real   videoVolume:        0.5
     property int    viewCurrentIndex:   0
+
+    // When the search preview overlay is shown over this (current) card, blank
+    // the card's wallpaper so it doesn't bleed through at reduced picker opacity.
+    readonly property bool _hideForSearchOverlay: isCurrent && viewSearchFocused
 
     function startVideo() {
         videoPlaying = true
@@ -60,7 +65,26 @@ Item {
         running: false
     }
 
-    property int distFromCurrent: 0
+    // Default to 9999 ("far") so newly-instantiated cards don't immediately
+    // queue an Image decode at picker open. updateCards() assigns the actual
+    // distance for cards inside the visible window.
+    property int distFromCurrent: 9999
+
+    // Card is "in or near viewport". Used to gate Image source loading.
+    // Must be >= carousel.preloadRange so preload-only cards (positioned
+    // off-screen by updateCards) actually trigger the image load.
+    readonly property bool inBuffer: distFromCurrent <= 25
+
+    // Latch: once the card enters the buffer, keep the Image source set
+    // for the rest of the picker session. Prevents the visible "reload"
+    // effect when a card scrolls out then back in.
+    property bool _hasLoadedOnce: false
+    onInBufferChanged: if (inBuffer) _hasLoadedOnce = true
+    readonly property bool _shouldLoadImage: inBuffer || _hasLoadedOnce
+
+    // Glitch shader time — kept on root so revealAnim can target it even
+    // when the actual ShaderEffect lives inside a lazy Loader.
+    property real _glitchITime: 0
 
     // ── Dimensions set imperatively by carousel ─────────────────
     property real cardWidth:        0
@@ -113,7 +137,7 @@ Item {
         // Stagger start based on distance
         PropertyAction { target: root; property: "opacity"; value: 0 }
         PropertyAction { target: root; property: "_glitching"; value: false }
-        PropertyAction { target: glitchShader; property: "iTime"; value: 0 }
+        PropertyAction { target: root; property: "_glitchITime"; value: 0 }
         PauseAnimation { duration: 80 + root.distFromCurrent * 60 }
 
         // Burst 1: magenta flash
@@ -125,7 +149,7 @@ Item {
         // Shader distortion ramp up
         ParallelAnimation {
             NumberAnimation {
-                target: glitchShader; property: "iTime"
+                target: root; property: "_glitchITime"
                 from: 0; to: 8; duration: 200
                 easing.type: Easing.InCubic
             }
@@ -147,7 +171,7 @@ Item {
         // Shader distortion ramp down + settle
         ParallelAnimation {
             NumberAnimation {
-                target: glitchShader; property: "iTime"
+                target: root; property: "_glitchITime"
                 from: 8; to: 0; duration: 200
                 easing.type: Easing.OutCubic
             }
@@ -165,7 +189,7 @@ Item {
         // Glitch OFF
         PropertyAction { target: root; property: "_glitching"; value: false }
         PropertyAction { target: root; property: "_borderColor"; value: CP.cyan }
-        PropertyAction { target: glitchShader; property: "iTime"; value: 0 }
+        PropertyAction { target: root; property: "_glitchITime"; value: 0 }
     }
 
     // ── Skew transform ──────────────────────────────────────────
@@ -190,6 +214,9 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         transform: Translate { id: revealShift }
 
+        // Layer must stay always enabled — dynamically toggling layer.enabled
+        // creates a race with the maskSource (cardMask) FBO that breaks the
+        // diagonal cuts on cards entering viewport during scroll.
         layer.enabled: true
         layer.effect: MultiEffect {
             maskEnabled: true
@@ -220,13 +247,15 @@ Item {
             // Background always filled, blur only if isCurrent
             Image {
                 anchors.fill: parent
-                source: root.searchPreviewThumb
-                        ? "file://" + root.searchPreviewThumb
-                        : (root.thumb ? "file://" + root.thumb : "")
+                source: root._shouldLoadImage
+                        ? (root.searchPreviewThumb
+                            ? "file://" + root.searchPreviewThumb
+                            : (root.thumb ? "file://" + root.thumb : ""))
+                        : ""
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
-                opacity: root.videoPlaying ? 0 : 1
-                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+                opacity: (root.videoPlaying || root._hideForSearchOverlay) ? 0 : 1
+                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
 
                 layer.enabled: root.isCurrent
                 layer.effect: MultiEffect {
@@ -238,69 +267,94 @@ Item {
                 }
             }
 
-            // Foreground: fit, only on current card (keep proportions)
-            Image {
+            // Foreground (PreserveAspectFit) — only the current card uses
+            // this. Gating with Loader saves a per-delegate Image allocation
+            // (incl. async decode setup) for 440 of 441 cards at bulk-load.
+            Loader {
                 anchors.fill: parent
-                source: root.searchPreviewThumb
-                        ? "file://" + root.searchPreviewThumb 
-                        : (root.thumb ? "file://" + root.thumb : "")
-                fillMode: Image.PreserveAspectFit
-                asynchronous: true
-                visible: root.isCurrent
-                opacity: root.videoPlaying ? 0 : 1
-                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+                active: root.isCurrent
+                sourceComponent: Image {
+                    source: root._shouldLoadImage
+                            ? (root.searchPreviewThumb
+                                ? "file://" + root.searchPreviewThumb
+                                : (root.thumb ? "file://" + root.thumb : ""))
+                            : ""
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
+                    opacity: (root.videoPlaying || root._hideForSearchOverlay) ? 0 : 1
+                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+                }
             }
 
-            AnimatedImage {
+            // Heavy multimedia children are gated by Loaders. Repeater
+            // instantiates 441 delegates synchronously at bulk-load time;
+            // creating MediaPlayer/VideoOutput/AudioOutput/WpePreviewItem/
+            // AnimatedImage upfront on every card freezes the UI for
+            // seconds. Loaders defer the allocation until the card's
+            // type matches AND it's actually being previewed.
+            Loader {
                 anchors.fill: parent
-                source: root.videoPlaying && root.type === "gif"
-                        ? "file://" + root.videoFile : ""
-                fillMode: Image.PreserveAspectCrop
-                playing: root.videoPlaying
-                visible: root.type === "gif"
-                opacity: root.videoPlaying ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
-            }
-
-            Item {
-                anchors.fill: parent
-                visible: root.type === "video"
-                opacity: root.videoPlaying ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
-
-                MediaPlayer {
-                    id: videoPlayer
-                    source: root.videoPlaying && root.videoFile !== ""
-                            && root.type === "video"
+                active: root.type === "gif" && root.isCurrent
+                sourceComponent: AnimatedImage {
+                    source: root.videoPlaying && root.type === "gif"
                             ? "file://" + root.videoFile : ""
-                    videoOutput: videoOutput
-                    audioOutput: AudioOutput {
-                        volume: root.videoVolume
-                    }
-                    loops: MediaPlayer.Infinite
-                    onSourceChanged: {
-                        if (source !== "") {
-                            play()
-                            volumeFixTimer.restart()
+                    fillMode: Image.PreserveAspectCrop
+                    playing: root.videoPlaying
+                    opacity: root.videoPlaying ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+                }
+            }
+
+            Loader {
+                id: videoLoader
+                anchors.fill: parent
+                // Allocate video stack only when this card is the actively
+                // previewed video (isCurrent gate). Other type=video cards
+                // pay zero allocation cost.
+                active: root.type === "video" && root.isCurrent
+                sourceComponent: Item {
+                    opacity: root.videoPlaying ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+
+                    MediaPlayer {
+                        id: videoPlayer
+                        source: root.videoPlaying && root.videoFile !== ""
+                                && root.type === "video"
+                                ? "file://" + root.videoFile : ""
+                        videoOutput: videoOutput
+                        audioOutput: AudioOutput {
+                            volume: root.videoVolume
+                        }
+                        loops: MediaPlayer.Infinite
+                        onSourceChanged: {
+                            if (source !== "") {
+                                play()
+                                volumeFixTimer.restart()
+                            }
                         }
                     }
-                }
 
-                VideoOutput {
-                    id: videoOutput
-                    anchors.fill: parent
-                    fillMode: VideoOutput.PreserveAspectCrop
+                    VideoOutput {
+                        id: videoOutput
+                        anchors.fill: parent
+                        fillMode: VideoOutput.PreserveAspectCrop
+                    }
                 }
             }
 
-            WpePreviewItem {
+            Loader {
                 anchors.fill: parent
-                visible: root.isCurrent && root.type === "scene"
-                scenePath: root.isCurrent && root.type === "scene" && root.videoPlaying
-                        ? root.path : ""
-                fps: 15
-                opacity: ready ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+                // WpePreviewItem is a C++ plugin instance — expensive to
+                // create. Only ever needed on the current card with a
+                // scene-type entry.
+                active: root.type === "scene" && root.isCurrent
+                sourceComponent: WpePreviewItem {
+                    scenePath: root.isCurrent && root.type === "scene" && root.videoPlaying
+                            ? root.path : ""
+                    fps: 15
+                    opacity: ready ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.InOutQuad } }
+                }
             }
 
             Rectangle {
@@ -310,45 +364,51 @@ Item {
                 Behavior on opacity { NumberAnimation { duration: 400 } }
             }
 
-            Item {
+            // Title bar (gradient + resolution/title text) \u2014 only visible
+            // on the current card. Loader avoids the Rectangle+Gradient+Text
+            // allocation on 440 of 441 delegates at bulk-load.
+            Loader {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 48
-                visible: root.isCurrent
-
-                Rectangle {
+                active: root.isCurrent
+                sourceComponent: Item {
                     anchors.fill: parent
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: "transparent" }
-                        GradientStop { position: 0.7; color: Qt.rgba(0, 0, 0, 0.7) }
-                        GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.85) }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 0.7; color: Qt.rgba(0, 0, 0, 0.7) }
+                            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.85) }
+                        }
                     }
-                }
 
-                Text {
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 8
-                    anchors.left: parent.left
-                    anchors.leftMargin: 12
-                    anchors.right: parent.right
-                    anchors.rightMargin: 12
-                    text: root.resolution !== ""
-                        ? root.resolution.replace("x", "\u00d7")
-                        : root.title.toUpperCase()
-                    font.family: "Oxanium"
-                    font.pixelSize: 13
-                    font.letterSpacing: 2
-                    color: Colours.textPrimary
-                    elide: Text.ElideRight
+                    Text {
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 8
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        text: root.resolution !== ""
+                            ? root.resolution.replace("x", "\u00d7")
+                            : root.title.toUpperCase()
+                        font.family: "Oxanium"
+                        font.pixelSize: 13
+                        font.letterSpacing: 2
+                        color: Colours.textPrimary
+                        elide: Text.ElideRight
 
-                    transform: Matrix4x4 {
-                        matrix: Qt.matrix4x4(
-                            1, -root.skewFactor, 0, 0,
-                            0, 1, 0, 0,
-                            0, 0, 1, 0,
-                            0, 0, 0, 1
-                        )
+                        transform: Matrix4x4 {
+                            matrix: Qt.matrix4x4(
+                                1, -root.skewFactor, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1
+                            )
+                        }
                     }
                 }
             }
@@ -371,6 +431,8 @@ Item {
         CutShape {
             id: cardMask
             anchors.fill: parent
+            // Always enabled — gating breaks cards entering viewport (race
+            // with cardWrapper's MultiEffect maskSource)
             layer.enabled: true
             visible: false
             fillColor: "white"
@@ -378,22 +440,32 @@ Item {
             cutBottomRight: 32
         }
 
-        // ── Shader system (sibling to content) ──────────────────
-        ShaderEffectSource {
-            id: cardShaderSource
-            sourceItem: content
-            live: root._glitching
-            hideSource: root._glitching
-        }
-
-        ShaderEffect {
-            id: glitchShader
+        // ── Glitch shader (sibling to content) ──────────────────
+        // Loader gated by _glitching — ShaderEffectSource+ShaderEffect are
+        // GPU resources, expensive to create. They're only ever needed
+        // during the reveal/match glitch burst.
+        Loader {
             anchors.fill: parent
-            visible: root._glitching
+            active: root._glitching
             z: 10
-            property var source: cardShaderSource
-            property real iTime: 0
-            fragmentShader: "../../shaders/glitch.frag.qsb"
+            sourceComponent: Item {
+                anchors.fill: parent
+
+                ShaderEffectSource {
+                    id: cardShaderSource
+                    anchors.fill: parent
+                    sourceItem: content
+                    live: root._glitching
+                    hideSource: root._glitching
+                }
+
+                ShaderEffect {
+                    anchors.fill: parent
+                    property var source: cardShaderSource
+                    property real iTime: root._glitchITime
+                    fragmentShader: "../../shaders/glitch.frag.qsb"
+                }
+            }
         }
     }
 
@@ -433,44 +505,52 @@ Item {
             }
         }
 
-        // Background
-        CutShape {
+        // Lazy badge content \u2014 CutShape and the glow-Text (with its own
+        // layer FBO) are only allocated for actual favorites, not for all
+        // 441 delegates at bulk-load.
+        Loader {
             anchors.fill: parent
-            fillColor: CP.alpha("#000000", 0.75)
-            strokeColor: CP.alpha(CP.red, 0.8)
-            strokeWidth: 1
-            inset: 0.5
-            cutBottomLeft: playlistBadge.visible ? 0 : 8
-            showTop: false
-            showRight: false
-        }
+            active: favBadge._favVisible
+            sourceComponent: Item {
+                anchors.fill: parent
 
-        // Icon with glow
-        Text {
-            anchors.centerIn: parent
-            text: "\uf004"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 11 * parent._scale
-            color: CP.red
+                CutShape {
+                    anchors.fill: parent
+                    fillColor: CP.alpha("#000000", 0.75)
+                    strokeColor: CP.alpha(CP.red, 0.8)
+                    strokeWidth: 1
+                    inset: 0.5
+                    cutBottomLeft: playlistBadge.visible ? 0 : 8
+                    showTop: false
+                    showRight: false
+                }
 
-            // Counter-skew to keep icon straight
-            transform: Matrix4x4 {
-                matrix: Qt.matrix4x4(
-                    1, -root.skewFactor, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    0, 0, 0, 1
-                )
-            }
+                Text {
+                    anchors.centerIn: parent
+                    text: "\uf004"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 11 * favBadge._scale
+                    color: CP.red
 
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: CP.red
-                shadowBlur: 0.8
-                shadowOpacity: 0.6
-                shadowHorizontalOffset: 0
-                shadowVerticalOffset: 0
+                    transform: Matrix4x4 {
+                        matrix: Qt.matrix4x4(
+                            1, -root.skewFactor, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1
+                        )
+                    }
+
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowColor: CP.red
+                        shadowBlur: 0.8
+                        shadowOpacity: 0.6
+                        shadowHorizontalOffset: 0
+                        shadowVerticalOffset: 0
+                    }
+                }
             }
         }
 
@@ -503,7 +583,11 @@ Item {
         anchors.top: cardWrapper.top
         anchors.topMargin: 1
         x: favBadge.x - _offset
-        width: Math.max(24 * _plScale, _plTxt.implicitWidth + 10)
+        // Approximate text width — the actual Text now lives inside the
+        // Loader below, so its implicitWidth isn't accessible from here.
+        // Estimate ~10px/digit at 16px Oxanium (close enough; badge fits a
+        // 24px circle for 1-2 digit numbers anyway).
+        width: Math.max(24 * _plScale, _plPos.toString().length * 10 * _plScale + 10)
         height: 24 * _plScale
         visible: root.path !== "" && root.searchPreviewThumb === "" && _plPos > 0
         opacity: _hovered ? 1.0 : 0.45
@@ -526,47 +610,57 @@ Item {
         Behavior on _offset { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: 120 } }
 
-        CutShape {
+        // Lazy badge content — CutShape, Text, MouseArea only allocated for
+        // cards actually in a playlist (most cards aren't).
+        Loader {
             anchors.fill: parent
-            fillColor: CP.alpha(CP.cyan, 0.6)
-            strokeColor: parent._hovered
-                        ? CP.alpha(CP.yellow, 0.9)
-                        : CP.alpha(CP.yellow, 0.6)
-            strokeWidth: 1; inset: 0.5
-            cutBottomLeft: 8
-            showTop: false
-            showRight: false
-        }
+            active: playlistBadge.visible
+            sourceComponent: Item {
+                anchors.fill: parent
 
-        Text {
-            id: _plTxt
-            anchors.centerIn: parent
-            text: parent._plPos.toString()
-            font.family: "Oxanium"
-            font.pixelSize: 16 * parent._plScale
-            color: CP.yellow
+                CutShape {
+                    anchors.fill: parent
+                    fillColor: CP.alpha(CP.cyan, 0.6)
+                    strokeColor: playlistBadge._hovered
+                                ? CP.alpha(CP.yellow, 0.9)
+                                : CP.alpha(CP.yellow, 0.6)
+                    strokeWidth: 1; inset: 0.5
+                    cutBottomLeft: 8
+                    showTop: false
+                    showRight: false
+                }
 
-            transform: Matrix4x4 {
-                matrix: Qt.matrix4x4(
-                    1, -root.skewFactor, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    0, 0, 0, 1
-                )
-            }
-        }
+                Text {
+                    id: _plTxt
+                    anchors.centerIn: parent
+                    text: playlistBadge._plPos.toString()
+                    font.family: "Oxanium"
+                    font.pixelSize: 16 * playlistBadge._plScale
+                    color: CP.yellow
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: playlistBadge._hovered = true
-            onExited:  playlistBadge._hovered = false
-            onClicked: {
-                if (PlaylistState.activeName === "")
-                    PlaylistState.setHighlightFilter(root.path)
-                else if (playlistBadge._plPos > 0)
-                    PlaylistState.highlightEntry(root.path)
+                    transform: Matrix4x4 {
+                        matrix: Qt.matrix4x4(
+                            1, -root.skewFactor, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1
+                        )
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onEntered: playlistBadge._hovered = true
+                    onExited:  playlistBadge._hovered = false
+                    onClicked: {
+                        if (PlaylistState.activeName === "")
+                            PlaylistState.setHighlightFilter(root.path)
+                        else if (playlistBadge._plPos > 0)
+                            PlaylistState.highlightEntry(root.path)
+                    }
+                }
             }
         }
     }

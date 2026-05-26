@@ -59,6 +59,17 @@ ShellRoot {
                     backdropDarken: 0.15
                     backdropSaturation: -0.2
                     blurRadius: 40
+
+                    // Live binding to the singleton's properties - no restart needed
+                    transitionType:         TransitionConfig.transitionType
+                    transitionDuration:     TransitionConfig.transitionDuration
+                    transitionFps:          TransitionConfig.transitionFps
+                    transitionStep:         TransitionConfig.transitionStep
+                    transitionAngle:        TransitionConfig.transitionAngle
+                    transitionPos:          TransitionConfig.transitionPos
+                    transitionBezier:       TransitionConfig.transitionBezier
+                    transitionWave:         TransitionConfig.transitionWave
+                    invertY:                TransitionConfig.invertY
                 }
             }
 

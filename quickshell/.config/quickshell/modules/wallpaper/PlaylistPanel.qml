@@ -100,13 +100,45 @@ Item {
                             color: Colours.accentPrimary
                         }
 
-                        Text {
-                            visible: PlaylistState.activeName !== ""
-                            text: PlaylistState.activeName.toUpperCase()
-                            font.family: "Oxanium"
-                            font.pixelSize: 13
-                            font.letterSpacing: 3
-                            color: Colours.accentSecondary
+                        Row {
+                            visible: PlaylistState.activeName !== "" || PlaylistState.playingName !== ""
+                            spacing: 6
+
+                            Text {
+                                visible: PlaylistState.playingName !== "" && PlaylistState.isPlaying
+                                text: "▶"
+                                font.pixelSize: 13
+                                color: Colours.accentPrimary
+                                anchors.verticalCenter: parent.verticalCenter
+                                SequentialAnimation on opacity {
+                                    running: parent.visible
+                                    loops: Animation.Infinite
+                                    NumberAnimation { from: 1.0; to: 0.5; duration: 1200; easing.type: Easing.InOutSine }
+                                    NumberAnimation { from: 0.5; to: 1.0; duration: 1200; easing.type: Easing.InOutSine }
+                                }
+                            }
+                            Text {
+                                text: (PlaylistState.activeName || PlaylistState.playingName).toUpperCase()
+                                font.family: "Oxanium"
+                                font.pixelSize: 13
+                                font.letterSpacing: 3
+                                color: PlaylistState.activeName === PlaylistState.playingName && PlaylistState.isPlaying
+                                    ? Colours.accentPrimary
+                                    : Colours.accentSecondary
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                visible: PlaylistState.activeName !== ""
+                                        && PlaylistState.activeName !== PlaylistState.playingName
+                                text: PlaylistState.playingName !== ""
+                                    ? "· PLAYING: " + PlaylistState.playingName.toUpperCase()
+                                    : "· READY"
+                                font.family: "Oxanium"
+                                font.pixelSize: 9
+                                font.letterSpacing: 2
+                                color: CP.alpha(CP.yellow, 0.65)
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
                         }
                     }
                 }
@@ -596,23 +628,58 @@ Item {
                     width: Math.round(_playControls._btnH * 1.2)
                     height: _playControls._btnH
 
+                    readonly property bool _wouldSwitch:
+                        PlaylistState.activeName !== ""
+                        && PlaylistState.entries.length > 0
+                        && (!PlaylistState.isPlaying
+                            || PlaylistState.activeName !== PlaylistState.playingName)
+
                     CutShape {
+                        id: _playBtnShape
                         anchors.fill: parent
-                        fillColor: PlaylistState.isPlaying ? CP.alpha(CP.cyan, 0.2) : "transparent"
-                        strokeColor: PlaylistState.isPlaying ? Colours.accentSecondary : CP.alpha(CP.cyan, 0.3)
-                        strokeWidth: 1; inset: 0.5
+                        fillColor: PlaylistState.isPlaying && !_playBtn._wouldSwitch
+                                ? CP.alpha(CP.cyan, 0.2)
+                                : _playBtn._wouldSwitch
+                                ? CP.alpha(CP.yellow, 0.12)
+                                : "transparent"
+                        strokeColor: PlaylistState.isPlaying && !_playBtn._wouldSwitch
+                                    ? Colours.accentSecondary
+                                    : _playBtn._wouldSwitch
+                                    ? Colours.accentPrimary
+                                    : CP.alpha(CP.cyan, 0.3)
+                        strokeWidth: _playBtn._wouldSwitch ? 1.5 : 1
+                        inset: 0.5
                         cutTopLeft: 5; cutBottomRight: 5
+                        Behavior on fillColor { ColorAnimation { duration: 150 } }
+                        Behavior on strokeColor { ColorAnimation { duration: 150 } }
+
+                        SequentialAnimation on opacity {
+                            running: _playBtn._wouldSwitch
+                            loops: Animation.Infinite
+                            NumberAnimation { from: 1.0; to: 0.55; duration: 900; easing.type: Easing.InOutSine }
+                            NumberAnimation { from: 0.55; to: 1.0; duration: 900; easing.type: Easing.InOutSine }
+                        }
                     }
                     Text {
                         anchors.centerIn: parent
-                        text: PlaylistState.isPlaying ? "\u23f8" : "\u25b6"
+                        text: PlaylistState.isPlaying && !_playBtn._wouldSwitch ? "\u23f8" : "\u25b6"
                         font.pixelSize: Math.round(parent.height * 0.4)
-                        color: PlaylistState.isPlaying ? Colours.accentSecondary : Colours.textMuted
+                        color: PlaylistState.isPlaying && !_playBtn._wouldSwitch ? Colours.accentSecondary
+                            : _playBtn._wouldSwitch ? Colours.accentPrimary
+                                                    : Colours.textMuted
                     }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: PlaylistState.isPlaying ? PlaylistState.pause() : PlaylistState.play()
+                        onClicked: {
+                            // Three cases:
+                            // 1. Already playing the active -> pause
+                            // 2. Active differs from playing OR not playing -> start playing the active
+                            if (PlaylistState.isPlaying && PlaylistState.activeName === PlaylistState.playingName)
+                                PlaylistState.pause()
+                            else
+                                PlaylistState.play()
+                        }
                     }
                 }
 
@@ -684,8 +751,8 @@ Item {
                     anchors.right: parent.right
                     anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
-                    text: PlaylistState.entries.length > 0
-                        ? (PlaylistState.currentIndex + 1) + "/" + PlaylistState.entries.length
+                    text: PlaylistState.playingEntries.length > 0
+                        ? (PlaylistState.currentIndex + 1) + "/" + PlaylistState.playingEntries.length
                         : "0/0"
                     font.family: "Oxanium"
                     font.pixelSize: 10
@@ -719,35 +786,63 @@ Item {
                             model: PlaylistState.playlistNames
                             delegate: Item {
                                 required property string modelData
-                                width: _chipTxt.implicitWidth + 24
+                                width: _chipTxt.implicitWidth + (playing ? 30 : 24)
                                 height: 18
                                 anchors.verticalCenter: parent.verticalCenter
-                                readonly property bool active: PlaylistState.activeName === modelData
+
+                                readonly property bool selected: PlaylistState.activeName === modelData
+                                readonly property bool playing: PlaylistState.playingName === modelData
+                                                            && PlaylistState.isPlaying
                                 readonly property bool highlighted: PlaylistState.highlightFilter.active
                                                                     && PlaylistState.highlightFilter.playlists.indexOf(modelData) >= 0
 
                                 CutShape {
                                     anchors.fill: parent
-                                    fillColor: active       ? CP.alpha(CP.yellow, 0.15)
+                                    fillColor: playing       ? CP.alpha(CP.yellow, 0.18)
+                                            : selected      ? CP.alpha(CP.cyan, 0.10)
                                             : highlighted   ? CP.alpha(CP.magenta, 0.18)
                                                             : "transparent"
-                                    strokeColor: active     ? Colours.accentPrimary
+                                    strokeColor: playing     ? Colours.accentPrimary
+                                            : selected      ? Colours.accentSecondary
                                             : highlighted   ? CP.alpha(CP.magenta, 0.65)
                                                             : CP.alpha(CP.cyan, 0.2)
-                                    strokeWidth: 1; inset: 0.5
+                                    strokeWidth: playing ? 1.5 : 1
+                                    inset: 0.5
                                     cutTopLeft: 9; cutBottomRight: 9
+                                    Behavior on strokeColor { ColorAnimation { duration: 150 } }
                                 }
+
+                                // Pulsing ▶ icon when playing
+                                Text {
+                                    visible: playing
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 6
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "▶"
+                                    font.pixelSize: 8
+                                    color: Colours.accentPrimary
+                                    SequentialAnimation on opacity {
+                                        running: parent.visible
+                                        loops: Animation.Infinite
+                                        NumberAnimation { from: 1.0; to: 0.45; duration: 1100; easing.type: Easing.InOutSine }
+                                        NumberAnimation { from: 0.45; to: 1.0; duration: 1100; easing.type: Easing.InOutSine }
+                                    }
+                                }
+
                                 Text {
                                     id: _chipTxt
                                     anchors.centerIn: parent
+                                    anchors.horizontalCenterOffset: playing ? 5 : 0
                                     text: modelData.toUpperCase()
                                     font.family: "Oxanium"
                                     font.pixelSize: 10
                                     font.letterSpacing: 1
-                                    color: active       ? Colours.accentPrimary
+                                    color: playing       ? Colours.accentPrimary
+                                        : selected      ? Colours.accentSecondary
                                         :  highlighted  ? CP.magenta
                                                         : Colours.textMuted
                                 }
+
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
