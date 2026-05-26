@@ -408,7 +408,8 @@ Item {
 
             Process {
                 id: launcher
-                command: ["bash", "-c", model.exec]
+                command: ["hyprctl", "dispatch", 
+                        "hl.dsp.exec_cmd(" + JSON.stringify(model.exec) + ")"]
                 running: false
             }
         }
