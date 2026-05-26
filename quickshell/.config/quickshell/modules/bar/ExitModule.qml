@@ -5,6 +5,7 @@ import Quickshell.Io
 import QtQuick
 import Quickshell.Hyprland
 import "../../common/Colors.js" as CP
+import "../../common"
 
 CyberpunkModule {
     id: root
@@ -12,7 +13,7 @@ CyberpunkModule {
 
     text: " "
 
-    onLeftClick:   function() { Hyprland.dispatch("exit") }
+    onLeftClick:   function() { HL.exit() }
     onRightClick:  function() { _poweroff.running = true }
     onMiddleClick: function() { _reboot.running   = true }
 

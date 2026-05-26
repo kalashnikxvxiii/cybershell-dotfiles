@@ -165,7 +165,7 @@ Item {
                     anchors.fill: parent
                     onClicked: {
                         if (modelData.action === "exit")
-                            Hyprland.dispatch("exit")
+                            HL.exit()
                         else if (modelData.action === "poweroff")
                             poweroffProc.running = true
                         else if (modelData.action === "reboot")

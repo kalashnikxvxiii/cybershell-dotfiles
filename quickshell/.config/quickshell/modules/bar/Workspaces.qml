@@ -19,13 +19,22 @@ Item {
     // ID of the workspace currently visible on this monitor.
     property int activeWsId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : -1
 
-    // Workspaces for this monitor, sorted by slot number ascending.
+    // Workspaces for this monitor: solo quelli con finestre o quello attivo.
+    // Hyprland tiene comunque tutti i workspace pre-creati dal plugin split-monitor-workspaces
+    // (la chiave enable_persistent_workspaces non è esposta come config key in Lua mode v1.2.0,
+    // quindi non possiamo dirgli "non pre-creare"). Filtro qui per restituire l'UX desiderata.
     property var workspaces: {
         var all = Hyprland.workspaces.values
         var result = []
         for (var i = 0; i < all.length; i++) {
             var ws = all[i]
-            if (!root.monitor || (ws.monitor && ws.monitor.name === root.monitor.name))
+            if (root.monitor && ws.monitor && ws.monitor.name !== root.monitor.name)
+                continue
+            if (!root.monitor && ws.monitor)  // catch-all when no barScreen
+                continue
+            var hasWindows = ws.toplevels && ws.toplevels.values.length > 0
+            var isActive   = ws.id === root.activeWsId
+            if (hasWindows || isActive)
                 result.push(ws)
         }
         result.sort(function(a, b) {
@@ -332,11 +341,11 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: mouse => {
                         if (mouse.button === Qt.LeftButton)
-                            Hyprland.dispatch("workspace name:" + wsBtn.modelData.name)
+                            HL.focusWorkspace("name:" + wsBtn.modelData.name)
                         else if (mouse.button === Qt.MiddleButton) {
                             var tops = wsBtn.modelData.toplevels.values
                             if (tops.length > 0)
-                                Hyprland.dispatch("closewindow address:" + tops[tops.length - 1].address)
+                                HL.closeWindow(tops[tops.length - 1].address)
                         }
                     }
                     onWheel: wheel => {
@@ -359,7 +368,7 @@ Item {
                         nextIdx = (nextIdx + wsList.length) % wsList.length
                         if (nextIdx === currentIdx) return
 
-                        Hyprland.dispatch("workspace name:" + wsList[nextIdx].name)
+                        HL.focusWorkspace("name:" + wsList[nextIdx].name)
                     }
                 }
             }
