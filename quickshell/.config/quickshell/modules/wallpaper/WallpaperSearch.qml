@@ -268,23 +268,59 @@ Item {
             color: CP.alpha(Colours.textMuted, 0.35)
         }
 
-        // Instructional placeholder when input is empty
-        Text {
+        // Instructional placeholder when input is empty 
+        Item {
             id: emptyPlaceholder
             x: searchInput.x
             anchors.verticalCenter: searchInput.verticalCenter
+            width: searchInput.width
+            height: placeholderText.implicitHeight
+            clip: true
             visible: root.expanded && searchInput.text === "" 
                     && _activePrefixes.indexOf("#") === -1
-            text: {
-                var remaining = WC.prefixes.filter(function(p) {
-                    return p !== "#" && root._activePrefixes.indexOf(p) === -1
-                })
-                return remaining.join(" ") + (root._activePrefixes.length === 0 ? " #filter" : "")
+
+            property real _phase: 0
+            readonly property real _overflow:
+                Math.max(0, placeholderText.implicitWidth - width)
+            
+            onVisibleChanged: if (visible) _phase = 0
+
+            Text {
+                id: placeholderText
+                text: {
+                    var remaining = WC.prefixes.filter(function(p) {
+                        return p !== "#" && root._activePrefixes.indexOf(p) === -1
+                    })
+                    return remaining.join(" ") + (root._activePrefixes.length === 0 ? " #filter" : "")
+                }
+                font.family: "Oxanium"
+                font.pixelSize: 12
+                font.letterSpacing: 1
+                color: CP.alpha(Colours.textMuted, 0.3)
+
+                // Phase-based scroll, computed vis binding (always live):
+                //  0.00-0.17  pause at start (x = 0)
+                //  0.17-0.50  scroll forward (x: 0 -> -overflow, eased)
+                //  0.50-0.67  pause at end   (x = -overflow)
+                //  0.67-1.00  scroll back    (x: -overflow -> 0, eased)
+                x: {
+                    var p = emptyPlaceholder._phase
+                    var d = emptyPlaceholder._overflow
+                    function ease(t) { return 0.5 - 0.5 * Math.cos(Math.PI * t) }
+                    if (p < 0.17) return 0
+                    if (p < 0.50) return -d * ease((p - 0.17) / 0.33)
+                    if (p < 0.67) return -d
+                    return -d + d * ease((p - 0.67) / 0.33)
+                }
             }
-            font.family: "Oxanium"
-            font.pixelSize: 12
-            font.letterSpacing: 1
-            color: CP.alpha(Colours.textMuted, 0.3)
+
+            NumberAnimation on _phase {
+                running: emptyPlaceholder.visible && emptyPlaceholder._overflow > 0
+                from: 0
+                to: 1
+                duration: 9000
+                loops: Animation.Infinite
+            }
         }
 
         // Text input — positioned after badge

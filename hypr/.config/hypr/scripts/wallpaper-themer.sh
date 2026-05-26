@@ -2,7 +2,7 @@
 
 WALLPAPER_DIR="$HOME/Pictures/wallpapers"
 WPE_DIR="$HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960"
-WALLUST="$HOME/.cargo/bin/wallust"
+WALLUST=$(command -v wallust 2>/dev/null || echo "$HOME/.local/share/cargo/bin/wallust")
 STATE_DIR="$HOME/.cache/wallpaper-themer"
 AUTO_INTERVAL=300
 DAEMON_PID_FILE="$STATE_DIR/daemon.pid"
@@ -11,10 +11,6 @@ AUDIO_LAST_VOL_FILE="$STATE_DIR/audio_last_volume"
 FULLSCREEN_WHITELIST=("discord" "kitty" "foot" "alacritty")
 
 mkdir -p "$STATE_DIR"
-
-# Debug logging
-DEBUG_LOG="/tmp/wp-debug.log"
-LOG() { echo "[$(date + '%H:%M:%S.%3N')] [SCRIPT/$$] $*" >> "$DEBUG_LOG"; }
 
 # ---------------------------------------------------------------------------
 # Pool management
@@ -133,7 +129,7 @@ start_wpe_on_screen() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
-    linux-wallpaperengine "${wpe_args[@]}" > "/tmp/wpe-${screen}.log" 2>&1 &
+    linux-wallpaperengine "${wpe_args[@]}" &
     local new_pid=$!
     disown $new_pid
     echo "$new_pid" > "$STATE_DIR/pid_${screen}"
@@ -160,7 +156,7 @@ start_wpe_direct() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
-    linux-wallpaperengine "${wpe_args[@]}" > "/tmp/wpe-${screen}.log" 2>&1 &
+    linux-wallpaperengine "${wpe_args[@]}" &
     local new_pid=$!
     disown $new_pid
     echo "$new_pid" > "$STATE_DIR/pid_${screen}"
@@ -358,12 +354,40 @@ wait_for_awww() {
     awww wait 2>/dev/null || true
 }
 
+# Read transition config from QS's transitions.json and emit --transition-*
+# flags for `awww img`. Without this, awww-daemon uses its compile-time
+# default ("simple") and ignores whatever the user picked in
+# TransitionEditor.qml — the env vars are also not propagated because the
+# daemon was spawned by Hyprland at session start, way before QS exists.
+_transition_flags() {
+    local cfg="$HOME/.config/quickshell/transitions.json"
+    [ -f "$cfg" ] || return
+    command -v jq >/dev/null 2>&1 || return
+    jq -r '
+        def opt(key; flag):
+            if has(key) and (.[key] | tostring) != "" and (.[key] | tostring) != "null"
+            then "\(flag)=\(.[key])" else empty end;
+        opt("type";     "--transition-type"),
+        opt("duration"; "--transition-duration"),
+        opt("fps";      "--transition-fps"),
+        opt("step";     "--transition-step"),
+        opt("angle";    "--transition-angle"),
+        opt("pos";      "--transition-pos"),
+        opt("bezier";   "--transition-bezier"),
+        opt("wave";     "--transition-wave")
+    ' "$cfg" 2>/dev/null
+}
+
 awww_transition() {
     local screen="$1"
     local img="$2"
     local final_img
     final_img=$(make_blur_composite "$screen" "$img")
-    awww img "$final_img" --outputs "$screen"
+    local flags=()
+    while IFS= read -r f; do
+        [ -n "$f" ] && flags+=("$f")
+    done < <(_transition_flags)
+    awww img "$final_img" --outputs "$screen" "${flags[@]}"
 }
 
 # Helper: generate a composite image (blurred backdrop + foreground fit)
@@ -456,7 +480,18 @@ apply_colors() {
         color_source="$dp1_wp"
     fi
 
-    [ -n "$color_source" ] && [ -f "$color_source" ] && "$WALLUST" run "$color_source" &>/dev/null
+    # `--skip-sequences` is the actual fix: without it wallust writes OSC
+    # escape sequences to its stdio and waits for the terminal's reply.
+    # In a daemon context (Quickshell.execDetached → bash → wallust) there
+    # is no real TTY, so wallust blocks indefinitely on `Setting terminal
+    # colors`, the parent stays in `wait`, `change.lock` is never released,
+    # and the rotation freezes. Templates are still generated, so kitty/
+    # swaync/etc. get the new palette as before.
+    # `setsid` + closed stdio + timeout 20 are belt-and-suspenders against
+    # any future stall.
+    [ -n "$color_source" ] && [ -f "$color_source" ] \
+        && timeout 20 setsid "$WALLUST" run --skip-sequences "$color_source" \
+            </dev/null >/dev/null 2>&1
 }
 
 # ---------------------------------------------------------------------------
@@ -467,7 +502,6 @@ _wpe_health_check() {
     local screen="$1"
     local expected_entry="$2"
     sleep 3
-    LOG "_wpe_health_check $screen $(basename "$expected_entry"): woke up, current=$(basename "$(get_current_wp "$screen")") pid=$(cat "$STATE_DIR/pid${screen}" 2>/dev/null) alive=$([ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && echo yeas || echo no)"
     # Se l'utente ha cambiato wallpaper nel frattempo, abortisci
     local current
     current=$(get_current_wp "$screen")
@@ -676,67 +710,44 @@ set_wallpaper() {
 
 # Usage: Playlist_apply <screen1>:<path1> [<screen2>:<path2> ...]
 playlist_apply() {
-    LOG "playlist_apply START args=($*)"
-    [ $# -eq 0 ] && { LOG " empty args, return"; return 1; }
-    if ! acquire_lock; then
-        LOG " LOCK BUSY (pid_in_lock=$(cat "$LOCK_FILE" 2>/dev/null)), abort"
-        return
-    fi
-    LOG "   lock acquired"
+    [ $# -eq 0 ] && return 1
+    acquire_lock || return
     trap release_lock EXIT
 
-    local arg s p preview
+    local arg s p sn
 
-    LOG "   PHASE 1 (awww previews): start"
-    # Phase 1: update awww preview for WPE (raw, instant — fallback while WPE inits)
-    for arg in "$@"; do
-        s="${arg%%:*}"; p="${arg#*:}"
-        if [ -n "$s" ] && [ -n "$p" ] && is_wpe "$p"; then
-            preview=$(get_wpe_preview "$p")
-            LOG "   awww $s -> preview=$(basename "$preview")"
-            [ -n "$preview" ] && awww img "$preview" --outputs "$s" &
-        fi
-    done
-    LOG "   PHASE 1 done"
-
-    local before_alive after_alive
-    before_alive=$(pgrep -c -x linux-wallpaperengine 2>/dev/null)
-    LOG "   PHASE 2 (kill all WPE): before_alive=$before_alive"
-    # Phase 2: kill ALL WPE in one-shot, then half second of settling
+    # Phase 1: kill stale WPE su tutti gli screen passati (per-screen, -f)
     for arg in "$@"; do
         sn="${arg%%:*}"
         [ -n "$sn" ] && pkill -9 -f "linux-wallpaperengine.*--screen-root $sn" 2>/dev/null
     done
     rm -f "$STATE_DIR"/pid_*
-    sleep 0.5
-    after_alive=$(pgrep -c -x linux-wallpaperengine 2>/dev/null)
-    LOG "   PHASE 2 done (after_alive=$after_alive)"
+    sleep 0.3
 
-    LOG "   PHASE 3 (spawn WPE): start"
-    # Phase 3: spawn new WPE (via start_wpe_direct)
+    # Phase 2: applica ogni entry in parallelo
+    local pids=()
     for arg in "$@"; do
         s="${arg%%:*}"; p="${arg#*:}"
-        if [ -n "$s" ] && [ -n "$p" ] && is_wpe "$p"; then
-            LOG "   spawn $s -> $(basename "$p")"
-            save_state "$s" "$p"
-            start_wpe_direct "$s" "$p"
-            local new_pid
-            new_pid=$(cat "$STATE_DIR/pid_${s}" 2>/dev/null)
-            LOG "   spawned pid=$new_pid for $s, alive=$(kill -0 "$new_pid" 2>/dev/null && echo yes || echo no)"
+        if [ -n "$s" ] && [ -n "$p" ]; then
+            (
+                save_state "$s" "$p"
+                if is_wpe "$p"; then
+                    start_wpe_direct "$s" "$p"
+                    local preview
+                    preview=$(get_wpe_preview "$p")
+                    [ -n "$preview" ] && awww img "$preview" --outputs "$s"
+                else
+                    awww_transition "$s" "$p"
+                fi
+            ) &
+            pids+=($!)
         fi
     done
-    LOG "   PHASE 3 done"
+    for pid in "${pids[@]}"; do wait "$pid"; done
 
-    LOG "   PHASE 4 (apply_colors): start"
-    # Phase 4: wallust (keep bash alive 1-3s —  init window for WPE)
     apply_colors
-    LOG "   PHASE 4 done"
-
     release_lock
     trap - EXIT
-    local final_alive
-    finale_alive=$(pgrep -c -x linux-wallpaperengine 2>/dev/null)
-    LOG "playlist_apply END (final_alive=$final_alive)"
 }
 
 adopt_wpe_preview() {

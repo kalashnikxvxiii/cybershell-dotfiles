@@ -93,12 +93,8 @@ QtObject {
             "  [ ! -f \"$HOME/.cache/wallpaper-themer/current_$sn\" ] && echo \"orphan|$sn|$pid\"; " +
             "done"]
         running: false
-        onRunningChanged: {
-            if (!running) console.log("[init] DONE - screenKind=", JSON.stringify(root.screenKind))
-        }
         stdout: SplitParser {
             onRead: line => {
-                console.log("[init]", line)
                 line = line.trim()
                 if (line === "") return
                 var parts = line.split("|")
@@ -169,12 +165,47 @@ QtObject {
         return h >= bucket[0] || h < bucket[1]      // wrap-around (red)
     }
 
+    // ── Picker catalog pre-load ──────────────────────────────
+    // Read catalog.jsonl ONCE at QS startup, parse all entries into a
+    // JS array. WallpaperPicker.qml bulk-appends from this array at open,
+    // so the carousel is populated in full before initCards() runs —
+    // currentIndex matches originalWallpaper, prev/next are the real
+    // neighbouring entries, no later batch-driven "reload" effect.
+    property var  catalogEntries: []
+    property bool catalogReady:   false
+
+    function reloadCatalog() {
+        catalogReady = false
+        _catalogProc.running = false
+        _catalogProc.running = true
+    }
+
+    property var _catalogProc: Process {
+        command: ["bash", "-c", "$HOME/.config/quickshell/scripts/wallpaper-picker.sh catalog"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var lines = text.split("\n")
+                var entries = []
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim()
+                    if (line === "") continue
+                    try { entries.push(JSON.parse(line)) }
+                    catch (e) { /* skip malformed line */ }
+                }
+                root.catalogEntries = entries
+                root.catalogReady = true
+            }
+        }
+    }
+
     // ── Ensure toggle file exists before watcher starts ────────────────
     property string _lastToggleContent: ""
 
     Component.onCompleted: {
         _toggleInitProc.running = true
         _initProc.running = true
+        _catalogProc.running = true
     }
 
     property var _toggleInitProc: Process {

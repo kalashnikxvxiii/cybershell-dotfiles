@@ -97,6 +97,15 @@ QtObject {
     property bool isPlaying:    false
     property int  currentIndex: 0
 
+    // ── Playlist snapshot (decoupled from active/displayed playlist) ──
+    property string playingIntervalMode:    "fixed"
+    property string playingScreenMode:      "both"
+    property string playingName:            ""
+    property bool   playingShuffle:         false
+    property bool   playingSync:            true
+    property int    playingInterval:        300
+    property var    playingEntries:         []
+
     signal entryApplyRequested(string path)
 
     // ── Playlist preview ──────────────────────────────────────────────
@@ -209,7 +218,34 @@ QtObject {
     // ── Playback ────────────────────────────────────────────────
     function play() {
         if (entries.length === 0) return
-        if (shuffle) currentIndex = Math.floor(Math.random() * entries.length)
+
+        // Snapshot active state into playing state (decoupled from display)
+        playingName         = activeName
+        playingEntries      = entries.slice()
+        playingIntervalMode = intervalMode
+        playingInterval     = interval
+        playingShuffle      = shuffle
+        playingScreenMode   = screenMode
+        playingSync         = sync
+        currentIndex        = 0
+
+        var indep = (screenMode === "both" && !playingSync && Quickshell.screens.length > 1)
+        if (indep) {
+            // Indep: randomize each screen's index independently when shuffle is on
+            var newIndexes = ({})
+            for (var i = 0; i < Quickshell.screens.length; i++) {
+                var sn = Quickshell.screens[i].name
+                if (playingShuffle) {
+                    newIndexes[sn] = Math.floor(Math.random() * playingEntries.length)
+                } else {
+                    var cur = _screenIndexes[sn]
+                    newIndexes[sn] = (cur !== undefined && cur >= 0 && cur < playingEntries.length) ? cur : 0
+                }
+            }
+            _screenIndexes = newIndexes
+        } else if (playingShuffle) {
+            currentIndex = Math.floor(Math.random() * playingEntries.length)
+        }
         isPlaying = true
     }
 
@@ -219,8 +255,10 @@ QtObject {
     }
 
     function stop() {
-        isPlaying = false
-        currentIndex = 0
+        isPlaying       = false
+        currentIndex    = 0
+        playingName     = ""
+        playingEntries  = []
         _advanceTimer.stop()
     }
 
@@ -228,78 +266,37 @@ QtObject {
         return path.indexOf("/steamcmd-isolated/.steam/SteamApps/workshop") !== -1
     }
 
-    function _ts() {
-        var d = new Date()
-        return ("0"+d.getHours()).slice(-2) + ":" +
-                ("0"+d.getMinutes()).slice(-2) + ":" +
-                ("0"+d.getSeconds()).slice(-2) + "." +
-                ("00"+d.getMilliseconds()).slice(-3)
-    }
-
-    function _applyToScreens(screensList, entriesByScreen) {
-        // Sort screens by type (WPE vs static)
-        var wpeArgs = []
-        var staticUpdates = []
-        var wpeUpdates = []
+    function _applyToScreens(screensList, pathsByScreen) {
+        var allArgs = []
         var newKind = Object.assign({}, _screenKind)
 
-        // Phase 1 - classify
         for (var i = 0; i < screensList.length; i++) {
             var sn = screensList[i]
-            var entry = entriesByScreen[sn]
-            var p = entry.path
-
-            if (_isWpe(p)) {
-                wpeArgs.push(sn + ":" + p)
-                wpeUpdates.push({ screen: sn, preview: entry.thumb || "" })
-                newKind[sn] = "wpe"
-            } else {
-                staticUpdates.push({ screen: sn, path: p })
-                newKind[sn] = "static"
-            }
+            var p = pathsByScreen[sn]
+            newKind[sn] = _isWpe(p) ? "wpe" : "static"
+            allArgs.push(sn + ":" + p)
         }
 
-        // Phase 2 - plugin static
-        for (var s = 0; s < staticUpdates.length; s++) {
-            WallpaperState.setScreenWallpaper(staticUpdates[s].screen, staticUpdates[s].path)
-            WallpaperState.setScreenKind(staticUpdates[s].screen, "static")
+        // Plugin sempre trasparente durante il cycle — awww renderizza tutto
+        for (var c = 0; c < screensList.length; c++) {
+            WallpaperState.setScreenWallpaper(screensList[c], "")
         }
 
-        // Phase 3 - plugin = preview WPE (loading state, replace the old "" transparent)
-        for (var c = 0; c < wpeUpdates.length; c++) {
-            WallpaperState.setScreenWallpaper(wpeUpdates[c].screen, wpeUpdates[c].preview)
-            WallpaperState.setScreenKind(wpeUpdates[c].screen, "wpe")
-        }
-
-        // Phase 4 - kill any lingering linux-wallpaperengine on screens going to static
-        if (staticUpdates.length > 0) {
-            for (var k = 0; k < staticUpdates.length; k++) {
-                var sn2 = staticUpdates[k].screen
-                Quickshell.execDetached(["rm", "-f",
-                    "/home/kalashnikxv/.cache/wallpaper-themer/pid_" + sn2])
-                Quickshell.execDetached(["pkill", "-9", "-f",
-                    "linux-wallpaperengine.*--screen-root " + sn2])
-            }
-        }
-
-        // Phase 5 - spawn script for WPE screens
-        if (wpeArgs.length > 0) {
+        if (allArgs.length > 0) {
             var cmd = ["/home/kalashnikxv/.config/hypr/scripts/wallpaper-themer.sh", "playlist-apply"]
-            for (var c2 = 0; c2 < wpeArgs.length; c2++) cmd.push(wpeArgs[c2])
+            for (var k = 0; k < allArgs.length; k++) cmd.push(allArgs[k])
             Quickshell.execDetached(cmd)
         }
 
         _screenKind = newKind
-        console.log("[playlist] _applyToScreens DONE - WallpaperState.screenKind=",
-                    JSON.stringify(WallpaperState.screenKind))
     }
 
     function next() {
-        if (entries.length === 0) return
+        if (playingEntries.length === 0) return
 
         var entriesByScreen = ({})
         var screensList = []
-        var indep = (screenMode === "both" && !sync && Quickshell.screens.length > 1)
+        var indep = (playingScreenMode === "both" && !playingSync && Quickshell.screens.length > 1)
 
         if (indep) {
             // Independent: each screen has its own path
@@ -307,25 +304,25 @@ QtObject {
             for (var i = 0; i < Quickshell.screens.length; i++) {
                 var sn = Quickshell.screens[i].name
                 var prev = _screenIndexes[sn] !== undefined ? _screenIndexes[sn] : -1
-                var idx = shuffle
-                        ? Math.floor(Math.random() * entries.length)
-                        : (prev + 1) % entries.length
+                var idx = playingShuffle
+                        ? Math.floor(Math.random() * playingEntries.length)
+                        : (prev + 1) % playingEntries.length
                 newIndexes[sn] = idx
-                entriesByScreen[sn] = entries[idx]
+                entriesByScreen[sn] = playingEntries[idx].path
                 screensList.push(sn)
             }
             _screenIndexes = newIndexes
         } else {
             //Sync: same path to all the target screens
-            if (shuffle)
-                currentIndex = Math.floor(Math.random() * entries.length)
+            if (playingShuffle)
+                currentIndex = Math.floor(Math.random() * playingEntries.length)
             else
-                currentIndex = (currentIndex + 1) % entries.length
-            var entry = entries[currentIndex]
+                currentIndex = (currentIndex + 1) % playingEntries.length
+            var entry = playingEntries[currentIndex]
             for (var i = 0; i < Quickshell.screens.length; i++) {
                 var sn = Quickshell.screens[i].name
-                if (screenMode === "both" || screenMode === sn) {
-                    entriesByScreen[sn] = entry
+                if (playingScreenMode === "both" || playingScreenMode === sn) {
+                    entriesByScreen[sn] = entry.path
                     screensList.push(sn)
                 }
             }
@@ -341,8 +338,8 @@ QtObject {
     }
 
     function prev() {
-        if (entries.length === 0) return
-        currentIndex = (currentIndex - 1 + entries.length) % entries.length
+        if (playingEntries.length === 0) return
+        currentIndex = (currentIndex - 1 + playingEntries.length) % playingEntries.length
         _applyCurrentEntry()
     }
 
@@ -355,7 +352,6 @@ QtObject {
     }
 
     onIsPlayingChanged: {
-        console.log("[playlist] onIsPLayingChanged fired, isPlaying=", isPlaying)
         if (isPlaying) _applyCurrentEntry()
         else _advanceTimer.stop()
         _savePlaybackState()
@@ -364,28 +360,39 @@ QtObject {
     onCurrentIndexChanged: _savePlaybackState()
 
     function _applyCurrentEntry() {
-        console.log("[playlist] _applyCurrentEntry called, currentIndex=", currentIndex,
-                    "entries.length=", entries.length, "isPlaying=", isPlaying,
-                    "screenMode=", screenMode)
-        if (currentIndex < 0 || currentIndex >= entries.length) return
+        if (playingEntries.length === 0) return
 
-        var entry = entries[currentIndex]
-        var entriesByScreen = ({})
+        var pathsByScreen = ({})
         var screensList = []
-        
-        for (var i = 0; i < Quickshell.screens.length; i++) {
-            var sn = Quickshell.screens[i].name
-            console.log("[playlist]     screen", sn, "match?",
-                        (screenMode === "both" || screenMode === sn))
-            if (screenMode === "both" || screenMode === sn) {
-                entriesByScreen[sn] = entry
+        var indep = (playingScreenMode === "both" && !playinSync && Quickshell.screens.length > 1)
+
+        if (indep) {
+            // Each screen has its own index from _screenIndexes (persisted across restarts)
+            var newIndexes = Object.assign({}, _screenIndexes)
+            for (var i = 0; i < Quickshell.screens.length; i++) {
+                var sn = Quickshell.screens[i].name
+                var idx = newIndexes[sn]
+                if (idx === undefined || idx < 0 || idx >= playingEntries.length) {
+                    idx = playingShuffle ? Math.floor(Math.random() * playingEntries.length) : 0
+                    newIndexes[sn] = idx
+                }
+                pathsByScreen[sn] = playingEntries[idx].path
                 screensList.push(sn)
+            }
+            _screenIndexes = newIndexes
+        } else {
+            if (currentIndex < 0 || currentIndex >= playingEntries.length) return
+            var entry = playingEntries[currentIndex]
+            for (var i = 0; i < Quickshell.screens.length; i++) {
+                var sn = Quickshell.screens[i].name
+                if (playingScreenMode === "both" || playingScreenMode === sn) {
+                    pathsByScreen[sn] = entry.path
+                    screensList.push(sn)
+                }
             }
         }
 
-        console.log("[playlist] _applyCurrentEntry screensList=", JSON.stringify(screensList))
-
-        if (screensList.length > 0) _applyToScreens(screensList, entriesByScreen)
+        if (screensList.length > 0) _applyToScreens(screensList, pathsByScreen)
 
         if (isPlaying) {
             var ms = _currentInterval()
@@ -411,7 +418,11 @@ QtObject {
     }
 
     function _savePlaybackState() {
-        var d = { playing: isPlaying, index: currentIndex }
+        var d = {
+            playing: isPlaying,
+            index: currentIndex,
+            screenIndexes: _screenIndexes
+        }
         _savePlaybackProc.command = [
             "python3", "-c",
             "import sys; open(sys.argv[1], 'w').write(sys.argv[2])",
@@ -427,29 +438,23 @@ QtObject {
         running: false
         stdout: SplitParser {
             onRead: data => {
-                console.log("[playlist] _readPlaybackProc.onRead raw data:", data)
                 try {
                     var d = JSON.parse(data.trim())
-                    console.log("[playlist] parsed playback:", JSON.stringify(d), "entries.length=", root.entries.length)
                     if (typeof d.index === "number" && d.index >= 0 && d.index < root.entries.length) {
                         root.currentIndex = d.index
-                        console.log("[playlist] currentIndex restored to", d.index)
-                    } else {
-                        console.log("[playlist] index NOT restored, condition failed (d.index=", d.index, "entries.length=", root.entries.length, ")")
+                    }
+                    if (d.screenIndexes && typeof d.screenIndexes === "object") {
+                        root._screenIndexes = d.screenIndexes
                     }
                     if (d.playing === true) {
                         root.isPlaying = true
-                        console.log("[playlist] isPlaying restored to true")
                     }
-                } catch(e) {
-                    console.log("[playlist] parse error:", e)
-                }
+                } catch(e) {}
             }
         }
     }
 
     Component.onCompleted: {
-        console.log("[playlist] Component.onCompleted, isPlaying=", isPlaying)
         _mkdirProc.running = true
         // Force re-apply post hot-reload: if the singleton keeps isPlaying=true
         // but the code was reloaded, onIsPlayingChanged don't refire
@@ -543,17 +548,13 @@ QtObject {
                 if (sm === "sync" || sm === "independet" || sm === "indep") sm = "both"
                 root.screenMode = sm
                 root.sync = (d.sync !== undefined) ? d.sync : true
-                console.log("[playlist] _readFile loaded, entries.length=", root.entries.length,
-                            "_playbackRestored=", root._playbackRestored)
                 if (!root._playbackRestored) {
                     root._playbackRestored = true
                     _readPlaybackProc.command = ["bash", "-c", "cat '" + _dir + "/.playback' 2>/dev/null"]
                     _readPlaybackProc.running = false
                     _readPlaybackProc.running = true
                 }
-            } catch(e) {
-                console.log("[playlist] _readFile parse error:", e)
-            }
+            } catch(e) {}
         }
     }
 

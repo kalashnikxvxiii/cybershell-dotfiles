@@ -19,19 +19,12 @@ Item {
     readonly property real fontSize: Math.min(width * 0.12, height * 0.12)
     readonly property real buttonSize: Math.min(width * 0.12, height * 0.12)
     property bool coverHovered: false
-    property real playerProgress: {
-        const p = activePlayer
-        return (p && p.length > 0) ? p.position / p.length : 0
-    }
+    property real playerProgress: 0
 
     layer.enabled: true
     layer.effect: MultiEffect {
         maskEnabled: true
         maskSource: shapeMask
-    }
-
-    Behavior on playerProgress {
-        Anim { duration: 400 }
     }
 
     Process {
@@ -40,6 +33,34 @@ Item {
                 "class:" + (root.activePlayer?.desktopEntry ?? "")]
         running: false
     }
+
+    // Position pulse: MPRIS doesn't push position. Tick at 100ms and recompute
+    // ratio directly (same pattern as MprisModule). No Behavior needed —
+    // updates are frequent enough to feel fluid.
+    Timer {
+        id: progressTimer
+        interval: 100
+        repeat: true
+        running: root.activePlayer
+                 && root.activePlayer.positionSupported
+                 && root.activePlayer.playbackState === MprisPlaybackState.Playing
+        triggeredOnStart: true
+        onTriggered: {
+            const p = root.activePlayer
+            if (!p || !p.lengthSupported || p.length <= 0) {
+                root.playerProgress = 0
+                return
+            }
+            root.playerProgress = Math.max(0, Math.min(1, p.position / p.length))
+        }
+    }
+
+    // Snap to 0 when player stops/changes (so arc doesn't stay stale)
+    Connections {
+        target: root.activePlayer
+        function onTrackTitleChanged() { root.playerProgress = 0 }
+    }
+    onActivePlayerChanged: playerProgress = 0
 
     CutShape {
         anchors.fill: parent
