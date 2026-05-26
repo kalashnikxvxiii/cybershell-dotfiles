@@ -8,9 +8,9 @@ layout=$(hyprctl activeworkspace -j 2>/dev/null | jq -r '.tiledLayout // "dwindl
 
 if [ "$layout" = "monocle" ]; then
     if [ "$direction" = "u" ]; then
-        hyprctl dispatch layoutmsg cyclenext
+        hd 'hl.dsp.layout("cyclenext")'
     else
-        hyprctl dispatch layoutmsg cycleprev
+        hd 'hl.dsp.layout("cycleprev")'
     fi
 else
     # dwindle / scrolling — naviga per coordinate, niente cross-monitor

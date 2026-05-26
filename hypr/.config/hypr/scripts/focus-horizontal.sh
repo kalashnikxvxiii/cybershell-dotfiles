@@ -10,7 +10,7 @@ if [ "$layout" = "scrolling" ]; then
     # Altrimenti scorri tra le finestre del workspace.
     cross=$(get_adjacent_monitor "$direction")
     if [ -n "$cross" ]; then
-        hyprctl dispatch focusmonitor "$cross"
+        hd "hl.dsp.focus({monitor = \"$cross\"})"
     else
         safe_movefocus "$direction"
     fi

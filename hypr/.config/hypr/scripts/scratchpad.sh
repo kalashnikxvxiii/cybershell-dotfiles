@@ -2,6 +2,8 @@
 # scratchpad.sh — pull-one | pull-all
 # Estrae finestre dallo scratchpad (special:magic) al workspace regolare corrente.
 
+source "$(dirname "$0")/hyprctl-lua-compat.sh"
+
 ACTION="${1:-pull-one}"
 SPECIAL="special:magic"
 
@@ -39,7 +41,7 @@ pull_one() {
         return 1
     fi
 
-    hyprctl dispatch movetoworkspace "$target"
+    hd "hl.dsp.window.move({workspace = \"$target\"})"
 }
 
 # Estrae tutte le finestre dallo scratchpad al workspace corrente.
@@ -59,7 +61,7 @@ pull_all() {
     fi
 
     for addr in "${addresses[@]}"; do
-        hyprctl dispatch movetoworkspacesilent "${target},address:${addr}"
+        hd "hl.dsp.window.move({workspace = \"${target}\", window = \"address:${addr}\"})"
     done
 
     notify-send "Scratchpad" "${#addresses[@]} finestra/e spostata/e al workspace ${target}." -t 2000
