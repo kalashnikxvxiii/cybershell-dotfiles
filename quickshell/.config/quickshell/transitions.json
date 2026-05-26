@@ -1,0 +1,12 @@
+{
+  "type": "random",
+  "duration": 2,
+  "fps": 30,
+  "step": 90,
+  "angle": 120,
+  "pos": "0.00,0.00",
+  "bezier": "0.54,0.000,0.34,0.99",
+  "wave": "12.0,50.0",
+  "invertY": false,
+  "userPresets": []
+}
