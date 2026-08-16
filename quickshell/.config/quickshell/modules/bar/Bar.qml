@@ -11,6 +11,7 @@ import "../../common/Colors.js" as CP
 import "../../common/BarConfig.js" as BC
 import "."
 import "../../common"
+import "AudioControl"
 
 Item {
     id: bar
@@ -21,6 +22,24 @@ Item {
     property bool isDP1: BC.isPrimary(screen)
     property int  barHeight: 24
     property bool volumePopupVisible: false
+
+    // ── Slide up/down transition coordinated with Exclusions ──────────────────────
+    readonly property bool _isVisible: BarState.isVisibleOn(bar.screen.name)
+
+    transform: Translate {
+        id: barSlide
+        y: bar._isVisible ? 0 : -bar.barHeight
+        Behavior on y {
+            NumberAnimation {
+                duration: 500
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: [0.16, 1, 0.3, 1, 1, 1]
+            }
+        }
+    }
+
+    // Kill input while off-screen (avoid ghost hovers on hidden bar)
+    enabled: bar._isVisible
 
     // ── Background gradient (color from Colours / Wallust) ───────────────
     Rectangle {
@@ -138,21 +157,23 @@ Item {
         }
     }
 
-    // ── Volume popup (DP-1 only) ───────────────────────────────────────────
+    // ── Volume popup ───────────────────────────────────────────
     PopupWindow {
         id: volumePopupWin
-        visible: bar.isDP1 && bar.volumePopupVisible
+        visible: bar.volumePopupVisible
+        color: "transparent"   // let CutShape diagonals show desktop background through
         anchor.window: bar.parentWindow
         anchor.item: rightSection.volumeAnchor
         anchor.rect: Qt.rect(0, 4, 72, barHeight)
         // Edges: Bottom=1 Left=2 Right=4 Top=8 (no 4|1/4|2=Left|Right, no 8|1=Top|Bottom)
         anchor.edges: 1 | 2
         anchor.gravity: 8 | 2
-        implicitWidth: 200
-        implicitHeight: 92
+        implicitWidth: audioControlContent.width
+        implicitHeight: audioControlContent.height
+        onVisibleChanged: if (visible) audioControlContent.forceActiveFocus()
 
-        VolumePopup {
-            id: volumePopupContent
+        AudioControlPopup {
+            id: audioControlContent
             onCloseRequested: bar.volumePopupVisible = false
         }
     }
