@@ -8,6 +8,7 @@ import QtQuick
 import "modules/core"
 import "common"
 import "modules/wallpaper"
+import "modules/logout"
 
 ShellRoot {
     // Lyrics server: only alive while Spotify is running
@@ -84,6 +85,10 @@ ShellRoot {
             }
 
             WallpaperPicker {
+                screen: modelData
+            }
+
+            LogoutOverlay {
                 screen: modelData
             }
         }
