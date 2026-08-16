@@ -29,3 +29,29 @@ alias nvidia-settings="nvidia-settings --config=$HOME/.config/nvidia/settings"
 function fish_greeting
     bash ~/.config/fish/greeting.sh
 end
+
+# ── Modern CLI replacements ────────────────────────────────
+alias ls   'eza --icons --git'
+alias ll   'eza -l --icons --git'
+alias la   'eza -la --icons --git'
+alias tree 'eza --tree --icons --git'
+alias cat  'bat --paging=never --style=plain'
+alias grep 'rg'
+alias find 'fd'
+
+# ── zoxide (smart cd) ──────────────────────────────────────
+zoxide init fish --cmd cd | source
+
+# ── fzf keybinds (Ctrl+R history, Ctrl+T file, Alt+C cd) ───
+fzf --fish | source
+
+# ── kitty kittens ──────────────────────────────────────────
+alias rg-link 'kitten hyperlinked_grep'
+
+# ── Git fast-paths ─────────────────────────────────────────
+alias lg 'lazygit'
+
+# ── HUD ────────────────────────────────────────────────────
+alias hud 'btm'
+
+alias cheat 'tools-help'

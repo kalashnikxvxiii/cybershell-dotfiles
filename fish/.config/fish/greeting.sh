@@ -1,185 +1,155 @@
 #!/usr/bin/env bash
-# Terminal greeting — Kitty: GIF animata (kitten icat) + fastfetch info fianco a fianco
-#                    WezTerm/altro: ASCII + fastfetch + glitch animation
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  NETRUNNER GREETING — CP2077 boot sequence, one-shot animated, then static║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# Dependencies (all optional; degrades gracefully):
+#   REQUIRED : bash, figlet, fastfetch
+#   ENHANCED : tte (terminaltexteffects) — animated reveal
+#              install: pipx install terminaltexteffects   (or)   paru -S terminaltexteffects
+#   OPTIONAL : systemctl (for service status), ip / nmcli (network)
+#
+# Behaviour: runs once at shell start, ~1.2s total animation, no loops.
 
-GIF_DIR="$HOME/Immagini/Gifs"
+set -u
 ASCII_DIR="$HOME/Immagini/ASCII"
-
 COLS=$(tput cols 2>/dev/null || echo 80)
-HALF=$(( COLS / 2 ))
+ROWS=$(tput lines 2>/dev/null || echo 24)
+SMALL=0; (( COLS < 90 )) && SMALL=1
 
-# ── Rilevamento terminale ─────────────────────────────────────────────────────
-if [[ -n "$KITTY_PID" || "$TERM" == "xterm-kitty" ]]; then
-    TERM_TYPE="kitty"
-elif [[ -n "$WEZTERM_PANE" || "$TERM_PROGRAM" == "WezTerm" ]]; then
-    TERM_TYPE="wezterm"
-else
-    TERM_TYPE="other"
-fi
+# ── CP2077 24-bit palette ─────────────────────────────────────────────────────
+Y=$'\033[38;2;252;236;12m'   # corpo yellow   #fcec0c
+C=$'\033[38;2;37;225;237m'   # netrunner cyan #25e1ed
+M=$'\033[38;2;234;0;217m'    # magenta        #ea00d9
+R=$'\033[38;2;197;0;60m'     # danger red     #c5003c
+G=$'\033[38;2;0;255;159m'    # neon ok        #00ff9f
+D=$'\033[38;2;80;80;90m'     # dim
+B=$'\033[1m'; X=$'\033[0m'
 
-# ── KITTY: kitten icat (animazione reale) + fastfetch info a destra ───────────
-if [[ "$TERM_TYPE" == "kitty" ]]; then
-    gifs=( "$GIF_DIR"/*.gif )
-    if [[ ! -f "${gifs[0]}" ]]; then
-        fastfetch; exit 0
-    fi
-    # Ordinamento alfabetico e selezione sequenziale (indice persistente)
-    mapfile -t gifs_sorted < <(printf '%s\n' "${gifs[@]}" | sort)
-    state_file="$HOME/.local/state/greeting_gif_index"
-    mkdir -p "$(dirname "$state_file")"
-    idx=$(cat "$state_file" 2>/dev/null)
-    idx=$(( ${idx:-0} % ${#gifs_sorted[@]} ))
-    gif="${gifs_sorted[$idx]}"
-    echo $(( (idx + 1) % ${#gifs_sorted[@]} )) > "$state_file"
+HAS_TTE=0; command -v tte >/dev/null && HAS_TTE=1
 
-    # Rileva se il terminale occupa il 100% della larghezza del monitor (Hyprland)
-    FULL_WIDTH=0
-    if command -v hyprctl &>/dev/null; then
-        _layout=$(python3 - <<'PY' 2>/dev/null
-import json, subprocess
-win  = json.loads(subprocess.check_output(["hyprctl","activewindow","-j"]))
-mons = json.loads(subprocess.check_output(["hyprctl","monitors","-j"]))
-mon_id = win.get("monitor", 0)
-mon = next((m for m in mons if m["id"] == mon_id), mons[0])
-print("full" if win["size"][0] >= mon["width"] else "partial")
-PY
-)
-        [[ "$_layout" == "full" ]] && FULL_WIDTH=1
-    fi
+# ── Helpers ───────────────────────────────────────────────────────────────────
+rule() { printf '%s' "$1"; printf -- '─%.0s' $(seq 1 "$COLS"); printf '%s\n' "$X"; }
 
-    # Dimensioni in pixel della GIF (solo primo frame)
-    read -r gif_px_w gif_px_h < <(identify -format "%w %h\n" "${gif}[0]" 2>/dev/null | head -1)
-    gif_px_w=${gif_px_w:-1}
-    gif_px_h=${gif_px_h:-1}
-
-    # Dimensioni cella in pixel via CSI 16t → per calcolare centramento verticale
-    printf '\033[16t' > /dev/tty
-    IFS=';' read -r -d 't' _ cell_h cell_w < /dev/tty
-    cell_h="${cell_h//[^0-9]/}"; cell_h="${cell_h:-20}"
-    cell_w="${cell_w//[^0-9]/}"; cell_w="${cell_w:-10}"
-
-    if (( gif_px_w > gif_px_h && FULL_WIDTH == 0 )); then
-        # ── LANDSCAPE + finestra parziale: GIF a larghezza piena, fastfetch sotto
-        # --align center centra se la GIF è più stretta del terminale
-        kitten icat --fit width --align center "$gif"
-        fastfetch --logo-type none
+reveal() {  # $1 = color, stdin = text
+    local color="$1"
+    if (( HAS_TTE )); then
+        printf '%s' "$color"
+        tte --frame-rate 120 decrypt \
+            --typing-speed 6 \
+            --ciphertext-colors 25e1ed ea00d9 \
+            --final-gradient-stops fcec0c fcec0c \
+            --final-gradient-steps 4 2>/dev/null
+        printf '%s' "$X"
     else
-        # ── PORTRAIT / QUADRATA o FULL-WIDTH: layout adattivo (50/50 o stacked)
-        mapfile -t FF_LINES < <(fastfetch --logo-type none 2>/dev/null)
-        FF_H=${#FF_LINES[@]}
-        [[ $FF_H -eq 0 ]] && { fastfetch; exit 0; }
-
-        ROWS=$(tput lines 2>/dev/null || echo 24)
-        right_w=$(( COLS - HALF - 2 ))
-        # Larghezza massima output fastfetch (senza codici ANSI)
-        ff_max_w=$(printf '%s\n' "${FF_LINES[@]}" | sed 's/\x1b\[[0-9;]*[A-Za-z]//g' | awk '{print length}' | sort -n | tail -1)
-        ff_max_w=${ff_max_w:-0}
-
-        if (( HALF >= 30 && right_w >= ff_max_w && FF_H <= ROWS - 2 )); then
-            # ── 50/50: GIF a sinistra, fastfetch a destra
-            for ((i=0; i<FF_H; i++)); do printf '\n'; done
-            printf "\033[%dA" "$FF_H"
-
-            printf '\033[6n' > /dev/tty
-            IFS=';' read -r -d 'R' CROW CCOL < /dev/tty
-            CROW="${CROW//[^0-9]/}"; CROW="${CROW:-1}"
-
-            # Calcola altezza effettiva della GIF in celle e offset verticale
-            read -r gif_actual_h gif_v_offset < <(python3 -c "
-gh, gw   = $gif_px_h, $gif_px_w
-cols     = $HALF
-rows     = $FF_H
-ch, cw   = $cell_h, $cell_w
-dh = cols * (gh / gw) * (cw / ch)
-actual = max(1, min(round(dh), rows))
-offset = (rows - actual) // 2
-print(actual, offset)
-")
-            gif_actual_h=${gif_actual_h:-$FF_H}
-            gif_v_offset=${gif_v_offset:-0}
-
-            kitten icat \
-                --place "${HALF}x${gif_actual_h}@0x$((CROW - 1 + gif_v_offset))" \
-                --align center --scale-up "$gif" 2>/dev/null
-
-            for i in "${!FF_LINES[@]}"; do
-                printf "\033[%d;%dH%s" "$((CROW + i))" "$((HALF + 2))" "${FF_LINES[$i]}"
-            done
-
-            printf "\033[%d;1H" "$((CROW + FF_H))"
-        else
-            # ── STACKED: finestra troppo stretta/bassa → GIF a tutta larghezza, info sotto
-            kitten icat --fit width --align center "$gif" 2>/dev/null
-            printf '%s\n' "${FF_LINES[@]}"
-        fi
+        printf '%s' "$color"; cat; printf '%s' "$X"
     fi
-    exit 0
-fi
+}
 
-# ── WEZTERM / ALTRO: ASCII + fastfetch + glitch ───────────────────────────────
-txts=( "$ASCII_DIR"/*.txt )
-[[ ! -f "${txts[0]}" ]] && { fastfetch; exit 0; }
+status() {  # $1=label  $2=ok|warn|err  $3=detail
+    local lbl="$1" st="$2" det="$3" tag pad
+    case "$st" in
+        ok)   tag="${G}[ OK ]${X}" ;;
+        warn) tag="${Y}[WARN]${X}" ;;
+        err)  tag="${R}[FAIL]${X}" ;;
+        *)    tag="${D}[ -- ]${X}" ;;
+    esac
+    local left="${C}>${X} ${lbl}"
+    local right="${D}${det}${X} ${tag}"
+    local lvis=$((${#lbl}+2))
+    local rvis=$((${#det}+7))
+    pad=$(( COLS - lvis - rvis ))
+    (( pad < 2 )) && pad=2
+    printf '%s' "$left"
+    printf "${D}%.0s.${X}" $(seq 1 "$pad")
+    printf '%s\n' "$right"
+}
 
-ART_FILE="${txts[$((RANDOM % ${#txts[@]}))]}"
+bar() {  # $1 percent  $2 color
+    local pct="$1" col="$2" w=20
+    local f=$(( pct * w / 100 ))
+    local e=$(( w - f ))
+    printf '%s' "$col"
+    printf '█%.0s' $(seq 1 "$f")
+    printf '%s' "$D"
+    printf '░%.0s' $(seq 1 "$e")
+    printf '%s %3d%%%s' "$col" "$pct" "$X"
+}
 
-art_w=$(python3 -c "print(max(len(l.rstrip('\n')) for l in open('$ART_FILE')))" 2>/dev/null)
-art_w=${art_w:-40}
-ART_TOTAL=$(( 2 + art_w ))
-
-if (( ART_TOTAL >= HALF )); then
-    FF_ARGS=(--logo-type file --logo "$ART_FILE" --logo-position top)
+# ── 1. Header banner (animated decrypt-reveal via tte) ────────────────────────
+clear 2>/dev/null
+HOSTUP="$(hostname | tr '[:lower:]' '[:upper:]')"
+if (( ! SMALL )); then
+    figlet -w "$COLS" -f slant "${HOSTUP}" 2>/dev/null | reveal "$Y"
 else
-    FF_ARGS=(--logo-type file --logo "$ART_FILE" --logo-padding-right $(( HALF - ART_TOTAL )))
+    printf "${Y}${B}▌ NODE: %s${X}\n" "$HOSTUP"
 fi
 
-mapfile -t LINES < <(fastfetch "${FF_ARGS[@]}" 2>/dev/null)
-HEIGHT=${#LINES[@]}
-[[ $HEIGHT -eq 0 ]] && { fastfetch; exit 0; }
+# ── 2. Status strip ───────────────────────────────────────────────────────────
+rule "$C"
+printf "${Y}${B}▌${X} ${Y}NETWATCH PROTOCOL${X} ${M}//${X} "
+printf "${C}KERNEL $(uname -r)${X} ${M}//${X} "
+printf "${Y}$(date +'%Y-%m-%d %H:%M:%S')${X}\n"
+rule "$C"
 
-GLITCH_CHARS='!@#$%^*/<>|~?'
-GC=($'\033[31m' $'\033[33m' $'\033[37;1m' $'\033[35m' $'\033[36;1m')
-RESET=$'\033[0m'
+# ── 3. Boot-sequence status (computed, static) ────────────────────────────────
+if ip -4 route get 1.1.1.1 >/dev/null 2>&1; then
+    NET_IF=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $5; exit}')
+    NET_IP=$(ip -4 addr show "$NET_IF" 2>/dev/null | awk '/inet /{print $2; exit}')
+    status "MILITECH SECURE LINK"     ok   "${NET_IF} ${NET_IP}"
+else
+    status "MILITECH SECURE LINK"     err  "OFFLINE"
+fi
+if pgrep -x Hyprland >/dev/null 2>&1; then
+    status "HYPRLAND COMPOSITOR"      ok   "WAYLAND"
+else
+    status "HYPRLAND COMPOSITOR"      warn "NOT RUNNING"
+fi
+if pgrep -x quickshell >/dev/null 2>&1; then
+    status "QUICKSHELL HUD"           ok   "$(pgrep -cx quickshell) PROC"
+else
+    status "QUICKSHELL HUD"           warn "INACTIVE"
+fi
+if command -v nvidia-smi >/dev/null 2>&1; then
+    GPU=$(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>/dev/null | head -1)
+    status "NEURAL ACCELERATOR"       ok   "${GPU}"
+else
+    status "NEURAL ACCELERATOR"       warn "NO CUDA NODE"
+fi
+FAIL=$(systemctl --failed --no-legend 2>/dev/null | wc -l)
+if (( FAIL == 0 )); then
+    status "SYSTEMD SUBSYSTEM"        ok   "ALL UNITS NOMINAL"
+else
+    status "SYSTEMD SUBSYSTEM"        err  "${FAIL} UNIT(S) DOWN"
+fi
 
-old_stty=$(stty -g 2>/dev/null)
-tput civis 2>/dev/null
-trap 'tput cnorm 2>/dev/null; [[ -n "$old_stty" ]] && stty "$old_stty" 2>/dev/null' EXIT INT TERM
+# ── 4. Resource bars (static snapshot) ────────────────────────────────────────
+read -r _ tot used _ <<<"$(free -m | awk '/^Mem:/{print $1,$2,$3}')"
+MEM_PCT=$(( used * 100 / tot ))
+CPU_PCT=$(awk '/cpu /{u=$2+$4; t=u+$5; print int(u*100/t)}' /proc/stat)
+DISK_PCT=$(df --output=pcent / | tail -1 | tr -dc '0-9')
+printf "\n"
+printf "  ${Y}CPU${X}  "; bar "$CPU_PCT"  "$Y"; printf "    "
+printf "${M}MEM${X}  "; bar "$MEM_PCT"  "$M"; printf "    "
+printf "${C}DSK${X}  "; bar "$DISK_PCT" "$C"; printf "\n\n"
 
-for line in "${LINES[@]}"; do printf "%s\n" "$line"; done
+# ── 5. Random ASCII art + fastfetch side-by-side ──────────────────────────────
+shopt -s nullglob
+txts=( "$ASCII_DIR"/*.txt )
+shopt -u nullglob
+if (( ${#txts[@]} > 0 )) && (( ! SMALL )); then
+    ART="${txts[RANDOM % ${#txts[@]}]}"
+    aw=$(awk '{l=length($0); if(l>m)m=l} END{print m+0}' "$ART")
+    pad=$(( COLS/2 - aw - 2 )); (( pad < 0 )) && pad=0
+    fastfetch --logo-type file --logo "$ART" --logo-padding-right "$pad" 2>/dev/null \
+        || fastfetch
+else
+    fastfetch
+fi
 
-for ((frame = 1; frame <= 16; frame++)); do
-    printf "\033[%dA" "$HEIGHT"
-
-    n_glitch=0
-    [[ $((frame % 4)) -eq 0 && frame -lt 16 ]] && n_glitch=1
-    [[ $((frame % 7)) -eq 0 && frame -lt 16 ]] && n_glitch=2
-
-    g1=-1; g2=-1
-    [[ $n_glitch -ge 1 ]] && g1=$((RANDOM % HEIGHT))
-    [[ $n_glitch -ge 2 ]] && g2=$((RANDOM % HEIGHT))
-
-    for ((i = 0; i < HEIGHT; i++)); do
-        if [[ $i -eq $g1 || $i -eq $g2 ]]; then
-            gc="${GC[$((RANDOM % ${#GC[@]}))]}"
-            plain=$(printf "%s" "${LINES[$i]}" | sed 's/\x1b\[[0-9;]*[mGKHFJA]//g')
-            out="$gc"
-            for ((c = 0; c < ${#plain}; c++)); do
-                ch="${plain:$c:1}"
-                if [[ "$ch" != " " && $((RANDOM % 3)) -eq 0 ]]; then
-                    out+="${GLITCH_CHARS:$((RANDOM % ${#GLITCH_CHARS})):1}"
-                else
-                    out+="$ch"
-                fi
-            done
-            printf "%s${RESET}\n" "$out"
-        else
-            printf "%s\n" "${LINES[$i]}"
-        fi
-    done
-
-    sleep 0.07
-done
-
-tput cnorm 2>/dev/null
-[[ -n "$old_stty" ]] && stty "$old_stty" 2>/dev/null
-trap - EXIT INT TERM
-while IFS= read -r -s -t 0 -n 1 _ 2>/dev/null; do :; done
+# ── 6. Footer ─────────────────────────────────────────────────────────────────
+rule "$M"
+UP=$(uptime -p | sed 's/^up //')
+printf "${C}${B}▌${X} ${C}UPTIME ${UP}${X} ${M}//${X} "
+printf "${Y}SHELL ${SHELL##*/}${X} ${M}//${X} "
+printf "${G}CYBERDECK ONLINE${X}\n"
+rule "$M"
