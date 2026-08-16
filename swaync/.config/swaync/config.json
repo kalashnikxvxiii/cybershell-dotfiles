@@ -11,16 +11,17 @@
   "control-center-margin-right": 8,
   "control-center-margin-left": 0,
   "notification-2fa-action": true,
-  "notification-inline-replies": false,
+  "notification-inline-replies": true,
   "notification-body-image-height": 100,
   "notification-body-image-width": 200,
-  "timeout": 8,
-  "timeout-low": 4,
+  "timeout": 18,
+  "timeout-low": 5,
   "timeout-critical": 0,
-  "fit-to-screen": true,
+  "fit-to-screen": false,
   "relative-timestamps": true,
   "control-center-width": 420,
-  "control-center-height": 580,
+  "control-center-height": 1045,
+  "layer-shell-cover-screen": false,
   "notification-window-width": 400,
   "keyboard-shortcuts": true,
   "notification-grouping": true,
@@ -35,6 +36,7 @@
   "widgets": [
     "title",
     "dnd",
+    "buttons-grid#quick-actions",
     "mpris",
     "notifications"
   ],
@@ -55,6 +57,37 @@
       "autohide": true,
       "show-album-art": "always",
       "loop-carousel": false
+    },
+    "buttons-grid#quick-actions": {
+      "buttons-per-row": 6,
+      "actions": [
+        { 
+          "label": "🔕",
+          "type": "toggle",
+          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && swaync-client --dnd-on || swaync-client --dnd-off'",
+          "update-command": "sh -c '[[ $(swaync-client -D) == true ]] && echo true || echo false'"
+        },
+        {
+          "label": "🎤",
+          "type": "toggle",
+          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && wpctl set-mute @DEFAULT_SOURCE@ 1 || wpctl set-mute @DEFAULT_SOURCE@ 0'",
+          "update-command": "sh -c 'wpctl get-volume @DEFAULT_SOURCE@ | grep -q MUTED && echo true || echo false'"
+        },
+        {
+          "label": "📶",
+          "type": "toggle",
+          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'",
+          "update-command": "sh -c '[[ $(nmcli radio wifi) == enabled ]] && echo true || echo false'"
+        },
+        {
+          "label": "🅱",
+          "type": "toggle",
+          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && bluetoothctl power on || bluetoothctl power off'",
+          "update-command": "sh -c 'bluetoothctl show | grep -qE Powered:.*yes && echo true || echo false'"
+        },
+        { "label": "📸", "type": "normal", "command": "hyprshot -m region -o ~/Immagini/Screenshots" },
+        { "label": "🎨", "type": "normal", "command": "hyprpicker -a -r" }
+      ]
     }
   }
 }
