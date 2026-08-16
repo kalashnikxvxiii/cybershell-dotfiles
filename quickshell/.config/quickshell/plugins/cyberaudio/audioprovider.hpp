@@ -31,6 +31,7 @@ public:
     ~AudioProvider() override;
 
 protected:
+    virtual AudioCollector& collector() { return AudioCollector::instance(); }
     AudioProcessor* m_processor = nullptr;
     void init();
 

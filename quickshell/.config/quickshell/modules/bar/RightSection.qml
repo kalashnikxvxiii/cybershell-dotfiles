@@ -94,5 +94,45 @@ Item {
             }
         }
 
+        // ── Secondary monitors - subset (volume + tray) ──────────────────
+        Loader {
+            active: !BC.isPrimary(root.barScreen)
+            height: innerRow.height
+
+            sourceComponent: Component {
+                Row {
+                    height: parent.height
+                    spacing: 0
+                    
+                    // Anchor for the volume popup (invisible)
+                    Item {
+                        width: 0
+                        Component.onCompleted: root.volumeAnchor = this
+                    }
+
+                    PulseModule {
+                        height: parent.height
+                        showBackground: false
+                        onLeftClick: function() { root.volumeToggleRequested() }
+                    }
+
+                    // Spacer reserving room for Tray's leftward expansion
+                    Item {
+                        width: trayCtlSec.expandedContentWidth
+                        height: parent.height
+                        Behavior on width {
+                            Anim {}
+                        }
+                    }
+
+                    Tray {
+                        id: trayCtlSec
+                        height: parent.height
+                        showBackground: false
+                        parentWindow: root.parentWindow
+                    }
+                }
+            }
+        }
     }
 }

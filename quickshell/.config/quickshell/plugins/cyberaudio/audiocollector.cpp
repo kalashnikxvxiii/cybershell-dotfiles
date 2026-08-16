@@ -24,12 +24,20 @@ public:
             PW_KEY_MEDIA_TYPE, "Audio",
             PW_KEY_MEDIA_CATEGORY, "Capture",
             PW_KEY_MEDIA_ROLE, "Music",
-            PW_KEY_STREAM_CAPTURE_SINK, "true",
-            PW_KEY_NODE_PASSIVE, "true",
             PW_KEY_NODE_VIRTUAL, "true",
             PW_KEY_STREAM_DONT_REMIX, "false",
             nullptr
         );
+
+        if (m_collector->captureSink()) {
+            pw_properties_set(props, PW_KEY_STREAM_CAPTURE_SINK, "true");
+            // Passivo solo sul monitor: non deve tenere sveglio il sink.
+            pw_properties_set(props, PW_KEY_NODE_PASSIVE, "true");
+        }
+
+        const QByteArray target = m_collector->target().toUtf8();
+        if (!target.isEmpty())
+            pw_properties_set(props, PW_KEY_TARGET_OBJECT, target.constData());
 
         static const pw_stream_events events = {
             .version = PW_VERSION_STREAM_EVENTS,
@@ -42,9 +50,10 @@ public:
             },
         };
 
+        const QByteArray streamName = m_collector->streamName().toUtf8();
         m_stream = pw_stream_new_simple(
             pw_main_loop_get_loop(m_loop),
-            "cyberaudio-capture",
+            streamName.constData(),
             props,
             &events,
             this
@@ -55,7 +64,7 @@ public:
         spa_audio_info_raw rawInfo = {};
         rawInfo.format = SPA_AUDIO_FORMAT_S16;
         rawInfo.rate = ac::SAMPLE_RATE;
-        rawInfo.channels = 1;
+        rawInfo.channels = m_collector->channels();
         auto* audioInfo = spa_format_audio_raw_build(
             &b, SPA_PARAM_EnumFormat, &rawInfo
         );
@@ -127,22 +136,23 @@ private:
 
     void handleTimeout(uint64_t expirations) {
         Q_UNUSED(expirations)
-        m_expirations++;
-        if (m_expirations >= 10 && !m_idle) {
-            m_idle = true;
-            m_collector->clearBuffer();
-            // Slow down timer when idle
-            timespec ts = { .tv_sec = 0, .tv_nsec = 500000000 }; // 500ms
-            pw_loop_update_timer(pw_main_loop_get_loop(m_loop), m_timer, &ts, nullptr, false);
-        } else if (!m_idle && m_expirations < 10) {
-            // Keep fast timer when streaming
-            timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; // 10ms
-            pw_loop_update_timer(pw_main_loop_get_loop(m_loop), m_timer, &ts, nullptr, false);
-        }
 
         if (m_token.stop_requested()) {
             pw_main_loop_quit(m_loop);
+            return;
         }
+
+        m_expirations++;
+        if (!m_idle && m_expirations >= 10) {
+            m_idle = true;
+            m_collector->clearBuffer();
+        }
+
+        // Ri-arma SEMPRE: il timer e' one-shot (interval = nullptr).
+        // Saltare un rearm significa non controllare mai piu' stop_requested()
+        // e bloccare per sempre il join() in stop().
+        timespec ts = { .tv_sec = 0, .tv_nsec = m_idle ? 500000000L : 10000000L };
+        pw_loop_update_timer(pw_main_loop_get_loop(m_loop), m_timer, &ts, nullptr, false);
     }
 
     static unsigned int nextPowerOf2(unsigned int n) {
@@ -161,7 +171,13 @@ AudioCollector& AudioCollector::instance() {
 }
 
 AudioCollector::AudioCollector(QObject* parent)
+    : AudioCollector(QStringLiteral("cyberaudio-capture"), true, 1, parent) {}
+
+AudioCollector::AudioCollector(QString streamName, bool captureSink, quint32 channels, QObject* parent)
     : Service(parent)
+    , m_streamName(std::move(streamName))
+    , m_captureSink(captureSink)
+    , m_channels(channels)
     , m_buffer1(ac::CHUNK_SIZE, 0.0f)
     , m_buffer2(ac::CHUNK_SIZE, 0.0f) {
     m_readBuffer.store(&m_buffer1, std::memory_order_relaxed);
@@ -213,5 +229,43 @@ quint32 AudioCollector::readChunk(double* out, quint32 count) {
     for (quint32 i = 0; i < n; ++i) out[i] = static_cast<double>((*rb)[i]);
     return m_sampleCount;
 }
+
+// ── MicCollector ─────────────────────────────────────────────────
+
+MicCollector& MicCollector::instance() {
+    static MicCollector inst;
+    return inst;
+}
+
+MicCollector::MicCollector(QObject* parent)
+    : AudioCollector(QStringLiteral("cyberaudio-mic"), false, 1, parent) {}
+
+void MicCollector::start() {
+    m_active = true;
+    AudioCollector::start();
+}
+
+void MicCollector::stop() {
+    m_active = false;
+    AudioCollector::stop();
+}
+
+void MicCollector::setTarget(const QString& target) {
+    if (target == m_target) return;
+    m_target = target;
+    if (!m_active) return;              // si applicherà alla prossima connessione
+    AudioCollector::stop();             // il worker rilegge la config allo start
+    AudioCollector::start();
+}
+
+// ── SinkLevelCollector ───────────────────────────────────────────
+
+SinkLevelCollector& SinkLevelCollector::instance() {
+    static SinkLevelCollector inst;
+    return inst;
+}
+
+SinkLevelCollector::SinkLevelCollector(QObject* parent)
+    : AudioCollector(QStringLiteral("cyberaudio-level"), true, 2, parent) {}
 
 } // namespace cyberaudio

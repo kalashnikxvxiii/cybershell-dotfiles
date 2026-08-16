@@ -44,8 +44,8 @@ void AudioProvider::init() {
 
     connect(m_thread, &QThread::started, m_processor, [this]() {
         // Ensure AudioCollector singleton exists on main thread
-        QMetaObject::invokeMethod(this, []() {
-            AudioCollector::instance();
+        QMetaObject::invokeMethod(this, [this]() {
+            collector();
         }, Qt::BlockingQueuedConnection);
     });
     connect(m_thread, &QThread::finished, m_processor, &QObject::deleteLater);
@@ -54,13 +54,13 @@ void AudioProvider::init() {
 }
 
 void AudioProvider::start() {
-    AudioCollector::instance().ref(this);
+    collector().ref(this);
     QMetaObject::invokeMethod(m_processor, &AudioProcessor::start, Qt::QueuedConnection);
 }
 
 void AudioProvider::stop() {
     QMetaObject::invokeMethod(m_processor, &AudioProcessor::stop, Qt::QueuedConnection);
-    AudioCollector::instance().unref(this);
+    collector().unref(this);
 }
 
 } // namespace cyberaudio

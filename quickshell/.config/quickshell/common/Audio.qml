@@ -23,4 +23,13 @@ QtObject {
 
     // BeatTracker: BPM detection via Aubio (handy for syncing animations to the beat)
     property BeatTracker beatTracker: BeatTracker {}
+
+    // ScopeProvider: real mic waveform selected
+    // Lo stream PipeWire si apre solo quando qualcuno fa ServiceRef su questo oggetto.
+    property ScopeProvider micScope: ScopeProvider {
+        points: 64
+    }
+
+    // LevelProvider: VU reali L/R dal monitor del sink di default (PCM stereo).
+    property LevelProvider outLevel: LevelProvider {}
 }
