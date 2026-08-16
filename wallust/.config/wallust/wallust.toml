@@ -49,29 +49,35 @@ palette = "saliencedark"
 # target: ABSOLUTE path in which to place a file with generated templated values.
 # ¡ If either one is a directory, then both SHOULD be one. !
 # zathura = { template = 'zathura', target = '~/.config/zathura/zathurarc' }
-cava    = { template = 'cava_theme',   target = '~/.config/cava/themes/wallust' }
-kitty   = { template = 'kitty_colors', target = '~/.config/kitty/colors.conf' }
-# Waybar: only bar bg, bar text, tooltip glow (style.css stays fixed, imports this)
-waybar  = { template = 'waybar_wallust_colors', target = '~/.config/waybar/wallust-colors.css' }
-wofi    = { template = 'wofi_style',   target = '~/.config/wofi/style.css' }
-swaync      = { template = 'swaync_style',  target = '~/.config/swaync/style.css' }
-hyprtoolkit  = { template = 'hyprtoolkit',      target = '~/.config/hypr/hyprtoolkit.conf' }
-cava_colors  = { template = 'cava_bar_colors', target = '~/.cache/wallust/cava_colors.sh' }
-nvim         = { template = 'nvim_palette',   target = '~/.config/nvim-Lazyman/lua/wallust_palette.lua' }
+cava              = { template = 'cava_theme',            target = '~/.config/cava/themes/wallust' }
+kitty             = { template = 'kitty_colors',          target = '~/.config/kitty/colors.conf' }
+wofi              = { template = 'wofi_style',            target = '~/.config/wofi/style.css' }
+swaync            = { template = 'swaync_style',          target = '~/.config/swaync/style.css' }
+hyprtoolkit       = { template = 'hyprtoolkit',           target = '~/.config/hypr/hyprtoolkit.conf' }
+cava_colors       = { template = 'cava_bar_colors',       target = '~/.cache/wallust/cava_colors.sh' }
+nvim              = { template = 'nvim_palette',          target = '~/.config/nvim-Lazyman/lua/wallust_palette.lua' }
+kde               = { template = 'kde_colors',            target = '~/.local/share/color-schemes/Cyberpunk-Wallust.colors' }
+qt6ct             = { template = 'qt6ct_palette',         target = '~/.config/qt6ct/colors/cyberpunk.conf' }
+konsole           = { template = 'konsole_colors',        target = '~/.local/share/konsole/Cyberpunk-Wallust.colorscheme' }
+fastfetch         = { template = 'fastfetch_config',      target = '~/.config/fastfetch/config.jsonc' }
+spicetify         = { template = 'spicetify_marketplace', target = '~/.config/spicetify/Themes/marketplace/color.ini' }
+vencord_quickcss  = { template = 'vencord_quickcss',      target = '~/.config/Vencord/settings/quickCss.css' }
+heroic            = { template = 'heroic_theme',          target = '~/.config/heroic/themes/cyberpunk-wallust.css' }
+prism             = { template = 'prism_theme',           target = '~/.local/share/PrismLauncher/themes/Cyberpunk-Wallust/theme.json' }
 # Cursor / VS Code Wallust Theme extension: needs both files
-cursor_json = { template = 'cursor.json', target = '~/.cache/wallust/colors.json' }
-cursor_colors = { template = 'vscode', target = '~/.cache/wallust/colors' }
+cursor_json       = { template = 'cursor.json',           target = '~/.cache/wallust/colors.json' }
+cursor_colors     = { template = 'vscode',                target = '~/.cache/wallust/colors' }
 
 
 [hooks]
 # Run commands when wallust is invoked. Useful to avoid scripting.
 #wallpaper = """swww img "$(find ~/Media/Pictures/Wallpapers -iregex '.*.\\(jpg\\|jpeg\\|png\\|gif\\)' -type f | shuf -n 1)" """
 reload = """
-pkill -SIGUSR2 waybar 2>/dev/null || true
 swaync-client -rs 2>/dev/null || true
 pkill -SIGUSR1 kitty 2>/dev/null || true
 pkill hyprlauncher 2>/dev/null || true; hyprlauncher --daemon &
 find /run/user/$(id -u) /tmp -maxdepth 3 -name 'nvim.*.0' 2>/dev/null | while read sock; do
   nvim --server "$sock" --remote-send ':WallustReload<CR>' 2>/dev/null || true
 done
+bash ~/.config/wallust/hooks/spicetify-wallust-reload.sh 2>/dev/null || true
 """

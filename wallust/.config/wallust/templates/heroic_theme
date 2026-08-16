@@ -1,0 +1,107 @@
+body.cyberpunk-wallust {
+  /* ── Background ─────────────────────────────────── */
+  --background: {{background}};
+  --background-darker: #000000;
+  --background-darker-80: rgba(0, 0, 0, 0.88);
+  --background-secondary: {{color0}};
+  --background-lighter: {{color8}};
+
+  /* ── Surfaces ───────────────────────────────────── */
+  --navbar-background: var(--background);
+  --input-background: var(--background-darker);
+  --body-background: {{background}};
+  --current-background: var(--body-background);
+  --modal-background: {{background}};
+  --modal-backdrop: rgba(0, 0, 0, 0.88);
+  --modal-border: {{color0}};
+  --osk-background: var(--body-background);
+  --osk-button-background: var(--input-background);
+  --osk-button-border: var(--navbar-background);
+  --search-bar-background: {{background}};
+  --search-bar-border: {{color0}};
+  --controller-hints-background: transparent;
+  --icons-background: {{color0}};
+  --divider: {{color0}};
+
+  /* ── Brand accents ──────────────────────────────── */
+  --primary: {{color4}};
+  --primary-hover: {{color12}};
+  --secondary: {{color3}};
+  --accent: {{color4}};
+  --accent-overlay: {{color12}};
+  --link-highlight: {{color4}};
+  --text-hover: {{color12}};
+
+  /* ── Navbar ─────────────────────────────────────── */
+  --navbar-active: {{foreground}};
+  --navbar-inactive: {{color8}};
+  --navbar-accent: var(--accent);
+  --navbar-active-background: {{color0}};
+
+  /* ── Buttons ────────────────────────────────────── */
+  --primary-button: {{color4}};
+  --secondary-button: {{color3}};
+  --tertiary-button: {{color11}};
+  --tertiary-button-overlay: {{color3}};
+  --success-button: {{color2}};
+  --cancel-button: {{color1}};
+  --cancel-button-overlay: {{color9}};
+  --disabled-button: {{color8}};
+  --disabled-button-overlay: {{color0}};
+  --button-stroke: {{color4}};
+  --play-button: {{color4}};
+  --install-button: {{color5}};
+  --download-button: {{color5}};
+  --download-button-overlay: {{color13}};
+
+  /* ── Status ─────────────────────────────────────── */
+  --success: {{color2}};
+  --success-hover: {{color10}};
+  --danger: {{color1}};
+  --danger-hover: {{color9}};
+  --icon-disabled: {{color8}};
+  --icon-disabled-overlay: {{color0}};
+
+  /* ── Anticheat ──────────────────────────────────── */
+  --anticheat-denied: {{color1}};
+  --anticheat-broken: {{color9}};
+  --anticheat-running: {{color6}};
+  --anticheat-supported: {{color2}};
+  --anticheat-planned: {{color5}};
+  --anticheat-unknown: {{color8}};
+
+  /* ── Text ───────────────────────────────────────── */
+  --text-default: {{foreground}};
+  --text-secondary: {{color7}};
+  --text-tertiary: {{background}};
+  --text-quartenary: {{color8}};
+  --text-title: {{color15}};
+  --text-pause-cancel: {{color14}};
+  --text-danger: {{color1}};
+  --text-gametitle: var(--text-default);
+  --text-log: {{color3}};
+  --text-warning: {{color11}};
+
+  /* ── Action icons ───────────────────────────────── */
+  --action-icon: var(--text-default);
+  --action-icon-hover: {{color4}};
+  --action-icon-active: {{color12}};
+
+  /* ── Alphabet filter ────────────────────────────── */
+  --alphabet-filter-accent-color: var(--accent);
+  --alphabet-filter-accent-hover: var(--accent-overlay);
+
+  /* ── Gradients ──────────────────────────────────── */
+  --gamecard-title-color: rgba({{background | rgb}}, 0.82);
+  --gradient-gamecard: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.418) 1.8%,
+    var(--gamecard-title-color) 45%
+  );
+  --gradient-body-background: linear-gradient(
+    90deg,
+    var(--background-darker) -32px,
+    var(--body-background) 64px,
+    var(--body-background) 100%
+  );
+}

@@ -1,0 +1,4 @@
+[ColorScheme]
+active_colors={{foreground}}, {{color0}}, {{color8}}, {{color7}}, {{color0}}, {{color8}}, {{foreground}}, {{color15}}, {{foreground}}, {{background}}, {{background}}, #000000, {{color4}}, {{background}}, {{color5}}, {{color13}}, {{color0}}, {{color0}}, {{color0}}, {{foreground}}, {{color8}}
+disabled_colors={{color8}}, {{color0}}, {{color8}}, {{color7}}, {{color0}}, {{color8}}, {{color8}}, {{color15}}, {{color8}}, {{background}}, {{background}}, #000000, {{color8}}, {{background}}, {{color8}}, {{color8}}, {{color0}}, {{color0}}, {{color0}}, {{color8}}, {{color8}}
+inactive_colors={{foreground}}, {{color0}}, {{color8}}, {{color7}}, {{color0}}, {{color8}}, {{foreground}}, {{color15}}, {{foreground}}, {{background}}, {{background}}, #000000, {{color4}}, {{background}}, {{color5}}, {{color13}}, {{color0}}, {{color0}}, {{color0}}, {{foreground}}, {{color8}}

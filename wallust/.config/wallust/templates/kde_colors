@@ -1,0 +1,139 @@
+[General]
+Name=Cyberpunk-Wallust
+shadeSortColumn=true
+
+[KDE]
+contrast=4
+
+# ╔═══════════════════════════════════════════════════════════════════╗
+# ║ "Cursor Dark Modern" + wallust                                    ║
+# ║ Background: pure black hardcoded                                  ║
+# ║ Foreground/accent/border/selection: TUTTI wallust-driven          ║
+# ║ Niente accent CP2077 fissi                                        ║
+# ╚═══════════════════════════════════════════════════════════════════╝
+
+[Colors:Window]
+BackgroundNormal=0,0,0
+BackgroundAlternate=8,8,8
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive={{color4 | rgb}}
+ForegroundInactive={{color8 | rgb}}
+ForegroundLink={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundPositive={{color2 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+
+[Colors:Button]
+BackgroundNormal=8,8,8
+BackgroundAlternate=0,0,0
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive={{color4 | rgb}}
+ForegroundInactive={{color8 | rgb}}
+ForegroundLink={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundPositive={{color2 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+
+[Colors:View]
+BackgroundNormal=0,0,0
+BackgroundAlternate=8,8,8
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive={{color4 | rgb}}
+ForegroundInactive={{color8 | rgb}}
+ForegroundLink={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundPositive={{color2 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+
+[Colors:Selection]
+BackgroundNormal={{color4 | rgb}}
+BackgroundAlternate={{color6 | rgb}}
+DecorationFocus={{color6 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive=0,0,0
+ForegroundInactive=0,0,0
+ForegroundLink=0,0,0
+ForegroundNegative=0,0,0
+ForegroundNeutral=0,0,0
+ForegroundNormal=0,0,0
+ForegroundPositive=0,0,0
+ForegroundVisited=0,0,0
+
+[Colors:Tooltip]
+BackgroundNormal=8,8,8
+BackgroundAlternate=0,0,0
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive={{color4 | rgb}}
+ForegroundInactive={{color8 | rgb}}
+ForegroundLink={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundPositive={{color2 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+
+[Colors:Header]
+BackgroundNormal=0,0,0
+BackgroundAlternate=8,8,8
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive={{color4 | rgb}}
+ForegroundInactive={{color8 | rgb}}
+ForegroundLink={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundPositive={{color2 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+
+[Colors:Complementary]
+BackgroundNormal=0,0,0
+BackgroundAlternate=8,8,8
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+ForegroundActive={{color4 | rgb}}
+ForegroundInactive={{color8 | rgb}}
+ForegroundLink={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundPositive={{color2 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+
+[ColorEffects:Disabled]
+Color=40,40,40
+ColorAmount=0
+ColorEffect=0
+ContrastAmount=0.65
+ContrastEffect=1
+IntensityAmount=0.10
+IntensityEffect=2
+
+[ColorEffects:Inactive]
+ChangeSelectionColor=true
+Color={{color8 | rgb}}
+ColorAmount=0.025
+ColorEffect=2
+ContrastAmount=0.10
+ContrastEffect=2
+Enable=false
+IntensityAmount=0
+IntensityEffect=0
+
+[WM]
+activeBackground=0,0,0
+activeBlend=8,8,8
+activeForeground={{foreground | rgb}}
+inactiveBackground=0,0,0
+inactiveBlend=8,8,8
+inactiveForeground={{color8 | rgb}}

@@ -1,0 +1,29 @@
+{
+    "colors": {
+        "Window":          "{{background}}",
+        "WindowText":      "{{foreground}}",
+        "Base":            "{{background}}",
+        "AlternateBase":   "{{color0}}",
+        "Button":          "{{color0}}",
+        "ButtonText":      "{{foreground}}",
+        "BrightText":      "{{color15}}",
+        "Text":            "{{foreground}}",
+        "Highlight":       "{{color4}}",
+        "HighlightedText": "{{background}}",
+        "Link":            "{{color5}}",
+        "ToolTipBase":     "{{color0}}",
+        "ToolTipText":     "{{foreground}}",
+        "fadeAmount":      0.5,
+        "fadeColor":       "{{color8}}"
+    },
+    "logColors": {
+        "Launcher":       "{{color4}}",
+        "Error":          "{{color1}}",
+        "Warning":        "{{color3}}",
+        "Debug":          "{{color2}}",
+        "FatalHighlight": "{{color9}}",
+        "Fatal":          "{{background}}"
+    },
+    "name": "Cyberpunk Wallust",
+    "widgets": "Fusion"
+}
