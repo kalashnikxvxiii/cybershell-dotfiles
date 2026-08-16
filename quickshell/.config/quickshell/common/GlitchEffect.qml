@@ -36,13 +36,22 @@ Item {
     property color linesColor:          "#1A1A2E"         // line color
     property real linesMinWidth:        100                 // minimum width (px)
     property real linesMaxWidth:        300                 // maximum width (px)
+    property real linesMinOpacity:      0.2                 // minimum reachable opacity
     property real linesMaxOpacity:      0.5                 // max reachable opacity
     property real linesMaxPause:        5000                // max pause between passes (ms)
     property real linesBaseSpeed:       1000                // base traversal duration (ms)
     property real linesSpeedVariation:  1200                // random duration variation (ms)
 
+    // Delegates are created only once the component is complete AND has a real
+    // size. Any earlier and a ScriptAction can fire in the middle of scene
+    // construction, re-enter the QML engine and exhaust the JS stack — an
+    // endless "Maximum call stack size exceeded" loop that hangs shell startup.
+    property bool _linesReady: false
+    Component.onCompleted: _linesReady = true
+
     Repeater {
-        model: root.linesEnabled ? root.linesCount : 0
+        model: (root.linesEnabled && root._linesReady
+                && root.width > 0 && root.height > 0) ? root.linesCount : 0
 
         Rectangle {
             id: lineRect
@@ -56,17 +65,19 @@ Item {
                 running: true
 
                 // Random pause before the next pass
-                PauseAnimation { duration: Math.random() * root.linesMaxPause }
+                PauseAnimation { id: linePause; duration: Math.random() * root.linesMaxPause }
 
                 // Randomize line properties
                 ScriptAction {
                     script: {
+                        linePause.duration = Math.random() * root.linesMaxPause
                         const goRight = Math.random() > 0.5
                         lineRect.width = root.linesMinWidth
                                         + Math.random() * (root.linesMaxWidth - root.linesMinWidth)
                         lineRect.y = Math.random() * root.height
-                        lineRect.opacity = 0.2
-                                            + Math.random() * (root.linesMaxOpacity - 0.2)
+                        const opMin = Math.min(root.linesMinOpacity, root.linesMaxOpacity)
+                        const opMax = Math.max(root.linesMinOpacity, root.linesMaxOpacity)
+                        lineRect.opacity = opMin + Math.random() * (opMax - opMin)
                         lineMoveAnim.from = goRight ? -lineRect.width : root.width
                         lineMoveAnim.to   = goRight ? root.width : -lineRect.width
                         lineMoveAnim.duration = root.linesBaseSpeed
@@ -242,7 +253,7 @@ Item {
     // Canvas overlay — colored bands + noise
     Canvas {
         id: tearCanvas
-        parent: root.tearSourcItem ?? root
+        parent: root.tearSourceItem ?? root
         anchors.fill: parent
         visible: root.tearIntensity > 0
         z: 9999

@@ -861,13 +861,13 @@ Item {
 
     // ── SCANLINE OVERLAY ───────────────────────────────────
     GlitchEffect {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        linesEnabled: true
+        anchors.fill: parent
+        linesEnabled: root.tabActive
         linesCount: 5
         linesColor: Colours.scanlineColor
         linesMinWidth: 200
         linesMaxWidth: 600
+        linesMinOpacity: 0.04
         linesMaxOpacity: 0.12
         linesMaxPause: 6000
         linesBaseSpeed: 1200
