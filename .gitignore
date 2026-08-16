@@ -17,12 +17,16 @@ backup/
 lyrics/
 DOCS/
 
-# === Kitty defaults (non tuoi) ===
+# === Kitty defaults / terze parti (non tuoi) ===
 kitty.conf.example
 kitty.conf.advanced
 themes/
 kitty-control/
 sessions/
+kitty/.config/kitty/README.md
+kitty/.config/kitty/kitty.app.png
+kitty/.config/kitty/kc_read_config.py
+kitty/.config/kitty/asciiville.conf
 
 # Spicetify managed (installed via marketplace)
 spicetify/**/CustomApps/
@@ -42,8 +46,15 @@ hyprtoolkit.conf
 
 # Backups
 *.bak
+*.bak-*
+*.bckp
+hypr/.config/hypr/wallpaperengine-backup/
 quickshell/.config/quickshell/modules/bar/tray-pins.json
 quickshell/.config/quickshell/modules/dashboard/applauncher-order.json
+
+# Scratch locale: sessione di test plugin su TTY3 (non condivisibile)
+hypr/.config/hypr/test.lua
+hypr/.config/hypr/test-load-plugin.sh
 
 # vendored: split-monitor-workspaces Lua library (managed as separate clone, not as submodule)
 hypr/.config/hypr/lib/split-monitor-workspaces/
