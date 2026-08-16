@@ -129,10 +129,17 @@ start_wpe_on_screen() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
-    linux-wallpaperengine "${wpe_args[@]}" &
+    linux-wallpaperengine "${wpe_args[@]}" > "$STATE_DIR/wpe_${screen}.log" 2>&1 &
     local new_pid=$!
     disown $new_pid
     echo "$new_pid" > "$STATE_DIR/pid_${screen}"
+    sleep 0.4
+    if ! kill -0 "$new_pid" 2>/dev/null; then
+        rm -f "$STATE_DIR/pid_${screen}"
+        notify-send -u critical "Wallpaper Engine" \
+            "Avvio fallito su $screen - $STATE_DIR/wpe_${screen}.log"
+        return 1
+    fi
 }
 
 start_wpe_direct() {
@@ -156,13 +163,18 @@ start_wpe_direct() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
-    linux-wallpaperengine "${wpe_args[@]}" &
+    linux-wallpaperengine "${wpe_args[@]}" > "$STATE_DIR/wpe_${screen}.log" 2>&1 &
     local new_pid=$!
     disown $new_pid
     echo "$new_pid" > "$STATE_DIR/pid_${screen}"
-    if kill -0 "$new_pid" 2>/dev/null; then
-        apply_audio_for_screen_async "$screen" "$entry" "$new_pid" "$(get_audio_volume)"
+    sleep 0.4
+    if ! kill -0 "$new_pid" 2>/dev/null; then
+        rm -f "$STATE_DIR/pid_${screen}"
+        notify-send -u critical "Wallpaper Engine" \
+            "Avvio fallito su $screen - $STATE_DIR/wpe_${screen}.log"
+        return 1
     fi
+    apply_audio_for_screen_async "$screen" "$entry" "$new_pid" "$(get_audio_volume)"
 }
 
 is_wpe_running_on_screen() {
