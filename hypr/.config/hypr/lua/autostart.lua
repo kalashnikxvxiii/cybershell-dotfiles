@@ -1,0 +1,36 @@
+---@diagnostic disable: undefined-global
+
+-- ── AUTOSTART ──────────────────────────────────────────────────────────
+-- Autostart necessary processes (notification daemons, status bars, etc.)
+-- NB: hyprpm reload load the C++ plugins (borders-plus-plus, ...).
+-- The smw plugin Lua-native is already loaded synchronously al require("smw")
+-- via require("split-monitor-workspaces") and setup() — don't go throu hyprpm.
+--
+-- Plugin config NB (split-monitor-workspaces v1.2.0):
+-- In Lua mode the plugin expose ONLY the function setters (monitor_priority,
+-- max_workspaces) already called in smw.lua. All the classic config keys
+-- (keep_focused, enable_notifications, enable_persistent_workspaces,
+-- enable_wrapping) are NOT registered → "unknown config key". No timer
+-- differed here: the behaviour "remnove empty workspace" is obtained via
+-- `hl.workspace_rule({persistent = false})` for all the slots (in rules.lua).
+hl.on("hyprland.start", function()
+    hl.exec_cmd("hyprpm reload -n")                                                                    -- start plugins
+    hl.exec_cmd("xrandr --output DP-1 --primary")                                                      -- XWayland primary monitor
+    hl.exec_cmd("qpwgraph")                                                                            -- audio
+    hl.exec_cmd("easyeffects")                                                                         -- easyeffects
+    hl.exec_cmd("python ~/.local/share/RazerBatteryTray/src/razer_battery_tray.py 'Razer Basilisk V3 Pro 35K Phantom Green Edition (Wireless)'")  -- razer battery tray
+    hl.exec_cmd("nm-applet --indicator")                                                               -- network manager tray
+    hl.exec_cmd("awww-daemon")                                                                         -- wallpaper daemon (awww)
+    hl.exec_cmd("quickshell")                                                                          -- Quickshell
+    hl.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh")                                          -- set initial wallpapers
+    -- hl.exec_cmd("hypridle")                                                                         -- idle management — disabled (desktop)
+    hl.exec_cmd("swaync")                                                                              -- notification daemon
+    hl.exec_cmd("~/.config/hypr/scripts/auto-dnd-fullscreen.sh")                                       -- auto DND in fullscreen
+    -- hl.exec_cmd("hyprlauncher --daemon")                                                            -- app launcher (pre-loaded) - disabled: daemon herd by HL_INITIAL_WORKSPACE_TOKEN stale -> app always opened in the startup ws 
+    hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal
+    hl.exec_cmd("xwaylandvideobridge")                                                                 -- Discord screen share
+    -- hl.exec_cmd("cava")                                                                             -- cava — audio visualizer
+    hl.exec_cmd("~/.local/bin/discord-guard")                                                          -- Discord (wrapper: ripara gli asar rotti dal repatch Vencord)
+    hl.exec_cmd("pgrep -f 'spicetify watch' >/dev/null || spicetify watch -l -s")                      -- wallust spicetify
+end)
