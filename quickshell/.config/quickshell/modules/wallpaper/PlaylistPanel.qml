@@ -13,7 +13,8 @@ Item {
         onPressed: root.forceActiveFocus()
     }
 
-    property var wallpaperModel: null
+    property var wallpaperModel:    null
+    property var screen:            null
 
     Connections {
         target: PlaylistState
@@ -117,15 +118,83 @@ Item {
                                     NumberAnimation { from: 0.5; to: 1.0; duration: 1200; easing.type: Easing.InOutSine }
                                 }
                             }
-                            Text {
-                                text: (PlaylistState.activeName || PlaylistState.playingName).toUpperCase()
-                                font.family: "Oxanium"
-                                font.pixelSize: 13
-                                font.letterSpacing: 3
-                                color: PlaylistState.activeName === PlaylistState.playingName && PlaylistState.isPlaying
-                                    ? Colours.accentPrimary
-                                    : Colours.accentSecondary
+                            Item {
+                                id: _nameField
                                 anchors.verticalCenter: parent.verticalCenter
+                                width:  renaming ? Math.max(120, _renameInput.implicitWidth + 8)
+                                                : _nameLabel.implicitWidth
+                                height: Math.max(_nameLabel.implicitHeight, _renameInput.implicitHeight)
+
+                                property bool renaming: false
+                                readonly property bool editable: PlaylistState.activeName !== ""
+
+                                function begin() {
+                                    if (!editable) return
+                                    _renameInput.text = PlaylistState.activeName
+                                    renaming = true
+                                    _renameInput.forceActiveFocus()
+                                    _renameInput.selectAll()
+                                }
+
+                                Text {
+                                    id: _nameLabel
+                                    visible: !_nameField.renaming
+                                    text: (PlaylistState.activeName || PlaylistState.playingName).toUpperCase()
+                                    font.family: "Oxanium"
+                                    font.pixelSize: 13
+                                    font.letterSpacing: 3
+                                    color: PlaylistState.activeName === PlaylistState.playingName && PlaylistState.isPlaying
+                                        ? Colours.accentPrimary
+                                        : Colours.accentSecondary
+                                }
+
+                                // Sottolineatura on-hover: segnala che è editabile
+                                Rectangle {
+                                    visible: !_nameField.renaming && _nameField.editable && _nameMa.containsMouse
+                                    anchors.left:   _nameLabel.left
+                                    anchors.right:  _nameLabel.right
+                                    anchors.top:    _nameLabel.bottom
+                                    anchors.topMargin: 1
+                                    height: 1
+                                    color: CP.alpha(CP.cyan, 0.6)
+                                }
+
+                                MouseArea {
+                                    id: _nameMa
+                                    anchors.fill: parent
+                                    enabled: !_nameField.renaming
+                                    hoverEnabled: true
+                                    cursorShape: _nameField.editable ? Qt.IBeamCursor : Qt.ArrowCursor
+                                    onClicked: _nameField.begin()
+                                }
+
+                                TextInput {
+                                    id: _renameInput
+                                    visible: _nameField.renaming
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    font.family: "Oxanium"
+                                    font.pixelSize: 13
+                                    font.letterSpacing: 3
+                                    color: Colours.accentSecondary
+                                    selectionColor: CP.alpha(CP.cyan, 0.35)
+                                    selectedTextColor: Colours.textPrimary
+
+                                    onAccepted: {
+                                        var n = text.trim().replace(/[\s\/]+/g, "-").replace(/[^a-zA-Z0-9\-_]/g, "")
+                                        if (n !== "") PlaylistState.renamePlaylist(PlaylistState.activeName, n)
+                                        _nameField.renaming = false
+                                        root.forceActiveFocus()
+                                    }
+
+                                    Keys.priority: Keys.AfterItem
+                                    Keys.onLeftPressed:  (event) => event.accepted = true
+                                    Keys.onRightPressed: (event) => event.accepted = true
+                                    Keys.onEscapePressed: {
+                                        _nameField.renaming = false
+                                        root.forceActiveFocus()
+                                    }
+                                    onActiveFocusChanged: if (!activeFocus) _nameField.renaming = false
+                                }
                             }
                             Text {
                                 visible: PlaylistState.activeName !== ""
@@ -137,6 +206,16 @@ Item {
                                 font.pixelSize: 9
                                 font.letterSpacing: 2
                                 color: CP.alpha(CP.yellow, 0.65)
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                visible: PlaylistState.activeName != ""
+                                text: "· " + PlaylistState.entries.length
+                                    + (PlaylistState.entries.length === 1 ? " ENTRY" : " ENTRIES")
+                                font.family: "Oxanium"
+                                font.pixelSize: 9
+                                font.letterSpacing: 2
+                                color: CP.alpha(CP.cyan, 0.75)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -618,6 +697,75 @@ Item {
                     cutTopLeft: 6; cutBottomRight: 6
                 }
 
+                // Countdown to next change (left side, mirrors the N/M counter on the right)
+                Item {
+                    id: _countdown
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: _cdTxt.implicitWidth + 16
+                    height: 20
+
+                    visible: PlaylistState.isPlaying && PlaylistState.nextAdvanceTime > 0
+
+                    property real _now: Date.now()
+
+                    Timer {
+                        running: _countdown.visible
+                        interval: 250
+                        repeat: true
+                        onTriggered: _countdown._now = Date.now()
+                    }
+
+                    readonly property real _remainMs:
+                        Math.max(0, PlaylistState.nextAdvanceTime - _now)
+                    
+                    CutShape {
+                        anchors.fill: parent
+                        fillColor: CP.alpha(CP.cyan, 0.06)
+                        strokeColor: CP.alpha(CP.cyan, 0.25)
+                        strokeWidth: 1; inset: 0.5
+                        cutTopLeft: 3; cutBottomRight: 3
+                    }
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 4
+
+                        // Pulsing dot
+                        Rectangle {
+                            width: 5; height: 5; radius: 1
+                            color: Colours.accentSecondary
+                            anchors.verticalCenter: parent.verticalCenter
+                            SequentialAnimation on opacity {
+                                running: _countdown.visible
+                                loops: Animation.Infinite
+                                NumberAnimation { from: 1.0; to: 0.35; duration: 800; easing.type: Easing.InOutSine }
+                                NumberAnimation { from: 0.35; to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                            }
+                        }
+
+                        Text {
+                            id: _cdTxt
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: {
+                                var s = Math.ceil(_countdown._remainMs / 1000)
+                                var h = Math.floor(s / 3600)
+                                var m = Math.floor((s % 3600) / 60)
+                                var sec = s % 60
+                                function p(n) { return n < 10 ? "0" + n : n.toString() }
+                                return h > 0
+                                    ? p(h) + ":" + p(m) + ":" + p(sec)
+                                    : p(m) + ":" + p(sec)
+                            }
+                            font.family: "Oxanium"
+                            font.pixelSize: 11
+                            font.letterSpacing: 1.5
+                            color: Colours.accentSecondary
+                        }
+                    }
+                }
+
                 property int _btnH: Math.min(_playControls.height - 10, 44)
 
                 // Play / Pause
@@ -751,8 +899,23 @@ Item {
                     anchors.right: parent.right
                     anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
+
+                    readonly property bool _indep:
+                        PlaylistState.playingScreenMode === "both"
+                        && !PlaylistState.playingSync
+                        && Quickshell.screens.length > 1
+                    
+                    readonly property int _idx: {
+                        if (PlaylistState.playingEntries.length === 0) return -1
+                        if (_indep && root.screen) {
+                            var i = PlaylistState._screenIndexes[root.screen.name]
+                            return (typeof i === "number") ? i : 0
+                        }
+                        return PlaylistState.currentIndex
+                    }
+
                     text: PlaylistState.playingEntries.length > 0
-                        ? (PlaylistState.currentIndex + 1) + "/" + PlaylistState.playingEntries.length
+                        ? (_idx + 1) + "/" + PlaylistState.playingEntries.length
                         : "0/0"
                     font.family: "Oxanium"
                     font.pixelSize: 10
@@ -1081,6 +1244,65 @@ Item {
                         sa._dropIdx = -1
                     }
                 }
+            }
+        }
+
+        // ── Scrollbar (only when the grid is overflowing) ────────
+        Item {
+            id: _scrollBar
+            z: 5
+            anchors.right:  entryGrid.right
+            anchors.top:    entryGrid.top
+            anchors.bottom: entryGrid.bottom
+            width: 12
+
+            readonly property real _range: Math.max(0, entryGrid.contentHeight - entryGrid.height)
+            readonly property bool needed: _range > 0
+            readonly property real thumbH: Math.max(28, height * entryGrid.height
+                                                        / Math.max(1, entryGrid.contentHeight))
+            
+            visible: opacity > 0
+            opacity: needed ? (_sbMa.containsMouse || _sbMa.pressed ? 1.0 : 0.5) : 0
+            Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+
+            // Track
+            Rectangle {
+                id: _sbThumb
+                anchors.right: parent.right
+                width: 4
+                height: _scrollBar.thumbH
+                y: _scrollBar._range > 0
+                    ? (entryGrid.contentY / _scrollBar._range) * (_scrollBar.height - height)
+                    : 0
+                color: _sbMa.pressed ? CP.cyan : CP.alpha(CP.cyan, 0.7)
+                Behavior on color { ColorAnimation { duration: 100 } }
+            }
+
+            MouseArea {
+                id: _sbMa
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                preventStealing: true
+
+                property real _grab: 0
+
+                function _scrollTo(y) {
+                    var travel = _scrollBar.height - _sbThumb.height
+                    if (travel <= 0) return
+                    var t = Math.max(0, Math.min(travel, y))
+                    entryGrid.contentY = (t / travel) * _scrollBar._range
+                }
+
+                onPressed: mouse => {
+                    if (mouse.y >= _sbThumb.y && mouse.y <= _sbThumb.y + _sbThumb.height) {
+                        _grab = mouse.y - _sbThumb.y
+                    } else {
+                        _grab = _sbThumb.height / 2
+                        _scrollTo(mouse.y - _grab)
+                    }
+                }
+                onPositionChanged: mouse => { if (pressed) _scrollTo(mouse.y - _grab) }
             }
         }
 

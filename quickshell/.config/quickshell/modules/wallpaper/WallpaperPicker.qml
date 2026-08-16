@@ -557,13 +557,27 @@ Scope {
     function _applyOriginalState() {
         var sn = root.screen.name
         var path = ""
-        if (PlaylistState.isPlaying && PlaylistState.entries.length > 0
-            && PlaylistState.currentIndex >= 0
-            && PlaylistState.currentIndex < PlaylistState.entries.length) {
-            path = PlaylistState.entries[PlaylistState.currentIndex].path
-        } else if (root.originalWallpaper) {
-            path = root.originalWallpaper
+        // Prefer the live cycle snapshot (playingEntries) so we restore what
+        // the cycle actually advanced to, not entries[0] from the editable
+        // playlist. In indep mode the shared currentIndex is never advanced —
+        // each screen tracks its own index in _screenIndexes[sn] — so we
+        // resolve the screen-specific index for this monitor.
+        if (PlaylistState.isPlaying) {
+            var pl = PlaylistState.playingEntries.length > 0
+                ? PlaylistState.playingEntries
+                : PlaylistState.entries
+            if (pl.length > 0) {
+                var indep = (PlaylistState.playingScreenMode === "both"
+                    && !PlaylistState.playingSync
+                    && Quickshell.screens.length > 1)
+                var idx = indep
+                    ? (PlaylistState._screenIndexes[sn] !== undefined
+                        ? PlaylistState._screenIndexes[sn] : -1)
+                    : PlaylistState.currentIndex
+                if (idx >= 0 && idx < pl.length) path = pl[idx].path
+            }
         }
+        if (!path && root.originalWallpaper) path = root.originalWallpaper
         if (!path) return
 
         if (_isWpePath(path)) {
@@ -2541,6 +2555,7 @@ Scope {
                     width: parent.width
                     x: PlaylistState.panelOpen ? 0 : -width
                     wallpaperModel: wallpaperModel
+                    screen: root.screen
 
                     Behavior on x {
                         enabled: panelSlider._panelAnim

@@ -389,7 +389,7 @@ cmd_preview_wpe() {
         --volume 0 \
         --noautomute \
         --no-fullscreen-pause \
-        --mpvparam=hwdec=auto &
+        --mpvparam=hwdec=auto > "$HOME/.cache/wallpaper-themer/wpe_preview_${screen}.log" 2>&1 &
     local new_pid=$!
 
     # Save as preview pid, NOT as wallpaper-themer state

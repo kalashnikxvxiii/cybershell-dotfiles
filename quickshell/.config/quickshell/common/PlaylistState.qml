@@ -103,6 +103,7 @@ QtObject {
     property string playingName:            ""
     property bool   playingShuffle:         false
     property bool   playingSync:            true
+    property real   nextAdvanceTime:        0
     property int    playingInterval:        300
     property var    playingEntries:         []
 
@@ -176,6 +177,7 @@ QtObject {
         })
         entries = arr
         panelOpen = true
+        _syncEntriesIfPlayingActive()
         _savePlaylist()
     }
 
@@ -185,6 +187,7 @@ QtObject {
         arr.splice(idx, 1)
         entries = arr
         if (currentIndex >= entries.length) currentIndex = Math.max(0, entries.length - 1)
+        _syncEntriesIfPlayingActive()
         _savePlaylist()
     }
 
@@ -194,6 +197,7 @@ QtObject {
         var item = arr.splice(from, 1)[0]
         arr.splice(to, 0, item)
         entries = arr
+        _syncEntriesIfPlayingActive()
         _savePlaylist()
     }
 
@@ -203,6 +207,7 @@ QtObject {
         var e = arr[idx]
         arr[idx] = { path: e.path, type: e.type, title: e.title, source: e.source, thumb: e.thumb || e.path, interval: secs }
         entries = arr
+        _syncEntriesIfPlayingActive()
         _savePlaylist()
     }
 
@@ -212,7 +217,28 @@ QtObject {
         else if (key === "shuffle")      shuffle      = value
         else if (key === "screenMode")   screenMode   = value
         else if (key === "sync")         sync         = value
+
+        // If editing the currently playing playlist, propagate to playing snapshot
+        if (activeName === playingName && playingName !== "") {
+            if      (key === "intervalMode")    playingIntervalMode = value
+            else if (key === "interval")        playingInterval     = value
+            else if (key === "shuffle")         playingShuffle      = value
+            else if (key === "screenMode")      playingScreenMode   = value
+            else if (key === "sync")            playingSync         = value
+
+            // Reset countdown immediately if the timing changed
+            if ((key === "interval" || key === "intervalMode") && isPlaying) {
+                var ms = _currentInterval()
+                if (ms > 0) { _advanceTimer.interval = ms; _advanceTimer.restart() }
+            }
+        }
         _savePlaylist()
+    }
+
+    function _syncEntriesIfPlayingActive() {
+        if (activeName === playingName && playingName !== "") {
+            playingEntries = entries.slice()
+        }
     }
 
     // ── Playback ────────────────────────────────────────────────
@@ -312,6 +338,12 @@ QtObject {
                 screensList.push(sn)
             }
             _screenIndexes = newIndexes
+            // Persist now — in indep mode currentIndex never changes, so the
+            // onCurrentIndexChanged save trigger doesn't fire. Without this
+            // .playback stays frozen at the last play/pause toggle, and at
+            // boot QS resumes from a stale index, replacing the wallpaper
+            // restore() just put on screen.
+            _savePlaybackState()
         } else {
             //Sync: same path to all the target screens
             if (playingShuffle)
@@ -344,11 +376,11 @@ QtObject {
     }
 
     function _currentInterval() {
-        if (intervalMode === "per_entry" && currentIndex < entries.length) {
-            var ei = entries[currentIndex].interval
+        if (playingIntervalMode === "per_entry" && currentIndex < playingEntries.length) {
+            var ei = playingEntries[currentIndex].interval
             if (ei > 0) return ei * 1000
         }
-        return interval * 1000
+        return playingInterval * 1000
     }
 
     onIsPlayingChanged: {
@@ -364,30 +396,60 @@ QtObject {
 
         var pathsByScreen = ({})
         var screensList = []
-        var indep = (playingScreenMode === "both" && !playinSync && Quickshell.screens.length > 1)
+        var indep = (playingScreenMode === "both" && !playingSync && Quickshell.screens.length > 1)
 
         if (indep) {
-            // Each screen has its own index from _screenIndexes (persisted across restarts)
+            // Each screen has its own index from _screenIndexes (persisted
+            // across restarts). At boot the persisted index can be stale
+            // (in indep mode .playback was only saved on play/pause, never
+            // after next()), so reconcile from the path currently on screen
+            // (sourced from `current_<screen>` cache via WallpaperState).
+            // This both avoids substituting the wallpaper restore() already
+            // applied AND keeps any WPE that's already running alive.
             var newIndexes = Object.assign({}, _screenIndexes)
             for (var i = 0; i < Quickshell.screens.length; i++) {
                 var sn = Quickshell.screens[i].name
+                var currentOnScreen = WallpaperState.pathForScreen(sn)
+                if (currentOnScreen) {
+                    for (var j = 0; j < playingEntries.length; j++) {
+                        if (playingEntries[j].path === currentOnScreen) {
+                            newIndexes[sn] = j
+                            break
+                        }
+                    }
+                }
                 var idx = newIndexes[sn]
                 if (idx === undefined || idx < 0 || idx >= playingEntries.length) {
                     idx = playingShuffle ? Math.floor(Math.random() * playingEntries.length) : 0
                     newIndexes[sn] = idx
                 }
-                pathsByScreen[sn] = playingEntries[idx].path
-                screensList.push(sn)
+                var pathToApply = playingEntries[idx].path
+                // Skip per-screen apply if the path already matches — no
+                // redundant transition flash, no WPE restart.
+                if (pathToApply !== currentOnScreen) {
+                    pathsByScreen[sn] = pathToApply
+                    screensList.push(sn)
+                }
+            }
+            // Only persist if anything actually changed (avoids a redundant
+            // .playback write on the no-op resume path).
+            var changed = false
+            for (var k in newIndexes) {
+                if (_screenIndexes[k] !== newIndexes[k]) { changed = true; break }
             }
             _screenIndexes = newIndexes
+            if (changed && isPlaying) _savePlaybackState()
         } else {
             if (currentIndex < 0 || currentIndex >= playingEntries.length) return
             var entry = playingEntries[currentIndex]
             for (var i = 0; i < Quickshell.screens.length; i++) {
                 var sn = Quickshell.screens[i].name
                 if (playingScreenMode === "both" || playingScreenMode === sn) {
-                    pathsByScreen[sn] = entry.path
-                    screensList.push(sn)
+                    // Same skip-if-already-on-screen optimization for sync mode.
+                    if (entry.path !== WallpaperState.pathForScreen(sn)) {
+                        pathsByScreen[sn] = entry.path
+                        screensList.push(sn)
+                    }
                 }
             }
         }
@@ -405,6 +467,10 @@ QtObject {
         repeat: false
         onTriggered: {
             if (root.isPlaying) root.next()
+        }
+        onRunningChanged: {
+            if (running) root.nextAdvanceTime = Date.now() + interval
+            else         root.nextAdvanceTime = 0
         }
     }
 
@@ -447,6 +513,18 @@ QtObject {
                         root._screenIndexes = d.screenIndexes
                     }
                     if (d.playing === true) {
+                        // Rehydrate playing snapshot from now-loaded active state.
+                        // (this runs only AFTER _loadFile.onLoaded fires, so entries
+                        // and config are guaranteed to be populated)
+                        if (root.playingEntries.length === 0) {
+                            root.playingName            = root.activeName
+                            root.playingEntries         = root.entries.slice()
+                            root.playingIntervalMode    = root.intervalMode
+                            root.playingInterval        = root.interval
+                            root.playingShuffle         = root.shuffle
+                            root.playingScreenMode      = root.screenMode
+                            root.playingSync            = root.sync
+                        }
                         root.isPlaying = true
                     }
                 } catch(e) {}
@@ -456,20 +534,6 @@ QtObject {
 
     Component.onCompleted: {
         _mkdirProc.running = true
-        // Force re-apply post hot-reload: if the singleton keeps isPlaying=true
-        // but the code was reloaded, onIsPlayingChanged don't refire
-        // Differs one tick to give entries the time to reload
-        _reapplyAfterReload.start()
-    }
-
-    property var _reapplyAfterReload: Timer {
-        interval: 200
-        repeat: false
-        onTriggered: {
-            if (isPlaying && entries.length > 0) {
-                _applyCurrentEntry()
-            }
-        }
     }
 
     property var _mkdirProc: Process {
@@ -599,6 +663,33 @@ QtObject {
         shuffle       = false
         screenMode    = "both"
         _savePlaylist()
+    }
+
+    function renamePlaylist(oldName, newName) {
+        if (oldName === "" || newName === "" || oldName === newName) return
+        if (playlistNames.indexOf(oldName) < 0) return
+        if (playlistNames.indexOf(newName) >= 0) return
+
+        // Replacemente in-place: preserve the order of chips
+        var names = playlistNames.slice()
+        names[names.indexOf(oldName)] = newName
+        playlistNames = names
+
+        // Reload the cache used by countInAll / setHighlightFilter
+        var ad = _allData
+        if (ad[oldName] !== undefined) {
+            ad[newName] = ad[oldName]
+            delete ad [oldName]
+            _allData = ad
+        }
+
+        if (playingName === oldName) playingName = newName
+        if (activeName === oldName) activeName = newName
+
+        _savePlaylist()
+        _delProc.command = ["rm", "-f", _dir + "/" + oldName + ".json"]
+        _delProc.running = false
+        _delProc.running = true
     }
 
     function deletePlaylist(name) {
