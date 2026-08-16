@@ -21,6 +21,12 @@ cd ~/dotfiles
 stow hypr kitty fish quickshell wallust swaync wofi
 ```
 
+## GRUB
+
+Boot theme: **[CyberGRUB-2077](https://github.com/adnksharp/CyberGRUB-2077)**, with a custom logo swapped in.
+
+It is not part of this repo: GRUB reads it from `/boot/grub/themes/` at boot time, outside Stow's reach. Install it from upstream and point `GRUB_THEME` at it in `/etc/default/grub`.
+
 ## Credits
 
 This rice builds on ideas and code from:
