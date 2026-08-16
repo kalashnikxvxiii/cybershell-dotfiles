@@ -1,0 +1,8 @@
+[Unit]
+Description=Steam WARP-bypass slice (user-level, preserves session integrity)
+Documentation=man:systemd.slice(5)
+Before=slices.target
+
+[Slice]
+# Name uses underscore to suppress systemd's dash-as-hierarchy auto-parenting,
+# which would otherwise nest this slice under an implicit "steam.slice".

@@ -1,0 +1,10 @@
+[Unit]
+Description=Hold CPU DMA latency at 0 (low-latency audio: blocks deep C-states)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -c "import struct,signal; f=open('/dev/cpu_dma_latency','wb'); f.write(struct.pack('i',0)); f.flush(); signal.pause()"
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
