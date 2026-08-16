@@ -16,10 +16,15 @@ Cyberpunk 2077-themed Wayland desktop environment on CachyOS (Arch-based).
 Requires [GNU Stow](https://www.gnu.org/software/stow/):
 
 ```bash
-git clone https://github.com/kalashnikxvxiii/dotfiles ~/dotfiles
+git clone https://github.com/kalashnikxvxiii/cybershell-dotfiles ~/dotfiles
 cd ~/dotfiles
-stow hypr kitty fish quickshell wallust swaync wofi
+stow hypr quickshell kitty fish wallust swaync wofi \
+     gtk qt6ct kvantum systemd \
+     btop cava fastfetch spicetify
 ```
+
+Second line is the Qt/GTK theming the wallust palette feeds, plus the systemd
+user units. After stowing `systemd`, run `systemctl --user daemon-reload`.
 
 ## GRUB
 
