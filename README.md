@@ -8,6 +8,7 @@ Cyberpunk 2077-themed Wayland desktop environment on CachyOS (Arch-based).
 - **Shell/Bar**: QuickShell (Qt 6 / QML)
 - **Terminal**: Kitty + Fish
 - **Theming**: wallust (dynamic palette from wallpaper)
+- **Qt/GTK**: qt6ct (Fusion + wallust palette), Kvantum KvFlat, adw-gtk3-dark
 - **Notifications**: SwayNC
 - **Launcher**: Wofi
 
