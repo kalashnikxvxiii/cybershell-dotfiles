@@ -7,8 +7,7 @@ CutShape {
     id: root
     width:  380
     height: 72
-    cutTopRight:   12
-    cutBottomLeft: 12
+    cutBottomLeft: 24
     fillColor:   Qt.rgba(0, 6/255, 14/255, 0.55)
     strokeColor: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.50)
     strokeWidth: 1
@@ -30,9 +29,9 @@ CutShape {
         spacing: 4
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "// UPTIME"
+            text: "UPTIME"
             color: Colours.textSecondary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 10
             font.weight: Font.Bold
             font.letterSpacing: 2
@@ -41,7 +40,7 @@ CutShape {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root._uptime
             color: Colours.accentPrimary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 14
             font.weight: Font.Bold
             font.letterSpacing: 1.5

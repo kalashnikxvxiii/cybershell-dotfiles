@@ -57,20 +57,41 @@ QtObject {
         root.pendingAction = -1
     }
 
+    function _shellEscape(arg) {
+        return "'" + String(arg).replace(/'/g, "'\\''") + "'"
+    }
+
+    function _soundForAction(id) {
+        if (id === "lock")                          return "window-minimize"
+        return null
+    }
+
     function _doInvoke(idx) {
         var act = actions[idx]
         root.visible       = false
         root.pendingAction = -1
-        Quickshell.execDetached(act.command)
+
+        var sound = _soundForAction(act.id)
+        if (!sound) {
+            Quickshell.execDetached(act.command)
+            return
+        }
+
+        var escaped = act.command.map(_shellEscape).join(" ")
+        var wait = (act.id === "lock") ? "" : "sleep 2.5 && "
+        Quickshell.execDetached(["sh", "-c",
+        "canberra-gtk-play -i " + sound +
+        " --property=canberra.xdg-theme.name=cyberpunk-2077 & " +
+        wait + "exec " + escaped])
     }
 
     readonly property var actions: [
-        { id: "lock",      label: "// LOCK",      shortcut: "L", command: ["hyprlock"],                isDanger: false },
-        { id: "logout",    label: "// LOGOUT",    shortcut: "E", command: ["uwsm", "stop"],           isDanger: false },
-        { id: "suspend",   label: "// SUSPEND",   shortcut: "U", command: ["systemctl", "suspend"],   isDanger: false },
-        { id: "hibernate", label: "// HIBERNATE", shortcut: "H", command: ["systemctl", "hibernate"], isDanger: false },
-        { id: "reboot",    label: "// REBOOT",    shortcut: "R", command: ["systemctl", "reboot"],    isDanger: true  },
-        { id: "shutdown",  label: "// SHUTDOWN",  shortcut: "S", command: ["systemctl", "poweroff"],  isDanger: true  }
+        { id: "lock",      label: "LOCK",      shortcut: "L", command: ["hyprlock"],                    isDanger: false },
+        { id: "logout",    label: "LOGOUT",    shortcut: "E", command: ["hyprctl", "dispatch", "exit"], isDanger: false },
+        { id: "suspend",   label: "SUSPEND",   shortcut: "U", command: ["systemctl", "suspend"],        isDanger: false },
+        { id: "hibernate", label: "HIBERNATE", shortcut: "H", command: ["systemctl", "hibernate"],      isDanger: false },
+        { id: "reboot",    label: "REBOOT",    shortcut: "R", command: ["systemctl", "reboot"],         isDanger: true  },
+        { id: "shutdown",  label: "SHUTDOWN",  shortcut: "S", command: ["systemctl", "poweroff"],       isDanger: true  }
     ]
 
     // ── Focused monitor detection via hyprctl (on open) ─────

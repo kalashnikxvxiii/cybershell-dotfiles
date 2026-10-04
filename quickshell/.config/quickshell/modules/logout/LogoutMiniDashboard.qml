@@ -14,6 +14,9 @@ Column {
             required property var modelData
             required property int index
 
+            active: root.visible
+            asynchronous: true
+
             source: {
                 var reg = LogoutWidgetState.availableWidgets.find(w => w.id === modelData.id)
                 return reg ? reg.componentPath : ""

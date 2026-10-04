@@ -30,13 +30,13 @@ Scope {
 
         anchors { top: true; bottom: true; left: true; right: true }
 
-        // ── Layer 1: base tint (leggera, per lasciar respirare il blur) ─
+        // -- Layer 1: base tint (leggera, per lasciar respirare il blur) -------
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(0, 6/255, 14/255, 0.35)
         }
 
-        // ── Layer 2: grain ──────────────────────────────────
+        // -- Layer 2: grain ----------------------
         Image {
             anchors.fill: parent
             source:   "file:///home/kalashnikxv/.config/wlogout/grain.png"
@@ -44,13 +44,13 @@ Scope {
             opacity:  0.15
         }
 
-        // ── Layer 3: scanline ───────────────────────────────
+        // -- Layer 3: scanline ------------------------
         ScanlineOverlay {
             anchors.fill: parent
             opacity: 0.35
         }
 
-        // ── Layer 4: Grid — solo su focused screen ──────────
+        // -- Layer 4: Grid - solo su focused screen ---------------
         Grid {
             anchors.centerIn: parent
             visible:       root.isFocused
@@ -72,14 +72,14 @@ Scope {
             }
         }
 
-        // ── Layer 5: dim quando confirming (solo focused) ───
+        // -- Layer 5: dim quando confirming (solo focused) -----------
         Rectangle {
             anchors.fill: parent
             visible: root.isFocused && LogoutState.pendingAction >= 0
             color: Qt.rgba(0, 0, 0, 0.45)
         }
 
-        // ── Layer 6: confirm dialog (solo focused) ──────────
+        // -- Layer 6: confirm dialog (solo focused) ---------------
         LogoutConfirmDialog {
             anchors.centerIn: parent
             visible: root.isFocused && LogoutState.pendingAction >= 0
@@ -90,13 +90,13 @@ Scope {
             onCancelled: LogoutState.cancelPending()
         }
 
-        // ── Layer 7: mini dashboard (solo NON-focused) ──────
+        // -- Layer 7: mini dashboard (solo NON-focused) ----------
         LogoutMiniDashboard {
             anchors.centerIn: parent
             visible: !root.isFocused
         }
 
-        // ── Keyboard handler — solo sul focused screen ──────
+        // -- Keyboard handler — solo sul focused screen ---------
         Item {
             anchors.fill: parent
             focus: LogoutState.visible && root.isFocused

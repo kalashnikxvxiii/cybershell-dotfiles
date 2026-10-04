@@ -17,7 +17,7 @@ Item {
     width:  200
     height: 220
 
-    // ── Color logic ─────────────────────────────────────────
+    // -- Color logic ---------------------------
     readonly property color borderCol:
         (action.isDanger && (_hovered || selected)) ? Colours.accentDanger
         : _hovered                                  ? Colours.accentPrimary
@@ -28,19 +28,18 @@ Item {
         (action.isDanger && (_hovered || selected)) ? Colours.accentDanger
                                                     : Colours.accentPrimary
 
-    // ── Trigger glitch on hover OR keyboard-select change ───
+    // -- Trigger glitch on hover OR keyboard-select change ------
     onSelectedChanged: if (root.selected) glitcher.restart()
 
-    // ── Background: CutShape con notch diagonale ────────────
+    // -- Background: CutShape con notch diagonale -----------------
     CutShape {
         id: bg
         anchors.fill: parent
-        cutTopRight:   12
-        cutBottomLeft: 12
+        cutBottomRight: 32
 
         fillColor: (root._hovered || root.selected)
-                   ? Qt.rgba(root.borderCol.r, root.borderCol.g, root.borderCol.b, 0.10)
-                   : Qt.rgba(0, 6/255, 14/255, 0.55)
+                ? Qt.rgba(root.borderCol.r, root.borderCol.g, root.borderCol.b, 0.10)
+                : Qt.rgba(0, 6/255, 14/255, 0.55)
         strokeColor: root.borderCol
         strokeWidth: (root._hovered || root.selected) ? 2 : 1
         inset:       (root._hovered || root.selected) ? 1 : 0.5
@@ -82,7 +81,7 @@ Item {
         Behavior on colorizationColor { ColorAnimation { duration: 150 } }
     }
 
-    // ── Label (con GlitchAnim + Translate) ──────────────────
+    // -- Label (con GlitchAnim + Translate) -----------------
     Item {
         id: labelWrap
         anchors.horizontalCenter: parent.horizontalCenter
@@ -100,7 +99,7 @@ Item {
             id: labelText
             text:  root.action.label
             color: root.textCol
-            font.family:        "JetBrainsMono Nerd Font"
+            font.family:        "Oxanium"
             font.pixelSize:     13
             font.weight:        Font.Bold
             font.letterSpacing: 3
@@ -109,7 +108,7 @@ Item {
         }
     }
 
-    // ── GlitchAnim (declarative, triggered da restart()) ────
+    // -- GlitchAnim (declarative, triggered da restart()) ----------
     GlitchAnim {
         id: glitcher
         labelTarget:      labelText
@@ -121,19 +120,19 @@ Item {
         intensity: 0.8
     }
 
-    // ── Shortcut hint (angolo alto-destra) ──────────────────
+    // -- Shortcut hint (angolo alto-destra) --------------------
     Text {
         anchors.top:     parent.top
         anchors.right:   parent.right
         anchors.margins: 14
         text:  "[" + root.action.shortcut + "]"
         color: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.65)
-        font.family:    "JetBrainsMono Nerd Font"
+        font.family:    "Oxanium"
         font.pixelSize: 11
         font.weight:    Font.Bold
     }
 
-    // ── Mouse ───────────────────────────────────────────────
+    // -- Mouse -------------------------------------------
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true

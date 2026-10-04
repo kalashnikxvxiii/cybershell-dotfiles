@@ -29,7 +29,7 @@ CutShape {
                 return "// " + months[d.getMonth()] + " " + d.getFullYear()
             }
             color: Colours.accentPrimary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 13
             font.weight: Font.Bold
             font.letterSpacing: 2
@@ -45,7 +45,7 @@ CutShape {
                     width: 26
                     text:  modelData
                     color: Colours.textSecondary
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: "Oxanium"
                     font.pixelSize: 10
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
@@ -79,7 +79,7 @@ CutShape {
                     width: 26
                     text:  modelData.day === 0 ? "" : modelData.day.toString()
                     color: modelData.isToday ? Colours.accentPrimary : Colours.textPrimary
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: "Oxanium"
                     font.pixelSize: 11
                     font.weight: modelData.isToday ? Font.Bold : Font.Normal
                     horizontalAlignment: Text.AlignHCenter

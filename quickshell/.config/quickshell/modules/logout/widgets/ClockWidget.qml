@@ -6,8 +6,6 @@ CutShape {
     id: root
     width:  380
     height: 100
-    cutTopRight:   12
-    cutBottomLeft: 12
     fillColor:   Qt.rgba(0, 6/255, 14/255, 0.55)
     strokeColor: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.50)
     strokeWidth: 1
@@ -24,20 +22,20 @@ CutShape {
             text: {
                 var d = new Date(root._now)
                 return d.getHours().toString().padStart(2,'0') + ":" +
-                       d.getMinutes().toString().padStart(2,'0') + ":" +
-                       d.getSeconds().toString().padStart(2,'0')
+                        d.getMinutes().toString().padStart(2,'0') + ":" +
+                        d.getSeconds().toString().padStart(2,'0')
             }
             color: Colours.accentPrimary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 34
             font.weight: Font.Bold
             font.letterSpacing: 4
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text:  "// SYSTEM CLOCK"
+            text:  "SYSTEM CLOCK"
             color: Colours.textSecondary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 10
             font.weight: Font.Bold
             font.letterSpacing: 2

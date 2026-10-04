@@ -23,7 +23,7 @@ CutShape {
         // wttr.in single-call: location|icon+temp+condition (pipe-separator)
         // Timeout 5s, fallback su offline
         command: ["bash", "-c",
-                 "curl -sf --max-time 5 'wttr.in/?format=%l|%c+%t+%C' 2>/dev/null || echo '?|\u26a0  offline'"]
+                "curl -sf --max-time 5 'wttr.in/?format=%l|%c+%t+%C' 2>/dev/null || echo '?|\u26a0  offline'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 var raw = this.text.trim()
@@ -53,9 +53,9 @@ CutShape {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "// WEATHER: " + root._location.toUpperCase()
+            text: "WEATHER: " + root._location.toUpperCase()
             color: Colours.textSecondary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 10
             font.weight: Font.Bold
             font.letterSpacing: 2
@@ -64,7 +64,7 @@ CutShape {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root._line
             color: Colours.accentPrimary
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: "Oxanium"
             font.pixelSize: 15
             font.weight: Font.Bold
             font.letterSpacing: 1.5

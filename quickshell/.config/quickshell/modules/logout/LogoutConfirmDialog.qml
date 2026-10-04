@@ -19,9 +19,8 @@ Item {
     // ── Background CutShape with notch + red glow ─────────────
     CutShape {
         anchors.fill: parent
-        cutTopRight: 16
-        cutBottomLeft: 16
-        fillColor: Qt.rgba(0, 6/255, 14/255, 0.92)
+        cutTopRight: 64
+        fillColor: Qt.rgba(0, 6/255, 14/255, 0.96)
         strokeColor: Colours.accentDanger
         strokeWidth: 2
         inset: 1
@@ -43,9 +42,9 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "> this action will terminate your session"
+            text: "this action will terminate your session"
             color: Qt.rgba(Colours.fg.r, Colours.fg.g, Colours.fg.b, 0.65)
-            font.family:    "JetBrainsMono Nerd Font"
+            font.family:    "Oxanium"
             font.pixelSize: 12
             font.weight:    Font.Bold
             font.letterSpacing: 1.5
@@ -61,8 +60,7 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    cutTopRight: 8
-                    cutBottomLeft: 8
+                    cutTopRight: 16
                     fillColor: root._yesHovered
                             ? Qt.rgba(Colours.accentDanger.r, Colours.accentDanger.g, Colours.accentDanger.b, 0.18)
                             : Qt.rgba(0, 6/255, 14/255, 0.5)
@@ -76,7 +74,7 @@ Item {
                     anchors.centerIn: parent
                     text: "[Y] YES"
                     color: Colours.accentDanger
-                    font.family:    "JetBrainsMono Nerd Font"
+                    font.family:    "Oxanium"
                     font.pixelSize: 14
                     font.weight:    Font.Bold
                     font.letterSpacing: 3
@@ -98,8 +96,7 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    cutTopRight: 8
-                    cutBottomLeft: 8
+                    cutTopRight: 16
                     fillColor: root._noHovered
                             ? Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.18)
                             : Qt.rgba(0, 6/255, 14/255, 0.5)
@@ -113,7 +110,7 @@ Item {
                     anchors.centerIn: parent
                     text: "[N] NO"
                     color: Colours.accentSecondary
-                    font.family:    "JetBrainsMono Nerd Font"
+                    font.family:    "Oxanium"
                     font.pixelSize: 14
                     font.weight:    Font.Bold
                     font.letterSpacing: 3

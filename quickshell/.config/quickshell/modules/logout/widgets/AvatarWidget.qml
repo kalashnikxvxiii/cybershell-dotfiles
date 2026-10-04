@@ -7,8 +7,7 @@ CutShape {
     id: root
     width:  380
     height: 120
-    cutTopRight:   12
-    cutBottomLeft: 12
+    cutTopRight: 24
     fillColor:   Qt.rgba(0, 6/255, 14/255, 0.55)
     strokeColor: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.50)
     strokeWidth: 1
@@ -30,9 +29,9 @@ CutShape {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
             Text {
-                text:  "// USER: " + (Quickshell.env("USER") || "user").toUpperCase()
+                text:  "USER: " + (Quickshell.env("USER") || "user").toUpperCase()
                 color: Colours.accentPrimary
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: "Oxanium"
                 font.pixelSize: 14
                 font.weight:    Font.Bold
                 font.letterSpacing: 2
@@ -40,7 +39,7 @@ CutShape {
             Text {
                 text:  "> host: " + (Quickshell.env("HOSTNAME") || "lucy")
                 color: Colours.textSecondary
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: "Oxanium"
                 font.pixelSize: 11
             }
         }
