@@ -152,8 +152,8 @@ Row {
                 anchors.bottom: parent.bottom
                 height: res.value * parent.height - waveCanvas.waveAmp
                 fillColor: res.colour
-                radiusBottomRight: 4
-                radiusBottomLeft: 4
+                radiusBottomRight: 8
+                radiusBottomLeft: 8
 
                 Behavior on height {
                     Anim { duration: 600 }

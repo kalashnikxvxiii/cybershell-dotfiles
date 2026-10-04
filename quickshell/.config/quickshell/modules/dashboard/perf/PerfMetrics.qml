@@ -47,6 +47,7 @@ Item {
     required property string    netSignal
     required property real      netRxBps
     required property real      netTxBps
+    required property var       netHistory
     required property color     cpuColor
     required property color     gpuColor
     required property color     memColor
@@ -137,6 +138,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: Colours.moduleBg
+                    cutBottomRight: 12
                 }
 
                 MouseArea {
@@ -267,6 +269,7 @@ Item {
                     strokeColor: Colours.neonBorder(0.3)
                     strokeWidth: 1
                     inset: 0.5
+                    cutBottomRight: 12
                 }
             }
 
@@ -286,7 +289,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: Colours.moduleBg
-                    cutTopRight: 24
+                    cutBottomLeft: 12
                 }
 
                 MouseArea {
@@ -439,7 +442,7 @@ Item {
                     layer.enabled: true
                     fillColor: "white"
                     anchors.fill: parent
-                    cutTopRight: 24
+                    cutBottomLeft: 12
                 }
 
                 CutShape {
@@ -447,7 +450,7 @@ Item {
                     strokeColor: Colours.neonBorder(0.3)
                     strokeWidth: 1
                     inset: 0.5
-                    cutTopRight: 24
+                    cutBottomLeft: 12
                 }
             }
 
@@ -460,6 +463,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: Colours.moduleBg
+                    cutTopRight: 12
                 }
 
                 ColumnLayout {
@@ -523,6 +527,7 @@ Item {
                     strokeColor: Colours.neonBorder(0.3)
                     strokeWidth: 1
                     inset: 0.5
+                    cutTopRight: 12
                 }
             }
 
@@ -535,6 +540,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: Colours.moduleBg
+                    cutTopLeft: 12
                 }
 
                 ColumnLayout {
@@ -636,77 +642,23 @@ Item {
                     strokeColor: Colours.neonBorder(0.3)
                     strokeWidth: 1
                     inset: 0.5
+                    cutTopLeft: 12
                 }
             }
 
             // ── ROW 2: NETWORK (full width) ─
-            Item {
+            NetworkCard {
                 Layout.row: 2; Layout.column: 0; Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 140
 
-                CutShape {
-                    anchors.fill: parent
-                    fillColor: Colours.moduleBg
-                    cutBottomLeft: 24
-                }
-
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 4
-
-                    RowLayout {
-                        spacing: 6
-                        Rectangle { width: 3; height: 10; color: Colours.accentSecondary }
-                        Text {
-                            text: "NETWORK"
-                            font.family: "Oxanium"
-                            font.pixelSize: 10
-                            font.letterSpacing: 2
-                            color: Colours.accentSecondary
-                        }
-                        Item { Layout.fillWidth: true }
-                        Text {
-                            text: metricsRoot.netStatus === "wifi" ? metricsRoot.netSsid : metricsRoot.netStatus.toUpperCase()
-                            font.family: "Chakra Petch"
-                            font.pixelSize: 10
-                            color: metricsRoot.netStatus === "off" ? Colours.accentDanger : Colours.accentOk
-                        }
-                    }
-
-                    RowLayout {
-                        spacing: 14
-                        Text {
-                            text: "↓ " + perf.formatBytes(metricsRoot.netRxBps)
-                            font.family: "Chakra Petch"
-                            font.pixelSize: 12
-                            color: Colours.accentSecondary
-                        }
-                        Text {
-                            text: "↑ " + perf.formatBytes(metricsRoot.netTxBps)
-                            font.family: "Chakra Petch"
-                            font.pixelSize: 12
-                            color: Colours.accentPrimary
-                        }
-                        Item { Layout.fillWidth: true }
-                        Text {
-                            visible: metricsRoot.netSignal !== ""
-                            text: metricsRoot.netSignal + " dBm"
-                            font.family: "Chakra Petch"
-                            font.pixelSize: 9
-                            color: Colours.textMuted
-                        }
-                    }
-                }
-
-                CutShape {
-                    anchors.fill: parent
-                    strokeColor: Colours.neonBorder(0.3)
-                    strokeWidth: 1
-                    inset: 0.5
-                    cutBottomLeft: 24
-                }
+                provider:   perf
+                netStatus:  metricsRoot.netStatus
+                netSsid:    metricsRoot.netSsid
+                netSignal:  metricsRoot.netSignal
+                netRxBps:   metricsRoot.netRxBps
+                netTxBps:   metricsRoot.netTxBps
+                netHistory: metricsRoot.netHistory
             }
         }
     }

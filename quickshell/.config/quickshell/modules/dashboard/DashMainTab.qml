@@ -54,6 +54,7 @@ Item {
             Layout.row: 0; Layout.column: 2; Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: root.topRowHeight
+            cutBottomRight: 16
 
             DashUser { anchors.fill: parent }
         }
@@ -63,7 +64,7 @@ Item {
             Layout.row: 0; Layout.column: 5; Layout.rowSpan: 2
             Layout.preferredWidth: root.mediaCellWidth
             Layout.fillHeight: true
-            cutBottomLeft: 24; cutTopRight: 24
+            cutTopRight: 24
 
             DashMediaMini { anchors.fill: parent }
         }
@@ -83,7 +84,6 @@ Item {
             Layout.row: 1; Layout.column: 1; Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: calendar.implicitHeight + 25
-            cutBottomLeft: 24
 
             DashCalendar { id: calendar; anchors.fill: parent; calendarState: root.dashState }
         }
@@ -93,7 +93,7 @@ Item {
             Layout.row: 1; Layout.column: 4
             Layout.preferredWidth: root.resourcesCellWidth
             Layout.fillHeight: true
-            cutBottomLeft: 24
+            cutTopRight: 16
 
             DashResources { anchors.centerIn: parent }
         }

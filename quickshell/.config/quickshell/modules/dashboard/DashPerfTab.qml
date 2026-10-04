@@ -56,6 +56,7 @@ Item {
     readonly property alias netSignal:      perf.netSignal
     readonly property alias netRxBps:       perf.netRxBps
     readonly property alias netTxBps:       perf.netTxBps
+    readonly property alias netHistory:     perf.netHistory
     readonly property alias sysHostName:    perf.sysHostName
     readonly property alias sysUpTime:      perf.sysUpTime
     readonly property alias sysLoad:        perf.sysLoad
@@ -68,7 +69,7 @@ Item {
 
     function formatBytes(b) { return perf.formatBytes(b) }
 
-    // ── UI state ─────────────────────────────────────────────
+    // -- UI state -------------------------------------
     property string searchFilter:           ""
     property bool   searchOpen:             false
     property bool   graphView:              false
@@ -124,7 +125,7 @@ Item {
         }
     }
 
-    // ── Kill handler ────────────────────────────────────────────────────
+    // -- Kill handler --------------------------------------
     function doKill() { perf.killProcess(root._killProcName) }
 
     // Periodic header glitch (every 5-8s)
@@ -148,7 +149,7 @@ Item {
         anchors.margins: 6
         spacing: 6
 
-        // ── Header Bar ────────────────────
+        // -- Header Bar -----------------------
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 28
@@ -264,7 +265,7 @@ Item {
             }
         }
 
-        // ── MAIN BODY: metrics (left) + processes (right) ────────
+        // -- MAIN BODY: metrics (left) + processes (right) ------------------
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -293,6 +294,7 @@ Item {
                 diskPerc: root.diskPerc; diskUsedGb: root.diskUsedGb; diskTotalGb: root.diskTotalGb
                 netStatus: root.netStatus; netSsid: root.netSsid; netSignal: root.netSignal
                 netRxBps: root.netRxBps; netTxBps: root.netTxBps
+                netHistory: root.netHistory
                 cpuColor: root.cpuColor; gpuColor: root.gpuColor; memColor: root.memColor
                 tempColor: root.tempColor; gpuTempColor: root.gpuTempColor
                 pulseValue: root._pulseValue; glitching: root._glitching
@@ -314,8 +316,6 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: Colours.moduleBg
-                    cutTopRight: 10
-                    cutBottomLeft: 24
                 }
 
                 ColumnLayout {
@@ -479,7 +479,7 @@ Item {
                         }
                     }
 
-                    // ── GRAPH VIEW ───────────────────────────────────────
+                    // -- GRAPH VIEW ------------------------
                     ProcessGraph {
                         visible: root.graphView
                         Layout.fillWidth: true
@@ -724,7 +724,6 @@ Item {
                             layer.enabled: true
                             fillColor: "white"
                             visible: false
-                            cutBottomLeft: 12
                         }
                     }
                 }
@@ -843,8 +842,6 @@ Item {
                     layer.enabled: true
                     fillColor: "white"
                     visible: false
-                    cutBottomLeft: 8
-                    cutTopRight: 24
                 }
 
                 CutShape {
@@ -852,8 +849,6 @@ Item {
                     strokeColor: Colours.neonBorder(0.3)
                     strokeWidth: 1
                     inset: 0.5
-                    cutTopRight: 24
-                    cutBottomLeft: 24
                 }
             }
         }

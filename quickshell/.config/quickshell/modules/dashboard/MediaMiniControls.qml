@@ -11,6 +11,8 @@ RowLayout {
     id: root
 
     required property MprisPlayer activePlayer
+    // Glow colour; driven by the cover accent from DashMediaMini.
+    property color accent: CP.yellow
     required property real buttonSize
     required property real fontSize
     required property bool coverHovered
@@ -48,11 +50,11 @@ RowLayout {
             PauseAnimation { duration: 510 }
         }
 
-        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 20; color: Qt.rgba(0.97, 0.94, 0.01, 0.06 * prevBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 14; color: Qt.rgba(0.97, 0.94, 0.01, 0.12 * prevBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 9; color: Qt.rgba(0.97, 0.94, 0.01, 0.25 * prevBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 5; color: Qt.rgba(0.97, 0.94, 0.01, 0.45 * prevBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 2; color: Qt.rgba(1, 1, 0.4, 0.70 * prevBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 20; color: CP.alpha(root.accent, 0.06 * prevBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 14; color: CP.alpha(root.accent, 0.12 * prevBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 9; color: CP.alpha(root.accent, 0.25 * prevBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 5; color: CP.alpha(root.accent, 0.45 * prevBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏮"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 2; color: CP.alpha(CP.lighten(root.accent, 0.35), 0.70 * prevBtnMini.glowOp) }
         Text {
             id: prevLabel
             anchors.centerIn: parent
@@ -121,11 +123,11 @@ RowLayout {
             PauseAnimation { duration: 470 }
         }
 
-        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 20; color: Qt.rgba(0.97, 0.94, 0.01, 0.12 * playBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 14; color: Qt.rgba(0.97, 0.94, 0.01, 0.20 * playBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 9; color: Qt.rgba(0.97, 0.94, 0.01, 0.25 * playBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 5; color: Qt.rgba(0.97, 0.94, 0.01, 0.45 * playBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 2; color: Qt.rgba(1, 1, 0.4, 0.70 * playBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 20; color: CP.alpha(root.accent, 0.12 * playBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 14; color: CP.alpha(root.accent, 0.20 * playBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 9; color: CP.alpha(root.accent, 0.25 * playBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 5; color: CP.alpha(root.accent, 0.45 * playBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: playBtnMini.icon; font.family: "JetBrains Mono NF"; font.pixelSize: root.fontSize * 2 + 2; color: CP.alpha(CP.lighten(root.accent, 0.35), 0.70 * playBtnMini.glowOp) }
         Text {
             id: playLabel
             anchors.centerIn: parent
@@ -193,11 +195,11 @@ RowLayout {
             PauseAnimation { duration: 540 }
         }
 
-        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 20; color: Qt.rgba(0.97, 0.94, 0.01, 0.06 * nextBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 14; color: Qt.rgba(0.97, 0.94, 0.01, 0.12 * nextBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 9; color: Qt.rgba(0.97, 0.94, 0.01, 0.25 * nextBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 5; color: Qt.rgba(0.97, 0.94, 0.01, 0.45 * nextBtnMini.glowOp) }
-        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 2; color: Qt.rgba(1, 1, 0.4, 0.70 * nextBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 20; color: CP.alpha(root.accent, 0.06 * nextBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 14; color: CP.alpha(root.accent, 0.12 * nextBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 9; color: CP.alpha(root.accent, 0.25 * nextBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 5; color: CP.alpha(root.accent, 0.45 * nextBtnMini.glowOp) }
+        Text { anchors.centerIn: parent; text: "⏭"; font.family: "JetBrains Mono Nerd Font"; font.pixelSize: root.fontSize * 1.5 + 2; color: CP.alpha(CP.lighten(root.accent, 0.35), 0.70 * nextBtnMini.glowOp) }
         Text {
             id: nextLabel
             anchors.centerIn: parent

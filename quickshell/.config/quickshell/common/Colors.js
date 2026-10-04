@@ -104,6 +104,21 @@ function darken(hex, amount) {
     )
 }
 
+// Turns a raw extracted colour (e.g. ImageAnalyser.dominantColour) into a
+// usable neon accent: saturation and value are pushed into the palette's range
+// so a washed-out or near-black source still reads as a CP2077 accent.
+// Achromatic or nearly black sources have no usable hue (below ~10% value the
+// hue is just quantization noise), so they fall back.
+function neonize(c, fallback) {
+    var col = Qt.darker(c, 1.0)
+    var fb = fallback !== undefined ? fallback : yellow
+    if (col.hsvSaturation < 0.12 || col.hsvValue < 0.10) return fb
+    return Qt.hsva(col.hsvHue,
+                   Math.min(1, Math.max(0.75, col.hsvSaturation * 1.35)),
+                   Math.max(0.85, col.hsvValue),
+                   1)
+}
+
 // Red channel for chromatic aberration (#ff003c at opacity a)
 function aberrationRed(a) {
     return Qt.rgba(1, 0, 0.235, a !== undefined ? a : 0.55)

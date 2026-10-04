@@ -2,6 +2,7 @@
 // Circular cover + progress arc + title/artist + controls
 
 import CyberAudio.Services
+import CyberGraphics
 import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
@@ -21,10 +22,32 @@ Item {
     property bool coverHovered: false
     property real playerProgress: 0
 
+    // Accent taken from the current cover art. Only this player follows it:
+    // the rest of the shell stays on the wallust palette.
+    property color coverAccent: CP.neonize(coverAnalyser.dominantColour, CP.yellow)
+    Behavior on coverAccent { CAnim { duration: 320 } }
+
     layer.enabled: true
     layer.effect: MultiEffect {
         maskEnabled: true
         maskSource: shapeMask
+    }
+
+    // The cover is analysed by grabbing the live Image, not by pointing source
+    // at its URL: MPRIS art is often a remote URL, which QImage cannot open.
+    ImageAnalyser {
+        id: coverAnalyser
+        sourceItem: coverImg
+        rescaleSize: 48
+    }
+
+    // Grabbing on Image.Ready would catch the crossfade mid-flight and read the
+    // still-transparent pixels as empty. Waiting out the 500ms fade also
+    // debounces bursts of track changes.
+    Timer {
+        id: coverAnalyseDelay
+        interval: 600
+        onTriggered: coverAnalyser.requestUpdate()
     }
 
     Process {
@@ -97,6 +120,9 @@ Item {
                 property var cavaValues: Audio.cava.values
                 onCavaValuesChanged: requestPaint()
 
+                property color accent: root.coverAccent
+                onAccentChanged: requestPaint()
+
                 onPaint: {
                     const ctx = getContext("2d")
                     ctx.reset()
@@ -131,12 +157,12 @@ Item {
                     ctx.closePath()
 
                     // Glow layer (thick, semi-transparent)
-                    ctx.strokeStyle = CP.alpha(CP.cyanBright, 0.25)
+                    ctx.strokeStyle = CP.alpha(accent, 0.25)
                     ctx.lineWidth   = 10
                     ctx.stroke()
 
                     // Main line
-                    ctx.strokeStyle = CP.cyan2
+                    ctx.strokeStyle = accent
                     ctx.lineWidth   = 1.5
                     ctx.stroke()
                 }
@@ -175,6 +201,7 @@ Item {
                     source: root.activePlayer?.trackArtUrl ?? ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
+                    onStatusChanged: if (status === Image.Ready) coverAnalyseDelay.restart()
 
                     property real spin: 0
                     rotation: spin
@@ -225,6 +252,9 @@ Item {
 
                 readonly property real prog: root.playerProgress
                 onProgChanged: requestPaint()
+
+                property color accent: root.coverAccent
+                onAccentChanged: requestPaint()
                 onVisibleChanged: if (visible) requestPaint()
                 Component.onCompleted: requestPaint()
 
@@ -244,7 +274,7 @@ Item {
                     if (prog > 0) {
                         ctx.beginPath()
                         ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + prog * 2 * Math.PI)
-                        ctx.strokeStyle = CP.yellow
+                        ctx.strokeStyle = accent
                         ctx.lineWidth = 3
                         ctx.lineCap = "round"
                         ctx.stroke()
@@ -387,6 +417,7 @@ Item {
                 z: 10
                 anchors.centerIn: parent
                 activePlayer: root.activePlayer
+                accent: root.coverAccent
                 buttonSize: root.buttonSize
                 fontSize: root.fontSize
                 coverHovered: root.coverHovered

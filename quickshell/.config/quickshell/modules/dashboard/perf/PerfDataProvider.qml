@@ -2,6 +2,7 @@
 // All metric properties, data providers (Timer+Process), helpers.
 // Used by DashPerfTab: PerfDataProvider { id: perf }
 
+import Quickshell
 import Quickshell.Io
 import QtQuick
 import "../../../common"
@@ -9,6 +10,10 @@ import "../../../common"
 Item {
     id: root
     property bool active: true
+
+    // The last speed-test result is read once at startup so the card can show
+    // it immediately, with its age, instead of looking like it never ran.
+    Component.onCompleted: _speedStateFile.reload()
 
     // ── Helpers ──────────────────────────────────────────────
     function formatBytes(b) {
@@ -66,6 +71,200 @@ Item {
     property real   netRxBps:   0
     property real   netTxBps:   0
     property string _netPrev:   ""
+    // Recent throughput, newest last, as {rx, tx} pairs. Feeds the graph drawn
+    // behind the network card. Sampled by the same timer as the rest of the
+    // network figures, so it only fills while the tab is on screen.
+    property var    netHistory: []
+
+    // ── Speed test ───────────────────────────────────────────────────────
+    // On demand only: a test saturates the link for about twenty seconds, so
+    // nothing here runs unless runSpeedTest() is called.
+    //
+    // Figures use -1 for "not measured": a run that is cancelled or fails part
+    // way keeps what it did measure, and the card has to tell a real zero
+    // from a figure that never came.
+    property bool   speedRunning:   false
+    property bool   speedCancelled: false
+    property string speedPhase:     ""     // connecting|latency|download|upload|done
+    property real   speedProgress:  0      // 0..1 across the whole test
+    property real   speedRate:      -1     // bit/s, live figure of the current transfer
+    property real   speedDown:      -1     // bit/s
+    property real   speedUp:        -1     // bit/s
+    property real   speedPing:      -1     // ms, median idle round trip
+    property real   speedJitter:    -1     // ms
+    property real   speedLoss:      -1     // % of latency probes that timed out
+    property real   speedLoaded:    -1     // ms, round trip while downloading
+    property real   speedBloat:     -1     // ms, loaded minus idle
+    property string speedColo:      ""     // Cloudflare edge, e.g. MXP
+    property string speedVia:       ""     // interface the test left through
+    property string speedWhen:      ""     // ISO timestamp of the last result
+    property string speedError:     ""
+
+    // The helper that runs the test. A property rather than a literal so the
+    // parsing can be exercised against a recorded run instead of the network.
+    property string speedScript: Quickshell.env("HOME")
+                                 + "/.config/quickshell/scripts/speedtest-run.py"
+
+    readonly property string _speedStatePath:
+        Quickshell.env("HOME") + "/.cache/qs-perf/speedtest.json"
+
+    // Share of the ring each phase owns, in proportion to how long it runs:
+    // latency about 2 s, download and upload about 8 s each.
+    function _speedOverall(phase, p) {
+        switch (phase) {
+        case "connecting": return 0.01
+        case "latency":    return 0.01 + p * 0.09
+        case "download":   return 0.10 + p * 0.45
+        case "upload":     return 0.55 + p * 0.45
+        case "done":       return 1.0
+        }
+        return root.speedProgress
+    }
+
+    function runSpeedTest() {
+        if (root.speedRunning) return
+        root.speedError     = ""
+        root.speedCancelled = false
+        root.speedPhase     = "connecting"
+        root.speedProgress  = 0
+        root.speedRate      = -1
+        root.speedDown      = -1
+        root.speedUp        = -1
+        root.speedPing      = -1
+        root.speedJitter    = -1
+        root.speedLoss      = -1
+        root.speedLoaded    = -1
+        root.speedBloat     = -1
+        root.speedColo      = ""
+        root.speedVia       = ""
+        root.speedWhen      = ""
+        root.speedRunning   = true
+        speedProc.running   = false
+        speedProc.running   = true
+    }
+
+    function cancelSpeedTest() {
+        if (!root.speedRunning) return
+        root.speedRunning   = false
+        root.speedCancelled = true
+        // SIGTERM: the helper closes its sockets on the way out, so the link
+        // is released at once rather than when the transfers would have ended.
+        speedProc.running = false
+        // The phase and figures are left as they were: the card keeps showing
+        // whatever had already been measured, which is what a cancel preserves.
+    }
+
+    function _num(v) { return (typeof v === "number" && isFinite(v)) ? v : -1 }
+
+    Process {
+        id: speedProc
+        command: ["python3", root.speedScript]
+        running: false
+
+        onExited: (code, status) => {
+            // Covers the crash case too: without this the card would sit in
+            // "testing" for ever if the helper died without an error event.
+            if (root.speedRunning) {
+                root.speedRunning = false
+                if (root.speedPhase !== "done" && root.speedError === "")
+                    root.speedError = "test interrupted"
+            }
+        }
+
+        stdout: SplitParser {
+            onRead: line => {
+                var e
+                try { e = JSON.parse(line) } catch (err) { return }
+                if (!e || !e.phase) return
+                // A cancelled run may still flush a line or two on its way out.
+                if (!root.speedRunning) return
+
+                switch (e.phase) {
+                case "error":
+                    root.speedError   = e.message || "unknown error"
+                    root.speedRunning = false
+                    return
+                case "cancelled":
+                    root.speedCancelled = true
+                    root.speedRunning   = false
+                    return
+                case "latency":
+                    root.speedPing = root._num(e.ms)
+                    if (e.done) {
+                        root.speedJitter = root._num(e.jitter)
+                        root.speedLoss   = root._num(e.loss)
+                    }
+                    break
+                case "download":
+                case "upload":
+                    // The done event carries the sustained figure, which then
+                    // stays under the key until the next phase has a reading.
+                    root.speedRate = root._num(e.done ? e.value : e.rate)
+                    if (e.done) {
+                        if (e.phase === "download") root.speedDown = root.speedRate
+                        else                        root.speedUp   = root.speedRate
+                    }
+                    break
+                case "done":
+                    root.speedDown    = root._num(e.download)
+                    root.speedUp      = root._num(e.upload)
+                    root.speedPing    = root._num(e.ping)
+                    root.speedJitter  = root._num(e.jitter)
+                    root.speedLoss    = root._num(e.loss)
+                    root.speedLoaded  = root._num(e.loaded)
+                    root.speedBloat   = root._num(e.bufferbloat)
+                    root.speedColo    = e.colo || ""
+                    root.speedVia     = e.via || ""
+                    root.speedWhen    = e.timestamp || new Date().toISOString()
+                    root.speedRunning = false
+                    root._saveSpeedState()
+                    break
+                }
+                root.speedPhase    = e.phase
+                root.speedProgress = root._speedOverall(e.phase, e.done ? 1 : (e.progress || 0))
+            }
+        }
+    }
+
+    function _saveSpeedState() {
+        var d = { down: root.speedDown, up: root.speedUp, ping: root.speedPing,
+                  jitter: root.speedJitter, loss: root.speedLoss,
+                  loaded: root.speedLoaded, bloat: root.speedBloat,
+                  colo: root.speedColo, via: root.speedVia, when: root.speedWhen }
+        _speedSaveProc.command = [
+            "python3", "-c",
+            "import sys,os,json; os.makedirs(os.path.dirname(sys.argv[1]), exist_ok=True); open(sys.argv[1], 'w').write(sys.argv[2])",
+            root._speedStatePath,
+            JSON.stringify(d)
+        ]
+        _speedSaveProc.running = false
+        _speedSaveProc.running = true
+    }
+
+    property var _speedSaveProc: Process { command: ["true"]; running: false }
+
+    property var _speedStateFile: FileView {
+        path: root._speedStatePath
+        onLoaded: {
+            try {
+                var d = JSON.parse(text())
+                // Fields missing from a file written by the old helper read
+                // as not measured rather than as zero.
+                root.speedDown   = root._num(d.down)
+                root.speedUp     = root._num(d.up)
+                root.speedPing   = root._num(d.ping)
+                root.speedJitter = root._num(d.jitter)
+                root.speedLoss   = root._num(d.loss)
+                root.speedLoaded = root._num(d.loaded)
+                root.speedBloat  = root._num(d.bloat)
+                root.speedColo   = d.colo || ""
+                root.speedVia    = d.via || ""
+                root.speedWhen   = d.when || ""
+            } catch (e) {
+                console.log("[perf] speedtest state parse error:", e)
+            }
+        }
+    }
 
     // System
     property string sysHostName:    ""
@@ -299,6 +498,11 @@ Item {
                 if (prev.length === 2) {
                     root.netRxBps = Math.max(0, (rx - parseInt(prev[0])) / 2)
                     root.netTxBps = Math.max(0, (tx - parseInt(prev[1])) / 2)
+
+                    let nh = root.netHistory.slice()
+                    nh.push({ rx: root.netRxBps, tx: root.netTxBps })
+                    if (nh.length > 60) nh.shift()
+                    root.netHistory = nh
                 }
                 root._netPrev = rx + " " + tx
             }
