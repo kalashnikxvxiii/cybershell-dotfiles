@@ -28,6 +28,7 @@ qt_add_qml_module(cyberaudio
         cavaprovider.hpp cavaprovider.cpp
         scopeprovider.hpp scopeprovider.cpp
         levelprovider.hpp levelprovider.cpp
+        nodelevelprovider.hpp nodelevelprovider.cpp
         beattracker.hpp beattracker.cpp
 )
 

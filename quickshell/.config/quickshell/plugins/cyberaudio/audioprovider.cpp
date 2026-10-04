@@ -33,17 +33,26 @@ AudioProvider::~AudioProvider() {
         m_thread->quit();
         m_thread->wait();
         delete m_thread;
+    } else {
+        // Mai avviato: nessun thread ha adottato il processor.
+        delete m_processor;
     }
 }
 
 void AudioProvider::init() {
-    if (!m_processor) return;
+    // Nessun thread qui. Viene creato al primo start(), cioe' quando il
+    // provider viene effettivamente ref'ato: un provider mai usato — come
+    // quelli delle righe fuori schermo — non costa alcun thread.
+}
+
+void AudioProvider::_ensureThread() {
+    if (m_thread || !m_processor) return;
 
     m_thread = new QThread(this);
     m_processor->moveToThread(m_thread);
 
     connect(m_thread, &QThread::started, m_processor, [this]() {
-        // Ensure AudioCollector singleton exists on main thread
+        // Garantisce che il collector esista sul main thread
         QMetaObject::invokeMethod(this, [this]() {
             collector();
         }, Qt::BlockingQueuedConnection);
@@ -54,12 +63,14 @@ void AudioProvider::init() {
 }
 
 void AudioProvider::start() {
+    _ensureThread();
     collector().ref(this);
     QMetaObject::invokeMethod(m_processor, &AudioProcessor::start, Qt::QueuedConnection);
 }
 
 void AudioProvider::stop() {
-    QMetaObject::invokeMethod(m_processor, &AudioProcessor::stop, Qt::QueuedConnection);
+    if (m_processor)
+        QMetaObject::invokeMethod(m_processor, &AudioProcessor::stop, Qt::QueuedConnection);
     collector().unref(this);
 }
 

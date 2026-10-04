@@ -40,6 +40,8 @@ protected:
 
 private:
     QThread* m_thread = nullptr;
+    void _ensureThread();
+
 };
 
 } // namespace cyberaudio

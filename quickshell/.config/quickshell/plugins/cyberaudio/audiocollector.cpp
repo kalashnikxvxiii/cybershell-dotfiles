@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <algorithm>
 #include <cstddef>
+#include <mutex>
 
 #include <pipewire/pipewire.h>
 #include <spa/param/audio/format-utils.h>
@@ -9,16 +10,31 @@
 
 namespace cyberaudio {
 
-// ── PipeWire Worker ──────────────────────────────────────────────
+namespace {
+    // pw_init/pw_deinit are PROCESS-wide, not per-thread. With multiple concurrent
+    // workers, one's pw_deinit() unmounts the global state while another
+    // is calling pw_main_loop_new(), which then returns nullptr -> SIGSEGV.
+    // We initialize only once and never deinitialize: the process's exit
+    // takes care of that
+    void ensurePipeWireInit() {
+        static std::once_flag once;
+        std::call_once(once, []() { pw_init(nullptr, nullptr); });
+    }
+} // namespace
 
+// -- PipeWire Worker ----------------------------------------------
 class PipeWireWorker {
 public:
     PipeWireWorker(AudioCollector* collector, std::stop_token token)
         : m_collector(collector), m_token(std::move(token)) {}
 
     void run() {
-        pw_init(nullptr, nullptr);
+        ensurePipeWireInit();
         m_loop = pw_main_loop_new(nullptr);
+        if (!m_loop) {
+            qWarning() << "cyberaudio: pw_main_loop_new failed, worker not started";
+            return;
+        }
 
         auto* props = pw_properties_new(
             PW_KEY_MEDIA_TYPE, "Audio",
@@ -31,13 +47,18 @@ public:
 
         if (m_collector->captureSink()) {
             pw_properties_set(props, PW_KEY_STREAM_CAPTURE_SINK, "true");
-            // Passivo solo sul monitor: non deve tenere sveglio il sink.
+            // Passive only on monitor: it must not keep the sink awake
             pw_properties_set(props, PW_KEY_NODE_PASSIVE, "true");
         }
 
         const QByteArray target = m_collector->target().toUtf8();
-        if (!target.isEmpty())
+        if (!target.isEmpty()) {
             pw_properties_set(props, PW_KEY_TARGET_OBJECT, target.constData());
+            // Without this, a non-hookable target causes PipeWire to fall back
+            // to autoconnect: the capture ends up on the default source,
+            // i.e., the microphone. This data is false, and the microphone is unexpectedly open
+            pw_properties_set(props, PW_KEY_NODE_DONT_RECONNECT, "true");
+        }
 
         static const pw_stream_events events = {
             .version = PW_VERSION_STREAM_EVENTS,
@@ -101,7 +122,6 @@ public:
 
         pw_stream_destroy(m_stream);
         pw_main_loop_destroy(m_loop);
-        pw_deinit();
     }
 
 private:
@@ -163,7 +183,7 @@ private:
     }
 };
 
-// ── AudioCollector ───────────────────────────────────────────────
+// -- AudioCollector -------------------------------
 
 AudioCollector& AudioCollector::instance() {
     static AudioCollector inst;
@@ -230,7 +250,7 @@ quint32 AudioCollector::readChunk(double* out, quint32 count) {
     return m_sampleCount;
 }
 
-// ── MicCollector ─────────────────────────────────────────────────
+// -- MicCollector -------------------------------------------
 
 MicCollector& MicCollector::instance() {
     static MicCollector inst;
@@ -258,7 +278,7 @@ void MicCollector::setTarget(const QString& target) {
     AudioCollector::start();
 }
 
-// ── SinkLevelCollector ───────────────────────────────────────────
+// -- SinkLevelCollector ------------------------------------------
 
 SinkLevelCollector& SinkLevelCollector::instance() {
     static SinkLevelCollector inst;
