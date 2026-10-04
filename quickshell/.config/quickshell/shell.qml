@@ -9,8 +9,33 @@ import "modules/core"
 import "common"
 import "modules/wallpaper"
 import "modules/logout"
+import "modules/manga"
+import "modules/sonar"
+import "modules/snip"
+import "modules/toasts"
 
 ShellRoot {
+    // The shell's own feedback channel. Scripts reach it with
+    //   qs ipc call toaster success "WALLPAPER" "Applicato" "image"
+    // Every parameter is required by `qs ipc call`, so callers that do not care
+    // about the icon pass "".
+    IpcHandler {
+        target: "toaster"
+
+        function info(title: string, message: string, icon: string): void {
+            Toaster.info(title, message, icon);
+        }
+        function success(title: string, message: string, icon: string): void {
+            Toaster.success(title, message, icon);
+        }
+        function warn(title: string, message: string, icon: string): void {
+            Toaster.warn(title, message, icon);
+        }
+        function error(title: string, message: string, icon: string): void {
+            Toaster.error(title, message, icon);
+        }
+    }
+
     // Lyrics server: only alive while Spotify is running
     Process {
         id: lyricsServer
@@ -74,6 +99,13 @@ ShellRoot {
                 }
             }
 
+            // Own layer surface above the wallpaper and below every window:
+            // keeps text in self-translucent windows (Zen) readable on bright
+            // wallpapers.
+            ContrastScrim {
+                screenObj: modelData
+            }
+
             Exclusions {                
                 screen: modelData
                 barHeight: 24
@@ -89,6 +121,22 @@ ShellRoot {
             }
 
             LogoutOverlay {
+                screen: modelData
+            }
+
+            MangaPanel {
+                screen: modelData
+            }
+
+            SonarPanel {
+                screen: modelData
+            }
+
+            SnipOverlay {
+                screen: modelData
+            }
+
+            ToastOverlay {
                 screen: modelData
             }
         }
