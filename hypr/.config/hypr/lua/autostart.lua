@@ -20,8 +20,9 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("easyeffects")                                                                         -- easyeffects
     hl.exec_cmd("python ~/.local/share/RazerBatteryTray/src/razer_battery_tray.py 'Razer Basilisk V3 Pro 35K Phantom Green Edition (Wireless)'")  -- razer battery tray
     hl.exec_cmd("nm-applet --indicator")                                                               -- network manager tray
+    hl.exec_cmd("gdbus wait --session --timeout 60 org.kde.StatusNotifierWatcher && { pgrep -f 'arch-update-tra[y]' >/dev/null || exec cachy-update --tray; }")  -- cachy-update tray (attende il watcher di Quickshell: l'applet Rust non ritenta)
     hl.exec_cmd("awww-daemon")                                                                         -- wallpaper daemon (awww)
-    hl.exec_cmd("quickshell")                                                                          -- Quickshell
+    hl.exec_cmd("quickshell >$XDG_RUNTIME_DIR/quickshell.log 2>&1")                                    -- Quickshell
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh")                                          -- set initial wallpapers
     -- hl.exec_cmd("hypridle")                                                                         -- idle management — disabled (desktop)
     hl.exec_cmd("swaync")                                                                              -- notification daemon
@@ -29,8 +30,11 @@ hl.on("hyprland.start", function()
     -- hl.exec_cmd("hyprlauncher --daemon")                                                            -- app launcher (pre-loaded) - disabled: daemon herd by HL_INITIAL_WORKSPACE_TOKEN stale -> app always opened in the startup ws 
     hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal
+    hl.exec_cmd("systemctl --user start plasma-polkit-agent.service")                                  -- agent polkit: in sessione NON-uwsm graphical-session.target resta inattivo e nessuno tira su la unit -> ogni pkexec da GUI (OBS virtual cam, udisks) si appende per sempre senza prompt
     hl.exec_cmd("xwaylandvideobridge")                                                                 -- Discord screen share
     -- hl.exec_cmd("cava")                                                                             -- cava — audio visualizer
     hl.exec_cmd("~/.local/bin/discord-guard")                                                          -- Discord (wrapper: ripara gli asar rotti dal repatch Vencord)
     hl.exec_cmd("pgrep -f 'spicetify watch' >/dev/null || spicetify watch -l -s")                      -- wallust spicetify
+    hl.exec_cmd("canberra-gtk-play -i desktop-login --property=canberra.xdg-theme.name=cyberpunk-2077")
+    hl.exec_cmd("python3 ~/.local/bin/hypr-sound-daemon.py")                                           -- feedback sonoro azioni finestre
 end)

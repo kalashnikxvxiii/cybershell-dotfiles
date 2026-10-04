@@ -32,15 +32,41 @@ local function safe_swap(direction)
         local w = hl.get_active_window()
         if not w or w.floating then return end
         hl.dispatch(hl.dsp.window.swap({ direction = direction }))
+        hl.dispatch(hl.dsp.exec_cmd(
+            "canberra-gtk-play -i completion-rotation -V 0.4 " ..
+            "--property=canberra.xdg-theme.name=cyberpunk-2077"
+        ))
     end
 end
 
+-- +++++++++++++++++++ Quickshell +++++++++++++++++++
+hl.bind(mainMod .. " + CTRL + Q", hl.dsp.exec_cmd("pkill quickshell && quickshell >$XDG_RUNTIME_DIR/quickshell.log 2>&1"))
+-- Wallpaper
+hl.bind(mainMod ..                " + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh smart"))
+hl.bind(mainMod .. " + SHIFT + W",        hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-mode"))
+hl.bind(mainMod .. " + CTRL + W",         hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-auto"))
+hl.bind(mainMod .. " + ALT + W",          hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-order"))
+hl.bind(mainMod .. " + SHIFT + ALT + W",  hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-pool"))
+hl.bind(mainMod .. " + M",                hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-toggle"))
+hl.bind(mainMod .. " + SHIFT + M",        hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-up"))
+hl.bind(mainMod .. " + CTRL + M",         hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-down"))
+hl.bind(mainMod .. " + SHIFT + P",        hl.dsp.exec_cmd("~/.config/quickshell/scripts/wallpaper-picker.sh toggle"))
+-- Manga Reader
+hl.bind(mainMod .. " + ALT + M", hl.dsp.exec_cmd("~/.config/quickshell/scripts/manga-toggle.sh"))
+
+-- Sonar panel (network / bluetooth)
+hl.bind(mainMod .. " + ALT + N", hl.dsp.exec_cmd("~/.config/quickshell/scripts/sonar-toggle.sh net"))
+hl.bind(mainMod .. " + ALT + B", hl.dsp.exec_cmd("~/.config/quickshell/scripts/sonar-toggle.sh bt"))
+
 -- +++++++++++++++++++ Applications +++++++++++++++++++
 hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd("kitten quick-access-terminal"))
+-- Sempre via discord-guard, mai `discord` diretto: il wrapper ripara gli asar
+-- rotti dal repatch Vencord e riafferma la decodifica video software.
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("~/.local/bin/discord-guard"))
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("pkill -KILL -x " .. menu .. "; rm -f $XDG_RUNTIME_DIR/.hyprlauncher.sock; " .. menu))
+hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("pkill -KILL -x " .. menu .. "; rm -f $XDG_RUNTIME_DIR/.hyprlauncher.sock; " .. menu))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("zen-browser"))
 hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd("kitty --class floating -e less -R ~/.config/hypr/hyprland-keys.txt"))
 -- hl.bind(mainMod .. " + F1",    hl.dsp.exec_cmd("kitty --class floating -e less -R ~/.config/hypr/hyprland-keys.txt"))
@@ -155,21 +181,16 @@ hl.bind(mainMod .. " + CTRL + period",  hl.dsp.layout("colresize +conf"))
 hl.bind(mainMod .. " + mouse_down", hl.dsp.exec_cmd("~/.config/hypr/scripts/ws-switch.sh next"))
 hl.bind(mainMod .. " + mouse_up",   hl.dsp.exec_cmd("~/.config/hypr/scripts/ws-switch.sh prev"))
 
--- +++++++++++++++++++ Screenshot +++++++++++++++++++
-hl.bind(            "Print", hl.dsp.exec_cmd("hyprshot -m region -o ~/Immagini/Screenshots"))
-hl.bind(mainMod ..         " + Print", hl.dsp.exec_cmd("hyprshot -m output -o ~/Immagini/Screenshots"))
-hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m window -o ~/Immagini/Screenshots"))
+-- Hyprexpo
+hl.bind(mainMod .. " + O", function() hl.plugin.hyprexpo.expo("toggle") end)
 
--- Wallpaper
-hl.bind(mainMod ..                " + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh smart"))
-hl.bind(mainMod .. " + SHIFT + W",        hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-mode"))
-hl.bind(mainMod .. " + CTRL + W",         hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-auto"))
-hl.bind(mainMod .. " + ALT + W",          hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-order"))
-hl.bind(mainMod .. " + SHIFT + ALT + W",  hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh toggle-pool"))
-hl.bind(mainMod .. " + M",                hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-toggle"))
-hl.bind(mainMod .. " + SHIFT + M",        hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-up"))
-hl.bind(mainMod .. " + CTRL + M",         hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-down"))
-hl.bind(mainMod .. " + SHIFT + P",        hl.dsp.exec_cmd("~/.config/quickshell/scripts/wallpaper-picker.sh toggle"))
+-- +++++++++++++++++++ Screenshot / Snip +++++++++++++++++++
+local snip = "~/.config/quickshell/scripts/snip.sh "
+hl.bind(                      "Print", hl.dsp.exec_cmd(snip .. "screenshot"))
+hl.bind(              "SHIFT + Print", hl.dsp.exec_cmd(snip .. "annotate"))
+hl.bind(mainMod ..         " + Print", hl.dsp.exec_cmd(snip .. "ocr"))
+hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd(snip .. "search"))
+hl.bind(mainMod ..   " + ALT + Print", hl.dsp.exec_cmd(snip .. "record"))
 
 -- +++++++++++++++++++ Multimedia +++++++++++++++++++
 hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
@@ -224,7 +245,10 @@ hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
 
 -- +++++++++++++++++++ System +++++++++++++++++++
-hl.bind(mainMod .. " + L",                hl.dsp.exec_cmd("hyprlock"))
+hl.bind(mainMod .. " + L",                hl.dsp.exec_cmd(
+    "canberra-gtk-play -i window-minimize -V 0.4 " ..
+    "--property=canberra.xdg-theme.name=cyberpunk-2077 & hyprlock"
+))
 -- Toggle bar only on screen where the mouse is
 hl.bind(mainMod .. " + CTRL + B", hl.dsp.exec_cmd("bash ~/.config/quickshell/scripts/bar-toggle.sh"))
 -- Toggle bar on all the screens
@@ -233,10 +257,9 @@ hl.bind(mainMod .. " + CTRL + SHIFT + B", hl.dsp.exec_cmd("bash ~/.config/quicks
 hl.bind(mainMod .. " + SHIFT + E",        hl.dsp.exec_cmd("~/.config/quickshell/scripts/logout-toggle.sh"))
 -- Fallback wlogout
 hl.bind(mainMod .. " + CTRL + SHIFT + E",        hl.dsp.exec_cmd("wlogout -b 3 -c 20 -r 20 -m 200"))
--- Quick logout (no menu): `uwsm stop` turns off the session compositor + user's
--- services in order, so sddm-helper exit with code 0 and SDDM restart the greeter.
--- (The old `hyprctl dispatch exit` is HyprLang syntax — in Lua mode it would give parse error
--- "return hl.dispatch(exit)". Furthermore `loginctl terminate-user` would force-kill sddm-helper,
--- leaving SDDM blocked on a black TTY — see wlogout layout for the
--- same fix menu side.)
-hl.bind(mainMod .. " + SHIFT + ESCAPE",   hl.dsp.exec_cmd("uwsm stop"))
+-- Quick logout (no menu): hl.dsp.exit() ends the compositor, sddm-helper exits
+-- with code 0 and SDDM restarts the greeter. Not `uwsm stop`: this session is
+-- not uwsm-managed, and there it fails with "Compositor is not running".
+-- (`loginctl terminate-user` would force-kill sddm-helper, leaving SDDM blocked
+-- on a black TTY.)
+hl.bind(mainMod .. " + CTRL + SHIFT + ESCAPE",   hl.dsp.exit())

@@ -19,8 +19,8 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 12,
-        rounding_power = 2,
+        rounding       = 34,
+        rounding_power = 1,
 
         -- ── Dim ────────
         dim_inactive     = true,

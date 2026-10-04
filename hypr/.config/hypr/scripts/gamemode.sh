@@ -21,17 +21,25 @@ if [ "$GAMEMODE" = "true" ] || [ "$GAMEMODE" = 1 ]; then
             borders_plus_plus = { add_borders = 0 },
         },
     })'
+    # Shader gia' spento sopra → ora si puo' riattivare il damage tracking.
+    # Chiamata separata: dentro una sola table Lua l'ordine di applicazione
+    # non e' garantito e Hyprland rialzerebbe l'error overlay.
+    he 'hl.config({ debug = { damage_tracking = 2 } })'
     hyprctl notify 1 4000 "rgb(00ff9d)" "  GAMEMODE ON"
 else
     # do NOT use `hyprctl reload`: in Lua mode re-execute `hl.plugin.load` +
     # `monitor_priority` + `max_workspaces` on top of config, re-assigning
     # the workspaces and moving focus on another monitor.
+    # damage_tracking = 0 PRIMA dello shader: cyberpunk.frag usa la uniform
+    # `time`, che Hyprland accetta solo senza damage tracking. Ordine invertito
+    # → error overlay "Screen shader uses uniform 'time'".
+    he 'hl.config({ debug = { damage_tracking = 0 } })'
     he 'hl.config({
         animations = { enabled = true },
         decoration = {
             shadow          = { enabled = true },
             blur            = { enabled = true },
-            rounding        = 12,
+            rounding        = 34,   -- keep in sync with lua/look-and-feel.lua
             screen_shader   = os.getenv("HOME") .. "/.config/hypr/shaders/cyberpunk.frag",
             dim_inactive    = true,
         },

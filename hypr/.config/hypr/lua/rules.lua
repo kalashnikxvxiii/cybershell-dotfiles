@@ -81,6 +81,16 @@ hl.layer_rule({
     animation   = "none",
 })
 
+-- Snip overlay: a region selector must appear instantly, or the first frames of
+-- the drag land on a surface that is still fading in. The capture itself cannot
+-- be contaminated -- grim runs before this surface exists -- so this is purely
+-- about the selector feeling immediate.
+hl.layer_rule({
+    name        = "snip-overlay-no-anim",
+    match       = { namespace = "snip-overlay" },
+    animation   = "none",
+})
+
 hl.layer_rule({
     name        = "hyprpicker-no-anim",
     match       = { namespace = "hyprpicker" },
@@ -101,6 +111,16 @@ hl.layer_rule({
     name        = "swaync-cc-slide",
     match       = { namespace = "swaync-control-center" },
     animation   = "slide-right",
+})
+
+-- Manga reader: the panel animates itself in QML — the drawer slides
+-- horizontally while the dark backdrop fades on its own timing. Hyprland's
+-- global "slide top" would drag the whole surface vertically instead and hide
+-- both, so the compositor keeps its hands off this layer.
+hl.layer_rule({
+    name        = "manga-reader-noanim",
+    match       = { namespace = "manga-reader" },
+    animation   = "none",
 })
 
 -- ── Common app floating ────────────────────────────────────────────────
@@ -193,8 +213,11 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name   = "steam-popups",
-    match  = { class = "^(steam)$", title = "^(?!Steam$).*$" },
+    name  = "steam-popups",
+    match = { class = "^(steam)$",
+            -- Match every title beside exactly "Steam" (Re2-safe, no lookahead):
+            -- empty / <5 char / >5 char / 5 char che non è "Steam"
+            title = "^([^S].*|.{0,4}|.{6,}|S[^t].*|St[^e].*|Ste[^a].*|Stea[^m].*|Steam.+)$" },
     float  = true,
     center = true,
 })
@@ -208,11 +231,12 @@ hl.window_rule({
     opaque  = true,
 })
 
--- Stremio: always opaque, no blur, no dim when no-focused
+-- Stremio + client alternativi (Harbor): always opaque, no blur, no dim when no-focused
 -- Real Electron class reverse-DNS: com.stremio.stremio
+-- Harbor (Tauri): class runtime "Harbor", StartupWMClass "harbor" -> matcho entrambe
 hl.window_rule({
     name    = "stremio-opaque",
-    match   = { class = "^(com\\.stremio\\.stremio)$" },
+    match   = { class = "^(com\\.stremio\\.stremio|[Hh]arbor)$" },
     opacity = "override 1.0 override 1.0 override 1.0",
     opaque  = true,
     no_blur = true,
@@ -277,4 +301,16 @@ hl.window_rule({
     name        = "spotify-ws",
     match       = { class = "^(Spotify)$" },
     workspace   = "12 silent",
+})
+
+-- ── Wine ───────────────────────────────────
+-- Rete di sicurezza per il systray di Wine. Normalmente non serve: xembedsniproxy
+-- (autostart.lua) intercetta le icone XEmbed e le pubblica come StatusNotifierItem,
+-- quindi finiscono in Quickshell. Ma se il proxy non sta girando, explorer.exe apre
+-- una propria finestrella senza titolo (~166x52) che atterra sopra la barra.
+-- Qui la si manda su un workspace speciale invece di vedersela in faccia.
+hl.window_rule({
+    name        = "wine-systray-hide",
+    match       = { class = "^(explorer\\.exe)$", title = "^$" },
+    workspace   = "special:winetray silent",
 })

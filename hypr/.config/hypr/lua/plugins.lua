@@ -72,5 +72,26 @@ hl.config({
             slide_height             = 20,       -- slide: offset Y in px
             shrink_percentage        = 0.99,     -- shrink: scale factor (ex bounce_strength)
         },
+
+        hyprexpo = {
+            columns             = 3,
+            gaps_in             = 4,
+            gaps_out            = 8,
+            bg_col              = "rgb(00060e)",
+            workspace_method    = "center current",
+            skip_empty          = false,
+            -- Drag & drop ws
+            drag_drop_enable    = true,
+            enable_drag_move    = true,
+            -- UX
+            enable_keyboard_nav     = true,
+            show_workspace_numbers  = true,
+            show_pinned_windows     = true,
+            animate_entry           = true,
+            -- Trackpad gesture
+            gesture_fingers     = 0,
+            gesture_distance    = 300,
+            gesture_direction   = "positive",
+        },
     },
 })
