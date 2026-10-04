@@ -43,7 +43,7 @@ Item {
 
     implicitHeight: 36
 
-    // ── Background ───────────────────────────────────────────────
+    // -- Background ------------------------------------------
     CutShape {
         anchors.fill: parent
         anchors.margins: 1
@@ -53,8 +53,7 @@ Item {
         strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.accent, 0.25)
         strokeWidth: 0.7
         inset: 0.5
-        cutTopLeft: 2
-        cutBottomRight: 2
+        cutBottomRight: 12
         Behavior on fillColor   { CAnim {} }
         Behavior on strokeColor { CAnim {} }
     }
@@ -100,7 +99,7 @@ Item {
             return parts.join("  ")
         }
         font.family: "Oxanium"
-        font.pixelSize: 6
+        font.pixelSize: 8
         color: muted ? Colours.textMuted : CP.alpha(Colours.textMuted, 0.85)
         elide: Text.ElideRight
     }
@@ -143,7 +142,7 @@ Item {
         }
     }
 
-    // ── Volume % + status sub-line ───────────────────────────────
+    // -- Volume % + status sub-line ------------------------
     Text {
         id: rowVolTxt
         anchors.right: parent.right
@@ -162,7 +161,7 @@ Item {
         anchors.topMargin: 1
         text: muted ? "MUTE" : (volPercent > 0 ? "IDLE" : "OFF")
         font.family: "Oxanium"
-        font.pixelSize: 6
+        font.pixelSize: 9
         color: CP.alpha(Colours.textMuted, 0.85)
     }
 
@@ -192,5 +191,12 @@ Item {
             if (mode === "selectable") root.selectRequested()
             else if (mode === "app")   AudioControlState.toggleMute(root.node)
         }
+    }
+
+    // ── RMB on the card -> direct mute ────────────────────────
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        onClicked: AudioControlState.toggleMute(root.node)
     }
 }

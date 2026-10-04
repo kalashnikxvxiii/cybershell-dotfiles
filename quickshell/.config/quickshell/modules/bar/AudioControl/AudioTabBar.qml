@@ -34,17 +34,16 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: active
-                               ? CP.alpha(modelData.accent, 0.20)
-                               : (chipMa.containsMouse
-                                  ? CP.alpha(modelData.accent, 0.10)
-                                  : Colours.moduleBgAlt)
+                            ? CP.alpha(modelData.accent, 0.20)
+                            : (chipMa.containsMouse
+                            ? CP.alpha(modelData.accent, 0.10)
+                            : Colours.moduleBgAlt)
                     strokeColor: active
-                                 ? modelData.accent
-                                 : CP.alpha(modelData.accent, 0.30)
+                                ? modelData.accent
+                                : CP.alpha(modelData.accent, 0.30)
                     strokeWidth: active ? 1.5 : 1
                     inset: 0.5
-                    cutTopLeft: 2
-                    cutBottomRight: 2
+                    cutBottomRight: 8
                     Behavior on fillColor   { CAnim {} }
                     Behavior on strokeColor { CAnim {} }
 
@@ -69,6 +68,21 @@ Item {
                     color: modelData.accent
                 }
 
+                // Shortcut number (1 - 4)
+                Text {
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 3
+                    text: chip.index + 1
+                    font.family: "Oxanium"
+                    font.pixelSize: 8
+                    font.letterSpacing: 0.5
+                    color: chip.active ? CP.alpha("white", 0.75)
+                                       : CP.alpha(modelData.accent, 0.5)
+                    Behavior on color { CAnim {} }
+                }
+
+
                 Text {
                     anchors.centerIn: parent
                     text: modelData.label
@@ -76,7 +90,7 @@ Item {
                     font.pixelSize: 18
                     font.letterSpacing: 1.2
                     font.bold: true
-                    color: chip.active ? "white" : CP.alpha(modelData.accent, 0.65)
+                    color: chip.active ? "white" : CP.alpha(modelData.accent, 0.8)
                     Behavior on color { CAnim {} }
                 }
 

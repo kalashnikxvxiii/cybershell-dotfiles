@@ -13,11 +13,12 @@
 import "../../../common/Colors.js" as CP
 import "../../../common"
 import QtQuick
+import QtQuick.Effects
 
 Item {
     id: root
 
-    // ── Public API ───────────────────────────────────────────────
+    // -- Public API ---------------------------------------
     property real  fillPercent: 0
     property bool  active:      true
     property bool  muted:       false
@@ -27,62 +28,90 @@ Item {
 
     implicitHeight: 14
 
-    // ── Track background ─────────────────────────────────────────
+    // -- Content cutted by the shape ------------------------
+    Item {
+        id: masked
+        anchors.fill: parent
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: gaugeMask
+        }
+
+        // Track background (only fill: stroke stays out of the mask)
+        CutShape {
+            anchors.fill: parent
+            fillColor: CP.alpha(CP.void2, 0.6)
+            cutBottomRight: 8
+        }
+
+        // Volume fill (horizontal gradient)
+        Rectangle {
+            id: fill
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.margins: 2
+            width: Math.max(0, (parent.width - 4) * Math.min(1.0, root.fillPercent))
+            Behavior on width { Anim { duration: 120 } }
+
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: muted ? CP.alpha(Colours.textMuted, 0.30) : CP.alpha(root.accent, 0.50) }
+                GradientStop { position: 1.0; color: muted ? CP.alpha(Colours.textMuted, 0.50) : CP.alpha(root.accent, 0.90) }
+            }
+            Behavior on opacity { CAnim {} }
+        }
+
+        // 4 particles (left → right loop)
+        Repeater {
+            model: 4
+            delegate: Rectangle {
+                required property int index
+                width: 3
+                height: 3
+                color: muted ? Colours.textMuted : root.accent
+                opacity: muted ? 0 : (1.0 - index * 0.2)
+                anchors.verticalCenter: parent.verticalCenter
+
+                NumberAnimation on x {
+                    from: -3
+                    to: root.width
+                    duration: 1800
+                    loops: Animation.Infinite
+                    running: root.active && !root.muted && root.visible
+                }
+                Component.onCompleted: x = -3 + (index * (root.width / 4))
+                Behavior on opacity { CAnim {} }
+            }
+        }
+    }
+
+    // -- Maschera: stessa forma del track --------------------
+    CutShape {
+        id: gaugeMask
+        layer.enabled: true
+        visible: false
+        width: parent.width
+        height: parent.height
+        fillColor: "white"
+        cutBottomRight: 8
+    }
+
+    // -- Bordo, fuori dalla maschera: stroke pieno e non tagliato --------
     CutShape {
         id: track
         anchors.fill: parent
-        fillColor: CP.alpha(CP.void2, 0.6)
+        fillColor: "transparent"
         strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.accent, 0.35)
         strokeWidth: 1
         inset: 0.5
-        cutTopLeft: 2
-        cutBottomRight: 2
+        cutBottomRight: 8
         Behavior on strokeColor { CAnim {} }
     }
 
-    // ── Volume fill (with horizontal gradient) ──────────────────
-    Rectangle {
-        id: fill
-        anchors.left: track.left
-        anchors.top: track.top
-        anchors.bottom: track.bottom
-        anchors.margins: 2
-        width: Math.max(0, (track.width - 4) * Math.min(1.0, root.fillPercent))
-        Behavior on width { Anim { duration: 120 } }
-
-        gradient: Gradient {
-            orientation: Gradient.Horizontal
-            GradientStop { position: 0.0; color: muted ? CP.alpha(Colours.textMuted, 0.30) : CP.alpha(root.accent, 0.50) }
-            GradientStop { position: 1.0; color: muted ? CP.alpha(Colours.textMuted, 0.50) : CP.alpha(root.accent, 0.90) }
-        }
-        Behavior on opacity { CAnim {} }
-    }
-
-    // ── 4 flow particles (left → right loop) ────────────────────
-    Repeater {
-        model: 4
-        delegate: Rectangle {
-            required property int index
-            width: 3
-            height: 3
-            color: muted ? Colours.textMuted : root.accent
-            opacity: muted ? 0 : (1.0 - index * 0.2)   // fade trailing particles
-            anchors.verticalCenter: parent.verticalCenter
-
-            NumberAnimation on x {
-                from: -3
-                to: root.width
-                duration: 1800
-                loops: Animation.Infinite
-                running: root.active && !root.muted
-            }
-            // Stagger initial offset via Component.onCompleted
-            Component.onCompleted: x = -3 + (index * (root.width / 4))
-            Behavior on opacity { CAnim {} }
-        }
-    }
-
-    // ── Interaction: drag, click, wheel ─────────────────────────
+    // -- Interaction: drag, click, wheel --------------------------
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton

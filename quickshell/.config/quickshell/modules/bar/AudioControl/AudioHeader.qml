@@ -22,7 +22,7 @@ Item {
     readonly property real volRatio: sink && sink.audio ? Math.min(1.5, sink.audio.volume) : 0
     readonly property int volPercent: Math.round(volRatio * 100)
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
-    readonly property string sinkName: sink ? (sink.description || sink.name || "—").toUpperCase().replace(/\s+/g, "·").substring(0, 14) : "NO DEFAULT"
+    readonly property string sinkName: sink ? (sink.description || sink.name || "—").toUpperCase().replace(/\s+/g, "·") : "NO DEFAULT"
 
     // Hex device ID for diegetic metadata: last byte of node.id formatted [0xNN]
     readonly property string hexId: {
@@ -61,13 +61,15 @@ Item {
         anchors.right: parent.right
         anchors.topMargin: 6
         anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        elide: Text.ElideRight
         text: {
             var status = muted ? "MUTED" : (sink ? "ROUTED" : "OFFLINE")
-            var hex = root.hexId !== "" ? " " + root.hexId : ""
+            var hex = (root.expanded && root.hexId !== "") ? " " + root.hexId : ""
             return "◢ SIGNAL · " + status + hex
         }
         font.family: "Oxanium"
-        font.pixelSize: 16
+        font.pixelSize: root.expanded ? 16 : 13
         font.letterSpacing: 2
         font.bold: true
         color: muted ? Colours.textMuted : CP.alpha(Colours.accentSecondary, 0.85)
@@ -102,17 +104,60 @@ Item {
         Column {
             anchors.left: percentTxt.right
             anchors.leftMargin: 10
+            anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             spacing: 1
-            Text {
-                text: root.sinkName
-                font.family: "Oxanium"
-                font.pixelSize: 14
-                font.letterSpacing: 1.5
-                font.bold: true
-                color: muted ? Colours.textMuted : Colours.accentSecondary
+            Item {
+                id: nameViewport
+                width: parent.width
+                height: nameLabel.implicitHeight
+                clip: true
+
+                property real marqueeOffset: 0
+                readonly property real marqueeGap: 40
+                readonly property bool marqueeActive: nameLabel.implicitWidth > width
+
+                onMarqueeActiveChanged: if (!marqueeActive) marqueeOffset = 0
+
+                Text {
+                    id: nameLabel
+                    x: nameViewport.marqueeActive ? nameViewport.marqueeOffset : 0
+                    text: root.sinkName
+                    font.family: "Oxanium"
+                    font.pixelSize: root.expanded ? 14 : 12
+                    font.letterSpacing: 1.5
+                    font.bold: true
+                    color: muted ? Colours.textMuted : Colours.accentSecondary
+                }
+
+                Text {
+                    visible: nameViewport.marqueeActive
+                    x: nameViewport.marqueeOffset + nameLabel.implicitWidth + nameViewport.marqueeGap
+                    text: nameLabel.text
+                    font: nameLabel.font
+                    color: nameLabel.color
+                }
+
+                SequentialAnimation {
+                    running: nameViewport.marqueeActive && root.visible
+                    loops: Animation.Infinite
+
+                    PropertyAction { target: nameViewport; property: "marqueeOffset"; value: 0 }
+                    PauseAnimation { duration: 1500 }
+                    NumberAnimation {
+                        target: nameViewport
+                        property: "marqueeOffset"
+                        from: 0
+                        to: -(nameLabel.implicitWidth + nameViewport.marqueeGap)
+                        duration: 8000
+                        easing.type: Easing.Linear
+                    }
+                    PauseAnimation { duration: 1000 }
+                }
             }
             Text {
+                width: parent.width
+                elide: Text.ElideRight
                 text: root.sampleSpec
                 font.family: "Oxanium"
                 font.pixelSize: 9
@@ -122,7 +167,7 @@ Item {
         }
     }
 
-    // ── FLOW gauge ───────────────────────────────────────────────
+    // -- FLOW gauge -------------------------------------
     Item {
         id: flowSection
         anchors.top: readoutRow.bottom
@@ -195,8 +240,7 @@ Item {
                 strokeColor: CP.alpha(Colours.accentSecondary, 0.35)
                 strokeWidth: muteMa.containsMouse ? 1.5 : 1
                 inset: 0.5
-                cutTopLeft: 2
-                cutBottomRight: 2
+                cutBottomLeft: 6
                 Behavior on fillColor   { CAnim {} }
                 Behavior on strokeColor { CAnim {} }
             }
@@ -233,8 +277,7 @@ Item {
                 strokeColor: CP.alpha(Colours.accentSecondary, 0.35)
                 strokeWidth: expandMa.containsMouse ? 1.5 : 1
                 inset: 0.5
-                cutTopLeft: 2
-                cutBottomRight: 2
+                cutBottomLeft: 6
                 Behavior on fillColor   { CAnim {} }
                 Behavior on strokeColor { CAnim {} }
             }
@@ -243,8 +286,8 @@ Item {
                 spacing: 4
                 Text {
                     text: "▼"
-                    font.pixelSize: 9
-                    color: expandMa.containsMouse ? Colours.accentSecondary : CP.alpha(Colours.accentSecondary, 0.65)
+                    font.pixelSize: 10
+                    color: expandMa.containsMouse ? Colours.accentSecondary : CP.alpha(Colours.accentSecondary, 0.8)
                     rotation: root.expanded ? 180 : 0
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on rotation { Anim {} }
@@ -254,9 +297,9 @@ Item {
                     id: expandTxt
                     text: root.expanded ? "COLLAPSE" : "EXPAND"
                     font.family: "Oxanium"
-                    font.pixelSize: 9
+                    font.pixelSize: 10
                     font.letterSpacing: 1.5
-                    color: expandMa.containsMouse ? Colours.accentSecondary : CP.alpha(Colours.accentSecondary, 0.65)
+                    color: expandMa.containsMouse ? Colours.accentSecondary : CP.alpha(Colours.accentSecondary, 0.8)
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { CAnim {} }
                 }

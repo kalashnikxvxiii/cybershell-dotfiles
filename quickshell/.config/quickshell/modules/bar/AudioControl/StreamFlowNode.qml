@@ -7,15 +7,16 @@
 import "../../../common/Colors.js" as CP
 import "../../../common"
 import QtQuick
+import CyberAudio.Services
 
 Item {
     id: root
 
-    // ── API ──────────────────────────────────────────────────────
+    // -- API --------------------------------
     property var   streamNode: null
     property color accent: Colours.accentPrimary
 
-    // ── Derived ──────────────────────────────────────────────────
+    // -- Derived ---------------------------
     readonly property bool muted: streamNode && streamNode.audio ? streamNode.audio.muted : false
     readonly property int  volPercent: streamNode && streamNode.audio ? Math.round(streamNode.audio.volume * 100) : 0
     readonly property string appName: {
@@ -38,6 +39,24 @@ Item {
         var p = streamNode.properties || ({})
         return Number(p["application.process.id"] || 0)
     }
+
+    // -- VU reale dello stream applicativo ---------------------
+    readonly property string nodeTarget: streamNode && streamNode.properties
+                                        ? (streamNode.properties["node.name"] || "") : ""
+
+    // dBFS → 0-1, fondoscala −60dB
+    function _vu(v) {
+        if (v <= 0.001) return 0
+        var db = 20 * Math.log(v) / Math.LN10
+        return Math.max(0, Math.min(1, (db + 60) / 60))
+    }
+
+    NodeLevelProvider {
+        id: nodeLevel
+        target: root.nodeTarget
+        captureSink: false
+    }
+    ServiceRef { service: root.visible ? nodeLevel : null }
 
     // App category icon glyph (based on application.name heuristics)
     readonly property string iconGlyph: {
@@ -64,8 +83,7 @@ Item {
         strokeColor: muted ? CP.alpha(CP.red, 0.4) : CP.alpha(root.accent, 0.5)
         strokeWidth: 1
         inset: 0.5
-        cutTopLeft: 3
-        cutBottomRight: 3
+        cutBottomRight: 16
         Behavior on fillColor   { CAnim {} }
         Behavior on strokeColor { CAnim {} }
     }
@@ -83,8 +101,7 @@ Item {
             strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.accent, 0.55)
             strokeWidth: 0.7
             inset: 0.5
-            cutTopLeft: 2
-            cutBottomRight: 2
+            cutTopRight: 8
         }
         Text {
             anchors.centerIn: parent
@@ -99,7 +116,7 @@ Item {
             anchors.bottomMargin: 3
             text: root.iconCategory
             font.family: "Oxanium"
-            font.pixelSize: 5
+            font.pixelSize: 8
             font.letterSpacing: 1
             color: muted ? Colours.textMuted : CP.alpha(root.accent, 0.65)
         }
@@ -140,7 +157,7 @@ Item {
                 return "PID " + root.streamPid + "  STREAM " + root.streamPath + "  " + root.streamFormat
             }
             font.family: "Oxanium"
-            font.pixelSize: 6
+            font.pixelSize: 8
             font.letterSpacing: 0.5
             color: Colours.textMuted
         }
@@ -187,7 +204,7 @@ Item {
                         to: flowLine.width - 6
                         duration: 1800
                         loops: Animation.Infinite
-                        running: !root.muted && flowLine.visible
+                        running: !root.muted && root.visible
                     }
                     Component.onCompleted: x = index * (flowLine.width / 2)
                 }
@@ -213,7 +230,7 @@ Item {
                 anchors.centerIn: parent
                 text: "— SIGNAL CUT —"
                 font.family: "Oxanium"
-                font.pixelSize: 6
+                font.pixelSize: 9
                 font.letterSpacing: 1.5
                 font.bold: true
                 color: CP.alpha(CP.red, 0.7)
@@ -234,13 +251,14 @@ Item {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                width: parent.width * Math.min(1.0, root.volPercent / 100)
-                color: CP.alpha(root.accent, 0.75)
+                width: parent.width * root._vu(nodeLevel.peak)
+                color: CP.alpha(root.accent, 0.9)
+                Behavior on width { NumberAnimation { duration: 60 } }
             }
         }
     }
 
-    // ── Volume slider (right, 100×14) + % ────────────────────────
+    // -- Volume slider (right, 100×14) + % --------------------
     Item {
         id: volBox
         anchors.right: parent.right
@@ -265,8 +283,7 @@ Item {
                 strokeColor: CP.alpha(root.accent, 0.30)
                 strokeWidth: 0.6
                 inset: 0.5
-                cutTopLeft: 2
-                cutBottomRight: 2
+                cutBottomRight: 6
             }
             Rectangle {
                 anchors.left: sliderTrack.left
@@ -311,6 +328,7 @@ Item {
 
         // Volume %
         Text {
+            id: volPctTxt
             anchors.top: sliderArea.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.topMargin: 3

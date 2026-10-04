@@ -7,16 +7,18 @@ import QtQuick
 
 Item {
     id: root
+    implicitHeight: scroll.contentHeight
 
     readonly property int otherCount: {
         var n = 0
         var arr = AudioControlState.inputNodes
         for (var i = 0; i < arr.length; i++)
-            if (arr[i] !== AudioControlState.defaultSource) n++
+            if (arr[i] !== AudioControlState.focusedSource) n++
         return n
     }
 
-    Column {
+    AC.TabScroll {
+        id: scroll
         anchors.fill: parent
         spacing: 10
 
@@ -50,17 +52,17 @@ Item {
 
         // ── Section: SOURCE CAPTURE ─────────────────────────────
         AC.SectionHeader {
-            visible: AudioControlState.defaultSource !== null
+            visible: AudioControlState.focusedSource !== null
             width: parent.width
             label: "SOURCE CAPTURE"
-            trail: "INBOUND SIGNAL"
+            trail: "INBOUND SIGNAL · RIGHT → MUTE"
             accent: CP.magenta
         }
 
         AC.EndpointCard {
-            visible: AudioControlState.defaultSource !== null
+            visible: AudioControlState.focusedSource !== null
             width: parent.width
-            node: AudioControlState.defaultSource
+            node: AudioControlState.focusedSource
             mode: "source"
             accent: CP.magenta
             showOscilloscope: true
@@ -71,33 +73,25 @@ Item {
             visible: root.otherCount > 0
             width: parent.width
             label: "OTHER SOURCES"
-            trail: root.otherCount + " AVAILABLE"
+            trail: root.otherCount + " AVAILABLE · RIGHT → MUTE"
             accent: CP.magenta
         }
-
-        Flickable {
-            id: scroll
+        
+        Column {
+            id: listCol
             width: parent.width
-            height: Math.max(0, parent.height - (AudioControlState.defaultSource ? 110 : 0) - 56 - 80)
-            contentHeight: listCol.height
-            clip: true
+            spacing: 4
 
-            Column {
-                id: listCol
-                width: scroll.width
-                spacing: 4
-
-                Repeater {
-                    model: AudioControlState.inputNodes
-                    delegate: AC.AudioDeviceRow {
-                        required property var modelData
-                        width: listCol.width
-                        visible: modelData !== AudioControlState.defaultSource
-                        node: modelData
-                        mode: "selectable"
-                        accent: CP.magenta
-                        onSelectRequested: AudioControlState.setDefaultSource(modelData)
-                    }
+            Repeater {
+                model: AudioControlState.inputNodes
+                delegate: AC.AudioDeviceRow {
+                    required property var modelData
+                    width: listCol.width
+                    visible: modelData !== AudioControlState.focusedSource
+                    node: modelData
+                    mode: "selectable"
+                    accent: CP.magenta
+                    onSelectRequested: AudioControlState._selectedSource = modelData
                 }
             }
         }

@@ -8,24 +8,94 @@ import "../../../common/effects"
 import "tabs" as Tabs
 import QtQuick
 import QtQuick.Effects
+import Quickshell
 
 FocusScope {
     id: root
     signal closeRequested()
 
-    // ── Sizing ───────────────────────────────────────────────────
+    // -- Sizing -----------------------------------------
     readonly property int compactW:  220
     readonly property int compactH:  140
     readonly property int expandedW: 420
-    readonly property int expandedH: 620
+    readonly property int expandedMaxH: 620
 
-    width:  AudioControlState.expanded ? expandedW : compactW
-    height: AudioControlState.expanded ? expandedH : compactH
+    readonly property bool animating: closeT.running || collapseT.running || growT.running
+    readonly property int chromeH: 4 + header.height + 6 + tabBar.height + 14 + 24
+    readonly property Item currentTabItem: {
+        switch (AudioControlState.activeTab) {
+            case "outputs": return outTab.item
+            case "inputs":  return inTab.item
+            case "apps":    return appsTab.item
+        }
+        return eqTab.item
+    }
+    readonly property int expandedH: {
+        var c = currentTabItem ? currentTabItem.implicitHeight : 0
+        return Math.max(compactH, Math.min(expandedMaxH, chromeH + c))
+    }
+    property bool open: false
+    readonly property int targetW: AudioControlState.expanded ? expandedW : compactW
 
+    width:  targetW
+    height: 0
+    visible: height > 0
+
+    // compact ... expanded while popup is still open
     Behavior on width  { Anim { duration: AudioControlState.expanded ? 260 : 200; easing.type: AudioControlState.expanded ? Easing.OutQuart : Easing.InCubic } }
-    Behavior on height { Anim { duration: AudioControlState.expanded ? 260 : 200; easing.type: AudioControlState.expanded ? Easing.OutQuart : Easing.InCubic } }
 
-    // ── Tab-aware accent ─────────────────────────────────────────
+    // apertura / chiusura - stessa cinetica di DashboardPanel
+    states: [
+        State {
+            name: "compact"
+            when: root.open && !AudioControlState.expanded
+            PropertyChanges { root.height: root.compactH }
+        },
+        State {
+            name: "expanded"
+            when: root.open && AudioControlState.expanded
+            PropertyChanges { root.height: root.expandedH }
+        }
+    ]
+
+    Binding {
+        target: AudioControlState
+        property: "popupOpen"
+        value: root.open
+    }
+
+    transitions: [
+        // Closing, from any state
+        Transition {
+            id: closeT
+            from: "*"; to: ""
+            SequentialAnimation {
+                Anim { target: root; property: "height"; duration: 200; easing.type: Easing.InCubic }
+                ScriptAction { script: root._evictInactiveTabs() }
+            }
+        },
+        // Collpsing, expanded -> compact
+        Transition {
+            id: collapseT
+            from: "expanded"; to: "compact"
+            Anim { target: root; property: "height"; duration: 200; easing.type: Easing.InCubic }
+        },
+        // Opening, and expansion compact -> expanded
+        Transition {
+            id: growT
+            from: "*"; to: "*"
+            Anim { target: root; property: "height"; duration: 260 }
+        }
+    ]
+
+    function _evictInactiveTabs() {
+        if (AudioControlState.activeTab !== "outputs") outTab.everShown = false
+        if (AudioControlState.activeTab !== "inputs") inTab.everShown = false
+        if (AudioControlState.activeTab !== "apps") appsTab.everShown = false
+        if (AudioControlState.activeTab !== "eq") eqTab.everShown = false
+    }
+
+    // -- Tab-aware accent -------------------------------------
     readonly property color tabAccent: {
         if (!AudioControlState.expanded) return Colours.accentSecondary   // cyan in compact
         switch (AudioControlState.activeTab) {
@@ -37,32 +107,14 @@ FocusScope {
         return Colours.accentSecondary
     }
 
-    // ── Enter animation ──────────────────────────────────────────
-    opacity: 0
-    property real slideY: -20
-    Component.onCompleted: {
-        enterOpacityAnim.start()
-        enterSlideAnim.start()
-    }
-    NumberAnimation {
-        id: enterOpacityAnim
-        target: root; property: "opacity"
-        from: 0; to: 1; duration: 180; easing.type: Easing.OutQuart
-    }
-    NumberAnimation {
-        id: enterSlideAnim
-        target: root; property: "slideY"
-        from: -20; to: 0; duration: 200; easing.type: Easing.OutQuart
-    }
-
-    // ── Card background ──────────────────────────────────────────
+    // -- Card background --------------------------------------------
     Item {
         id: card
-        x: 0; y: root.slideY
+        x: 0; y: 0
         width: parent.width
         height: parent.height
 
-        layer.enabled: true
+        layer.enabled: !root.animating
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowColor: Colours.glowFor(root.tabAccent)
@@ -78,15 +130,14 @@ FocusScope {
             strokeColor: Colours.panelBorder(root.tabAccent)
             strokeWidth: 1
             inset: 0.5
-            cutTopRight: 20
-            cutBottomLeft: 20
+            cutBottomLeft: 32
             Behavior on strokeColor { CAnim {} }
         }
     }
 
-    // ── CornerAccents (tab-aware) ────────────────────────────────
+    // -- CornerAccents (tab-aware) --------------------------------
     CornerAccents {
-        x: 0; y: root.slideY
+        x: 0; y: 0
         width: parent.width
         height: parent.height
         accentColor: root.tabAccent
@@ -100,40 +151,20 @@ FocusScope {
         Behavior on accentColor { CAnim {} }
     }
 
-    // ── Scanlines ────────────────────────────────────────────────
+    // -- Scanlines ---------------------------------------
     ScanlineOverlay {
-        x: 0; y: root.slideY
+        x: 0; y: 0
         width: parent.width
         height: parent.height
         opacity: 0.08
     }
 
-    // ── Content ──────────────────────────────────────────────────
+    // -- Content --------------------------------------------
     Item {
         id: content
-        x: 0; y: root.slideY
+        x: 0; y: 0
         width: parent.width
         height: parent.height
-
-        // Close button
-        Text {
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 8
-            text: "✕"
-            font.pixelSize: 24
-            color: CP.red
-            z: 10
-            HoverHandler { id: closeHover }
-            opacity: closeHover.hovered ? 1 : 0.7
-            Behavior on opacity { CAnim {} }
-            MouseArea {
-                anchors.fill: parent
-                anchors.margins: -6
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.closeRequested()
-            }
-        }
 
         // Header (always visible)
         AudioHeader {
@@ -142,7 +173,7 @@ FocusScope {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.margins: 4
-            anchors.rightMargin: 24
+            anchors.rightMargin: 8
             expanded: AudioControlState.expanded
             onExpandToggleRequested: AudioControlState.expanded = !AudioControlState.expanded
             onCloseRequested: root.closeRequested()
@@ -162,8 +193,8 @@ FocusScope {
         }
 
         // Tab content (lazy via Loader)
-        Loader {
-            id: tabLoader
+        Item {
+            id: tabHost
             anchors.top: tabBar.bottom
             anchors.bottom: parent.bottom
             anchors.left: parent.left
@@ -171,14 +202,50 @@ FocusScope {
             anchors.margins: 8
             anchors.bottomMargin: 24
             anchors.topMargin: 14
-            active: AudioControlState.expanded
-            opacity: active ? 1 : 0
+            opacity: AudioControlState.expanded ? 1 : 0
+            visible: opacity > 0
             Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-            sourceComponent: {
-                if (AudioControlState.activeTab === "outputs") return outputsComp
-                if (AudioControlState.activeTab === "inputs")  return inputsComp
-                if (AudioControlState.activeTab === "apps")    return appsComp
-                return eqComp
+
+            Loader {
+                id: outTab
+                anchors.fill: parent
+                property bool everShown: false
+                visible: AudioControlState.activeTab === "outputs"
+                onVisibleChanged: if (visible) everShown = true
+                Component.onCompleted: if (visible) everShown = true
+                active: everShown
+                asynchronous: true
+                sourceComponent: outputsComp
+            }
+            Loader {
+                id: inTab
+                anchors.fill: parent
+                property bool everShown: false
+                visible: AudioControlState.activeTab === "inputs"
+                onVisibleChanged: if (visible) everShown = true
+                active: everShown
+                asynchronous: true
+                sourceComponent: inputsComp
+            }
+            Loader {
+                id: appsTab
+                anchors.fill: parent
+                property bool everShown: false
+                visible: AudioControlState.activeTab === "apps"
+                onVisibleChanged: if (visible) everShown = true
+                active: everShown
+                asynchronous: true
+                sourceComponent: appsComp
+            }
+            Loader {
+                id: eqTab
+                anchors.fill: parent
+                property bool everShown: false
+                visible: AudioControlState.activeTab === "eq"
+                onVisibleChanged: if (visible) everShown = true
+                active: everShown
+                asynchronous: true
+                sourceComponent: eqComp
             }
         }
 

@@ -8,6 +8,7 @@ import QtQuick
 
 Item {
     id: root
+    implicitHeight: scroll.contentHeight
 
     readonly property var presets: ["Flat","Bass","Treble","Vocal","Pop","Rock","Jazz","Classic"]
     readonly property var bandLabels: ["31","63","125","250","500","1k","2k","4k","8k","16k"]
@@ -55,7 +56,8 @@ Item {
     }
 
     // ── Main EQ UI ───────────────────────────────────────────────
-    Column {
+    AC.TabScroll {
+        id: scroll
         anchors.fill: parent
         spacing: 8
         visible: AudioControlState.eqAvailable
@@ -133,8 +135,7 @@ Item {
                             strokeColor: presetChip.active ? CP.neon : CP.alpha(CP.neon, 0.30)
                             strokeWidth: presetChip.active ? 1.5 : 1
                             inset: 0.5
-                            cutTopLeft: 2
-                            cutBottomRight: 2
+                            cutBottomRight: 6
                             Behavior on fillColor   { CAnim {} }
                             Behavior on strokeColor { CAnim {} }
                         }
@@ -186,8 +187,7 @@ Item {
                                  : CP.alpha(Colours.accentSecondary, 0.35)
                     strokeWidth: AudioControlState.eqPending ? 1.5 : 1
                     inset: 0.5
-                    cutTopLeft: 2
-                    cutBottomRight: 2
+                    cutBottomLeft: 6
                     Behavior on fillColor   { CAnim {} }
                     Behavior on strokeColor { CAnim {} }
 
@@ -296,29 +296,29 @@ Item {
 
                 Row {
                     spacing: 4
-                    Text { text: "SELECTED"; font.family: "Oxanium"; font.pixelSize: 6; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "SELECTED"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
                     Text {
                         text: AudioControlState.eqSelectedBand >= 0 ? root.bandFreqs[AudioControlState.eqSelectedBand] + " Hz" : "—"
-                        font.family: "Oxanium"; font.pixelSize: 7; color: "white"
+                        font.family: "Oxanium"; font.pixelSize: 10; color: "white"
                     }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "GAIN"; font.family: "Oxanium"; font.pixelSize: 6; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "GAIN"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
                     Text {
                         text: AudioControlState.eqSelectedBand >= 0 ? (AudioControlState.eqBands[AudioControlState.eqSelectedBand] > 0 ? "+" : "") + AudioControlState.eqBands[AudioControlState.eqSelectedBand] + " dB" : "—"
-                        font.family: "Oxanium"; font.pixelSize: 7; font.bold: true; color: Colours.accentPrimary
+                        font.family: "Oxanium"; font.pixelSize: 10; font.bold: true; color: Colours.accentPrimary
                     }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "Q"; font.family: "Oxanium"; font.pixelSize: 6; font.letterSpacing: 1; font.bold: true; color: CP.neon }
-                    Text { text: "1.0"; font.family: "Oxanium"; font.pixelSize: 7; color: "white" }
+                    Text { text: "Q"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "1.0"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "MODE"; font.family: "Oxanium"; font.pixelSize: 6; font.letterSpacing: 1; font.bold: true; color: CP.neon }
-                    Text { text: "BELL"; font.family: "Oxanium"; font.pixelSize: 7; color: "white" }
+                    Text { text: "MODE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "BELL"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
                 }
             }
         }

@@ -7,16 +7,18 @@ import QtQuick
 
 Item {
     id: root
+    implicitHeight: scroll.contentHeight
 
     readonly property int otherCount: {
         var n = 0
         var arr = AudioControlState.outputNodes
         for (var i = 0; i < arr.length; i++)
-            if (arr[i] !== AudioControlState.defaultSink) n++
+            if (arr[i] !== AudioControlState.focusedSink) n++
         return n
     }
 
-    Column {
+    AC.TabScroll {
+        id: scroll
         anchors.fill: parent
         spacing: 10
 
@@ -50,7 +52,7 @@ Item {
 
         // ── Section: SINK ROUTING ───────────────────────────────
         AC.SectionHeader {
-            visible: AudioControlState.defaultSink !== null
+            visible: AudioControlState.focusedSink !== null
             width: parent.width
             label: "SINK ROUTING"
             trail: "1 ACTIVE / " + root.otherCount + " IDLE"
@@ -58,9 +60,9 @@ Item {
         }
 
         AC.EndpointCard {
-            visible: AudioControlState.defaultSink !== null
+            visible: AudioControlState.focusedSink !== null
             width: parent.width
-            node: AudioControlState.defaultSink
+            node: AudioControlState.focusedSink
             mode: "sink"
             accent: Colours.accentSecondary
             showOscilloscope: false
@@ -71,33 +73,25 @@ Item {
             visible: root.otherCount > 0
             width: parent.width
             label: "ALTERNATIVE ENDPOINTS"
-            trail: "CLICK → REROUTE"
+            trail: "CLICK → REROUTE · RIGHT → MUTE"
             accent: Colours.accentSecondary
         }
 
-        Flickable {
-            id: scroll
+        Column {
+            id: listCol
             width: parent.width
-            height: Math.max(0, parent.height - (AudioControlState.defaultSink ? 84 : 0) - 56 - 80)
-            contentHeight: listCol.height
-            clip: true
+            spacing: 4
 
-            Column {
-                id: listCol
-                width: scroll.width
-                spacing: 4
-
-                Repeater {
-                    model: AudioControlState.outputNodes
-                    delegate: AC.AudioDeviceRow {
-                        required property var modelData
-                        width: listCol.width
-                        visible: modelData !== AudioControlState.defaultSink
-                        node: modelData
-                        mode: "selectable"
-                        accent: Colours.accentSecondary
-                        onSelectRequested: AudioControlState.setDefaultSink(modelData)
-                    }
+            Repeater {
+                model: AudioControlState.outputNodes
+                delegate: AC.AudioDeviceRow {
+                    required property var modelData
+                    width: listCol.width
+                    visible: modelData !== AudioControlState.focusedSink
+                    node: modelData
+                    mode: "selectable"
+                    accent: Colours.accentSecondary
+                    onSelectRequested: AudioControlState._selectedSink = modelData
                 }
             }
         }
@@ -176,7 +170,7 @@ Item {
                             NumberAnimation on x {
                                 from: 0; to: link1.width
                                 duration: 2400; loops: Animation.Infinite
-                                running: true
+                                running: root.visible
                             }
                             Component.onCompleted: x = index * (link1.width / 2)
                         }
@@ -237,7 +231,7 @@ Item {
                             NumberAnimation on x {
                                 from: 0; to: link2.width
                                 duration: 2400; loops: Animation.Infinite
-                                running: true
+                                running: root.visible
                             }
                             Component.onCompleted: x = index * (link2.width / 2)
                         }
@@ -266,7 +260,13 @@ Item {
                         }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: AudioControlState.defaultSink ? (AudioControlState.defaultSink.name || "—").substring(0, 8).toUpperCase() : "—"
+                            width: sinkBox.width - 6
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                            text: AudioControlState.defaultSink
+                                ? (AudioControlState.defaultSink.description
+                                || AudioControlState.defaultSink.name || "—").substring(0, 8).toUpperCase()
+                                : "—"
                             font.family: "Oxanium"
                             font.pixelSize: 9
                             color: Colours.textMuted

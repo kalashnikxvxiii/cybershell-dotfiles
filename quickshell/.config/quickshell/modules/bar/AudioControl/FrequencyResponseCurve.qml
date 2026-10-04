@@ -75,9 +75,11 @@ Item {
         renderTarget: Canvas.FramebufferObject
 
         // Redraw every CAVA value update via Connections
-        Connections {
-            target: Audio.cava
-            function onValuesChanged() { cavaLayer.requestPaint() }
+        Timer {
+            interval: 33
+            repeat: true
+            running: cavaLayer.visible
+            onTriggered: cavaLayer.requestPaint()
         }
 
         onPaint: {

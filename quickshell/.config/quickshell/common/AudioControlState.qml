@@ -9,48 +9,64 @@ import Quickshell.Services.Pipewire
 QtObject {
     id: root
 
-    // ── UI state (persisted) ──────────────────────────────────────
+    // -- UI state (persisted) ------------------------------------
     property bool   expanded:  false
+    property bool   popupOpen: false
     property string activeTab: "outputs"  // "outputs" | "inputs" | "apps" | "eq"
 
     onExpandedChanged:  _saveUiStateDebounced.restart()
     onActiveTabChanged: _saveUiStateDebounced.restart()
 
-    // ── PipeWire bindings (reactive) ──────────────────────────────
+    // -- PipeWire bindings (reactive) ----------------------------------
     readonly property var defaultSink:   Pipewire.preferredDefaultAudioSink
     readonly property var defaultSource: Pipewire.preferredDefaultAudioSource
 
     // Filtered node lists (recomputed reactively when Pipewire.nodes.values changes)
-    readonly property var outputNodes: {
-        var arr = []
+    property var outputNodes: []
+    property var inputNodes: []
+    property var streamNodes: []
+
+    property var _nodesConn: Connections {
+        target: Pipewire.nodes
+        function onValuesChanged() { root._rebuildNodeLists() }
+    }
+
+    function _sameSet(a, b) {
+        if (a.length !== b.length) return false
+        for (var i = 0; i < a.length; i++)
+            if (a[i] !== b[i]) return false
+        return true
+    }
+
+    function _rebuildNodeLists() {
+        var outs = [], ins = [], streams = []
         var nodes = Pipewire.nodes.values
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i]
-            if (n && n.isSink && !n.isStream && n.audio !== null)
-                arr.push(n)
+            if (!n || n.audio === null) continue
+            if (n.isStream) {
+                if (n.type !== PwNodeType.AudioInStream
+                    && (n.name || "").indexOf("loopback-") !== 0
+                    && (n.name || "").indexOf("cyberaudio-") !== 0)
+                    streams.push(n)
+            } else if (n.isSink) {
+                outs.push(n)
+            } else {
+                ins.push(n)
+            }
         }
-        return arr
+        if (!_sameSet(outs, outputNodes)) outputNodes = outs
+        if (!_sameSet(ins, inputNodes)) inputNodes = ins
+        if (!_sameSet(streams, streamNodes)) streamNodes = streams
     }
-    readonly property var inputNodes: {
-        var arr = []
-        var nodes = Pipewire.nodes.values
-        for (var i = 0; i < nodes.length; i++) {
-            var n = nodes[i]
-            if (n && !n.isSink && !n.isStream && n.audio !== null)
-                arr.push(n)
-        }
-        return arr
-    }
-    readonly property var streamNodes: {
-        var arr = []
-        var nodes = Pipewire.nodes.values
-        for (var i = 0; i < nodes.length; i++) {
-            var n = nodes[i]
-            if (n && n.isStream && n.audio !== null)
-                arr.push(n)
-        }
-        return arr
-    }
+
+    property var _selectedSink: null
+    property var _selectedSource: null
+
+    readonly property var focusedSink: (_selectedSink && outputNodes.indexOf(_selectedSink) >= 0)
+                                    ? _selectedSink : defaultSink
+    readonly property var focusedSource: (_selectedSource && inputNodes.indexOf(_selectedSource) >= 0)
+                                        ? _selectedSource : defaultSource
 
     // PwObjectTracker keeps audio properties live for all tracked nodes
     property var _tracker: PwObjectTracker {
@@ -65,7 +81,7 @@ QtObject {
         }
     }
 
-    // ── PipeWire mutating helpers ─────────────────────────────────
+    // -- PipeWire mutating helpers ------------------------------
     function setVolume(node, val) {
         if (!node || !node.audio) return
         var v = Number(val)
@@ -80,17 +96,15 @@ QtObject {
 
     function setDefaultSink(node) {
         if (!node) return
-        console.log("[audio] setDefaultSink id=" + node.id + " name=" + node.name)
         Quickshell.execDetached(["wpctl", "set-default", String(node.id)])
     }
 
     function setDefaultSource(node) {
         if (!node) return
-        console.log("[audio] setDefaultSource id=" + node.id + " name=" + node.name)
         Quickshell.execDetached(["wpctl", "set-default", String(node.id)])
     }
 
-    // ── EQ state (read from ~/.cache/qs-audio/eq_state.json) ──────
+    // -- EQ state (read from ~/.cache/qs-audio/eq_state.json) --------------
     property var eqBands: [0,0,0,0,0,0,0,0,0,0]  // -12..+12 dB per band
     property string eqPreset:  "Flat"
     property bool   eqPending: false
@@ -101,7 +115,6 @@ QtObject {
     readonly property string _eqScript: Qt.resolvedUrl("../scripts/audio-eq.sh").toString().replace("file://", "")
 
     function applyEqPreset(name) {
-        console.log("[audio] applyEqPreset name=" + name)
         Quickshell.execDetached([_eqScript, "preset", name])
         _eqReloadTimer.restart()
     }
@@ -113,7 +126,6 @@ QtObject {
     }
 
     function applyEqCustom() {
-        console.log("[audio] applyEqCustom")
         Quickshell.execDetached([_eqScript, "apply"])
         _eqReloadTimer.restart()
     }
@@ -160,7 +172,7 @@ QtObject {
         }
     }
 
-    // ── UI state persistence ──────────────────────────────────────
+    // -- UI state persistence --------------------------------
     readonly property string _uiStatePath: Quickshell.env("HOME") + "/.cache/qs-audio/ui_state.json"
 
     property var _saveUiStateDebounced: Timer {
@@ -200,5 +212,6 @@ QtObject {
     Component.onCompleted: {
         _eqFile.reload()
         _uiStateFile.reload()
+        _rebuildNodeLists()
     }
 }

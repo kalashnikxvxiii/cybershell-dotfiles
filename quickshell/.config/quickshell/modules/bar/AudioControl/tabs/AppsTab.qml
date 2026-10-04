@@ -7,6 +7,7 @@ import QtQuick
 
 Item {
     id: root
+    implicitHeight: scroll.contentHeight
 
     readonly property int streamCount: AudioControlState.streamNodes.length
     readonly property int mutedCount: {
@@ -18,7 +19,8 @@ Item {
         return n
     }
 
-    Column {
+    AC.TabScroll {
+        id: scroll
         anchors.fill: parent
         spacing: 10
 
@@ -57,27 +59,18 @@ Item {
             trail: root.streamCount + " ACTIVE STREAMS → MASTER · CLICK ROW = MUTE"
             accent: Colours.accentPrimary
         }
-
-        Flickable {
-            id: scroll
+        Column {
+            id: listCol
             width: parent.width
-            height: Math.max(0, parent.height - 24 - 80)
-            contentHeight: listCol.height
-            clip: true
+            spacing: 4
 
-            Column {
-                id: listCol
-                width: scroll.width
-                spacing: 4
-
-                Repeater {
-                    model: AudioControlState.streamNodes
-                    delegate: AC.StreamFlowNode {
-                        required property var modelData
-                        width: listCol.width
-                        streamNode: modelData
-                        accent: Colours.accentPrimary
-                    }
+            Repeater {
+                model: AudioControlState.streamNodes
+                delegate: AC.StreamFlowNode {
+                    required property var modelData
+                    width: listCol.width
+                    streamNode: modelData
+                    accent: Colours.accentPrimary
                 }
             }
         }

@@ -14,13 +14,13 @@ import CyberAudio.Services
 Item {
     id: root
 
-    // ── Public API ───────────────────────────────────────────────
+    // -- Public API -------------------------------------------------
     property var    node:               null
     property color  accent:             Colours.accentSecondary
     property string mode:               "sink"            // "sink" | "source"
     property bool   showOscilloscope:   false
 
-    // ── Derived ──────────────────────────────────────────────────
+    // -- Derived ------------------------------------------------
     readonly property string displayName: {
         if (!node) return "—"
         return (node.description || node.name || "Unknown").toUpperCase()
@@ -53,8 +53,16 @@ Item {
         var db = 20 * Math.log(v) / Math.LN10
         return Math.max(0, Math.min(1, (db + 60) / 60))
     }
-    readonly property real vuL: root.showOscilloscope ? 0 : root._toBar(Audio.outLevel.peakL)
-    readonly property real vuR: root.showOscilloscope ? 0 : root._toBar(Audio.outLevel.peakR)
+    readonly property string nodeTarget: node && node.properties
+                                        ? (node.properties["node.name"] || "") : ""
+
+    NodeLevelProvider {
+        id: cardLevel
+        target: root.nodeTarget
+        captureSink: root.mode === "sink"
+    }
+    readonly property real vuL: root.showOscilloscope ? 0 : root._toBar(cardLevel.peakL)
+    readonly property real vuR: root.showOscilloscope ? 0 : root._toBar(cardLevel.peakR)
 
     // Peak hold (3s decay)
     property real _peakL: 0
@@ -71,23 +79,22 @@ Item {
         }
     }
 
-    // ── Sizing ───────────────────────────────────────────────────
+    // -- Sizing ------------------------------------------
     implicitHeight: showOscilloscope ? 110 : 84
 
-    // ── Background card ──────────────────────────────────────────
+    // -- Background card ----------------------------------------------
     CutShape {
         anchors.fill: parent
         fillColor: muted ? CP.alpha(CP.void2, 0.45) : CP.alpha(root.accent, 0.10)
         strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : root.accent
         strokeWidth: 1.5
         inset: 0.5
-        cutTopLeft: 4
-        cutBottomRight: 4
+        cutTopRight: 24
         Behavior on fillColor   { CAnim {} }
         Behavior on strokeColor { CAnim {} }
     }
 
-    // ── Badge ────────────────────────────────────────────────────
+    // -- Badge ------------------------------------------------
     Text {
         id: badge
         anchors.top: parent.top
@@ -101,7 +108,7 @@ Item {
         color: muted ? Colours.textMuted : root.accent
     }
 
-    // ── Device name (Oxanium 14 bold) ────────────────────────────
+    // -- Device name (Oxanium 14 bold) -------------------------------------
     Text {
         id: name
         anchors.top: badge.bottom
@@ -119,7 +126,7 @@ Item {
         elide: Text.ElideRight
     }
 
-    // ── Metadata line ────────────────────────────────────────────
+    // -- Metadata line --------------------------------
     Text {
         id: meta
         anchors.top: name.bottom
@@ -142,25 +149,28 @@ Item {
         elide: Text.ElideRight
     }
 
-    // ── Cattura reale del mic: attiva solo finché questa card è viva ──
+    // -- Cattura reale del mic: attiva solo finché questa card è viva -----------------
     Loader {
-        active: root.showOscilloscope && root.mode === "source" && root.node !== null
+        active: root.showOscilloscope && root.mode === "source" && root.node !== null && root.visible
         sourceComponent: Item {
             ServiceRef { service: Audio.micScope }
             Binding {
                 target: Audio.micScope
                 property: "target"
                 value: root.node && root.node.properties
-                       ? (root.node.properties["node.name"] || "") : ""
+                    ? (root.node.properties["node.name"] || "") : ""
             }
         }
     }
 
-    // ── Livello reale in uscita: attivo solo mentre la card OUT è viva ──
+    // -- Livello reale in uscita: attivo solo mentre la card OUT è viva ---------------
+    // The ref lives inside the component: as a direct child of a Loader it
+    // outlived `active` and kept the capture running with the popup closed.
+    // The VU reads cardLevel, not Audio.outLevel, so that is the one to hold.
     Loader {
-        active: !root.showOscilloscope && root.node !== null
+        active: !root.showOscilloscope && root.node !== null && root.visible
         sourceComponent: Item {
-            ServiceRef { service: Audio.outLevel }
+            ServiceRef { service: cardLevel }
         }
     }
 
@@ -327,6 +337,13 @@ Item {
         font.pixelSize: 13
         font.bold: true
         color: muted ? Colours.textMuted : Colours.accentPrimary
+    }
+
+    // ── RMB -> mute the active device ───────────────
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        onClicked: AudioControlState.toggleMute(root.node)
     }
 }
 
