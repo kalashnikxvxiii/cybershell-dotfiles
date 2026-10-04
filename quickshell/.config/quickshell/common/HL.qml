@@ -42,9 +42,29 @@ Singleton {
     }
 
     function closeWindow(addr) {
-        // hl.dsp.window.close() with no target closes the active window.
-        // For a specific window we need to focus it first then close.
-        run("hl.dispatch(hl.dsp.focus({window = \"address:" + addr + "\"})); hl.dispatch(hl.dsp.window.close())")
+        if (!addr) return
+        var a = String(addr)
+        if (a.indexOf("0x") !== 0) a = "0x" + a
+        run("hl.dispatch(hl.dsp.window.close(\"address:" + a + "\"))")
+    }
+
+    // Moves specific windows to a workspace without dragging the view along.
+    //
+    // `follow = false` is what makes it silent -- the classic
+    // movetoworkspacesilent. `silent`/`quiet` are accepted by the Lua table
+    // and then ignored, so the focus follows the window: verified.
+    // The whole batch goes in one dispatch, so a reorder is a single IPC
+    // round trip rather than one per window.
+    function moveWindows(addrs, target) {
+        if (!addrs || addrs.length === 0) return
+        var lua = ""
+        for (var i = 0; i < addrs.length; i++) {
+            var a = String(addrs[i])
+            if (a.indexOf("0x") !== 0) a = "0x" + a
+            lua += "hl.dispatch(hl.dsp.window.move({ workspace = \"" + target
+                 + "\", window = \"address:" + a + "\", follow = false })) "
+        }
+        run(lua)
     }
 
     function exit() {

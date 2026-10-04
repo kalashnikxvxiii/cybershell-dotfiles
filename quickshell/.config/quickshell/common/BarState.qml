@@ -7,16 +7,22 @@ import QtQuick
 Singleton {
     id: root
 
-    // ── State ─────────────────────
+    // -- State ------------------
     // Monitors name array currently hidden. Screen visible if not included
     property var hiddenScreens: []
 
-    // ── Query API (used in bindings) ──────────────
+    // Workspace under the cursor, for preview. Runtime-only
+    property var previewWorkspace: null
+
+    // Cursor hover preview's popup: avoid closing
+    property bool previewPopupHovered: false
+
+    // -- Query API (used in bindings) ---------------
     function isVisibleOn(screenName) {
         return root.hiddenScreens.indexOf(screenName) === -1
     }
 
-    // ── Actions ────────────────────
+    // -- Actions ------------------
     function toggleFocused() { _focusedQuery.running = true }
 
     function toggleAll() {
@@ -40,7 +46,7 @@ Singleton {
         root.hiddenScreens = next
     }
 
-    // ── Hyprland: figure out which monitor has the cursor ────────────
+    // -- Hyprland: figure out which monitor has the cursor -----------------
     Process {
         id: _focusedQuery
         command: ["hyprctl", "monitors", "-j"]
@@ -60,7 +66,7 @@ Singleton {
         }
     }
 
-    // ── IPC: touch triggers ──────────────────────────────────
+    // -- IPC: touch triggers ------------------------------------
     FileView {
         path: "/tmp/qs-bar-toggle-focused"
         watchChanges: true

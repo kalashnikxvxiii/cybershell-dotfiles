@@ -129,8 +129,8 @@ Item {
             Repeater {
                 id: centerRepeater
                 model: bar.isDP1
-                       ? BC.entriesPrimaryCenter
-                       : BC.entriesSecondaryCenter
+                    ? BC.entriesPrimaryCenter
+                    : BC.entriesSecondaryCenter
                 
                 delegate: DelegateChooser {
                     role: "name"
@@ -157,25 +157,46 @@ Item {
         }
     }
 
-    // ── Volume popup ───────────────────────────────────────────
+    // -- Volume popup --------------------------
     PopupWindow {
         id: volumePopupWin
-        visible: bar.volumePopupVisible
+        visible: bar.volumePopupVisible || audioControlContent.height > 0
         color: "transparent"   // let CutShape diagonals show desktop background through
         anchor.window: bar.parentWindow
         anchor.item: rightSection.volumeAnchor
-        anchor.rect: Qt.rect(0, 4, 72, barHeight)
-        // Edges: Bottom=1 Left=2 Right=4 Top=8 (no 4|1/4|2=Left|Right, no 8|1=Top|Bottom)
-        anchor.edges: 1 | 2
-        anchor.gravity: 8 | 2
-        implicitWidth: audioControlContent.width
-        implicitHeight: audioControlContent.height
+        // Edges: Top=1 Left=2 Right=4 Bottom=8
+        anchor.edges: Edges.Bottom
+        anchor.gravity: Edges.Bottom
+        implicitWidth:  Math.max(1, audioControlContent.width)
+        implicitHeight: Math.max(1, audioControlContent.height)
         onVisibleChanged: if (visible) audioControlContent.forceActiveFocus()
 
         AudioControlPopup {
             id: audioControlContent
+            open: bar.volumePopupVisible
             onCloseRequested: bar.volumePopupVisible = false
         }
     }
+    
+    PopupWindow {
+        id: wsPreviewWin
+        visible: BarState.previewWorkspace !== null
+                && BarState.previewWorkspace.monitor
+                && bar.screen
+                && BarState.previewWorkspace.monitor.name === bar.screen.name
+        color: "transparent"
+        anchor.window: bar.parentWindow
+        anchor.rect: Qt.rect(0, barHeight, 1, 1)
+        anchor.edges: Edges.Bottom | Edges.Left
+        anchor.gravity: Edges.Bottom | Edges.Right
+        implicitWidth: Math.max(1, wsPreviewContent.implicitWidth)
+        implicitHeight: Math.max(1, wsPreviewContent.implicitHeight)
 
+        WorkspacePreview {
+            id: wsPreviewContent
+            workspace: BarState.previewWorkspace
+            previewWidth: 420
+            active: wsPreviewWin.visible
+        }
+    }
 }
