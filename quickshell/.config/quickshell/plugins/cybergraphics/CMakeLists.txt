@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick Concurrent)
 
 qt_add_qml_module(cybergraphics
     URI CyberGraphics
@@ -14,12 +14,15 @@ qt_add_qml_module(cybergraphics
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/CyberGraphics"
     SOURCES
         sparklineitem.hpp sparklineitem.cpp
+        imageanalyser.hpp imageanalyser.cpp
 )
 
 target_link_libraries(cybergraphics PRIVATE
     Qt6::Core
+    Qt6::Gui
     Qt6::Qml
     Qt6::Quick
+    Qt6::Concurrent
 )
 
 install(
