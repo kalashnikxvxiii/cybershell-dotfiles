@@ -59,3 +59,7 @@ hypr/.config/hypr/test-load-plugin.sh
 
 # vendored: split-monitor-workspaces Lua library (managed as separate clone, not as submodule)
 hypr/.config/hypr/lib/split-monitor-workspaces/
+
+# Python bytecode
+__pycache__/
+*.pyc
