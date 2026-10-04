@@ -3,6 +3,7 @@
 import Quickshell.Io
 import QtQuick
 import "../../common/Colors.js" as CP
+import "../../common"
 import "../../common/io"
 
 CyberpunkModule {
@@ -14,7 +15,10 @@ CyberpunkModule {
     accent: connected ? CP.cyan : Qt.rgba(0.2, 0.2, 0.2, 1.0)
     text:   connected ? " " + btStatus : " OFF"
 
-    onLeftClick: function() { _bmgr.running = true }
+    // Left click opens the Sonar panel on its bluetooth view; blueman stays
+    // one right click away for everything the panel does not cover.
+    onLeftClick: function() { SonarState.toggleView("bt") }
+    onRightClick: function() { _bmgr.running = true }
     Process { id: _bmgr; command: ["blueman-manager"]; running: false }
 
     TimedProcess {

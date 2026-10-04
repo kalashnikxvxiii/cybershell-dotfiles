@@ -57,23 +57,22 @@ Item {
                     height: parent.height
                     spacing: 0
 
-                    Item {
-                        width: 0
-                        Component.onCompleted: root.volumeAnchor = this
-                    }
-
-                    WallpaperBarModule {
-                        height: parent.height; showBackground: false
-                    }
-
                     PulseModule {
                         height: parent.height; showBackground: false
                         onLeftClick: function() { root.volumeToggleRequested() }
+                        Component.onCompleted: root.volumeAnchor = this
                     }
 
                     Clock {
                         id: clockItem
                         height: innerRow.height
+                    }
+
+                    // Network + bluetooth, between the clock and the tray, on
+                    // the primary screen only.
+                    SonarModule {
+                        height: parent.height
+                        showBackground: false
                     }
 
                     Item {
@@ -103,17 +102,12 @@ Item {
                 Row {
                     height: parent.height
                     spacing: 0
-                    
-                    // Anchor for the volume popup (invisible)
-                    Item {
-                        width: 0
-                        Component.onCompleted: root.volumeAnchor = this
-                    }
 
                     PulseModule {
                         height: parent.height
                         showBackground: false
                         onLeftClick: function() { root.volumeToggleRequested() }
+                        Component.onCompleted: root.volumeAnchor = this
                     }
 
                     // Spacer reserving room for Tray's leftward expansion

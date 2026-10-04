@@ -2,6 +2,7 @@
 
 import QtQuick
 import "../../common/Colors.js" as CP
+import "../../common"
 import "../../common/io"
 import "../../common/effects"
 
@@ -21,6 +22,9 @@ CyberpunkModule {
     }
 
     PulseAnim on opacity { running: !root.connected; duration: 700 }
+
+    // Opens the Sonar panel on its network view; a second click closes it.
+    onLeftClick: function() { SonarState.toggleView("net") }
 
     TimedProcess {
         interval: 5000
