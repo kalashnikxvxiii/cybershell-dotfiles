@@ -111,8 +111,8 @@ make_blur_composite() {
 
     if magick "$img" \
         \( -clone 0 -thumbnail "${small}^" -gravity center -extent "$small" \
-           -blur 0x12 -modulate 85,75,100 \
-           -resize "${res}!" \) \
+            -blur 0x12 -modulate 85,75,100 \
+            -resize "${res}!" \) \
         \( -clone 0 -resize "${res}" \) \
         -delete 0 \
         -gravity center -compose over -composite \
@@ -270,6 +270,10 @@ _generate_impl() {
     [ -d "$WPE_DIR" ] && find "$WPE_DIR" -mindepth 1 -maxdepth 1 -type d | sort | \
     while IFS= read -r entry; do
         [ -f "$entry/project.json" ] || continue
+        # Fetched only to preview on the desktop. It lives in the same folder
+        # as the real ones, so without this marker a catalogue rebuild while a
+        # preview is up would adopt it permanently.
+        [ -f "$entry/.qs-trial" ] && continue
         local key; key=$(get_thumb_key "$entry")
         local thumb; thumb=$(generate_thumb "$entry" "$key")
         [ -z "$thumb" ] && continue
@@ -362,7 +366,21 @@ cmd_catalog() {
 
 cmd_preview_wpe() {
     local screen="$1" entry="$2"
-    [ -d "$entry" ] && [ -f "$entry/project.json" ] || return
+    # Reports instead of returning silently. This guard failing used to leave
+    # the picker with no preview and no way to tell why -- the caller discarded
+    # the output too, so a missing item looked identical to a working one.
+    if [ ! -d "$entry" ]; then
+        echo "ERROR:NO_DIR"
+        return 1
+    fi
+    if [ ! -f "$entry/project.json" ]; then
+        echo "ERROR:NO_PROJECT"
+        return 1
+    fi
+    if ! command -v linux-wallpaperengine >/dev/null 2>&1; then
+        echo "ERROR:NO_ENGINE"
+        return 1
+    fi
 
     local wpe_id
     wpe_id=$(basename "$entry")
@@ -379,14 +397,22 @@ cmd_preview_wpe() {
         local pid
         pid=$(cat "$pid_file" 2>/dev/null)
         [ -n "$pid" ] && kill "$pid" 2>/dev/null
+        rm -f "$pid_file"
     fi
     pkill -f "linux-wallpaperengine.*--screen-root $screen" 2>/dev/null
-    sleep 0.3
+    for _i in $(seq 1 40); do
+        pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 || break
+        sleep 0.1
+    done
 
+    pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 && \
+        { echo "$(date '+%d/%m %T') DOUBLE on $screen from ${FUNCNAME[0]}" \
+            >> "$HOME/.cache/wallpaper-themer/wpe-double.log"
+          notify-send -u critical "WPE" "Two engines on $screen (${FUNCNAME[0]})"; } 
     linux-wallpaperengine \
         --screen-root "$screen" \
         --bg "$wpe_id" \
-        --volume 0 \
+        --volume 100 \
         --noautomute \
         --no-fullscreen-pause \
         --mpvparam=hwdec=auto > "$HOME/.cache/wallpaper-themer/wpe_preview_${screen}.log" 2>&1 &
@@ -394,6 +420,29 @@ cmd_preview_wpe() {
 
     # Save as preview pid, NOT as wallpaper-themer state
     echo "$new_pid" > "/tmp/qs-wpe-preview-pid-${screen}"
+
+    # The engine runs at --volume 100 so the audio stays controllable, which
+    # leaves the silence to the sink-input: hand it the themer's audio level,
+    # exactly as an applied wallpaper gets. Output to /dev/null: the themer
+    # forks a waiter that would otherwise hold the caller's stdout pipe open.
+    "$HOME/.config/hypr/scripts/wallpaper-themer.sh" preview-audio \
+        "$screen" "$entry" "$new_pid" >/dev/null 2>&1
+
+    # The engine fails asynchronously -- a bad output name or a missing asset
+    # dir kills it a moment after launch, which the caller could never see.
+    # A process still alive here is a launch that took.
+    sleep 1.5
+    if ! kill -0 "$new_pid" 2>/dev/null; then
+        # Two lines appear even in runs that work, so they would otherwise
+        # always win the match and hide the real cause.
+        echo "ERROR:WPE_EXIT:$(grep -iE 'error|cannot|no outputs|failed' \
+            "$HOME/.cache/wallpaper-themer/wpe_preview_${screen}.log" 2>/dev/null \
+            | grep -viE 'Cannot find directory for steam app|Failed to initialize GLEW' \
+            | head -1 | cut -c1-120)"
+        return 1
+    fi
+
+    echo "OK"
 }
 
 cmd_stop_preview_wpe() {

@@ -4,6 +4,7 @@ import QtQuick.Effects
 import QtQuick
 import QtMultimedia
 import Quickshell.Io
+import CyberGraphics
 import WpePreview 1.0
 
 Item {
@@ -374,14 +375,34 @@ Item {
                 height: 48
                 active: root.isCurrent
                 sourceComponent: Item {
+                    id: titleBar
                     anchors.fill: parent
+
+                    // How dark the bar has to be depends on the bottom of the
+                    // wallpaper, where the label sits - a thumbnail can be dark
+                    // overall and blinding along its lower edge
+                    ImageAnalyser {
+                        id: stripAnalyser
+                        source: root.thumb
+                        rescaleSize: 48
+                        // Fixed, not derived from the card: cardHeight animates,
+                        // and a rect bound to it would re-run the analysis on
+                        // every frame of the resize
+                        sampleRect: Qt.rect(0, 0.75, 1, 0.25)
+                    }
+
+                    // The floor keeps the bar readable while the analysis is
+                    // still running (luminance starts at 0) and keeps it a
+                    // design element rather than letting it vanish
+                    property real scrim: Math.max(0.35, Math.min(0.92, stripAnalyser.luminance * 1.35))
+                    Behavior on scrim { Anim { duration: 200 } }
 
                     Rectangle {
                         anchors.fill: parent
                         gradient: Gradient {
                             GradientStop { position: 0.0; color: "transparent" }
-                            GradientStop { position: 0.7; color: Qt.rgba(0, 0, 0, 0.7) }
-                            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.85) }
+                            GradientStop { position: 0.7; color: Qt.rgba(0, 0, 0, titleBar.scrim * 0.82) }
+                            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, titleBar.scrim) }
                         }
                     }
 
@@ -523,6 +544,7 @@ Item {
                     cutBottomLeft: playlistBadge.visible ? 0 : 8
                     showTop: false
                     showRight: false
+                    showLeft: playlistBadge.visible ? false : true
                 }
 
                 Text {
@@ -590,7 +612,7 @@ Item {
         width: Math.max(24 * _plScale, _plPos.toString().length * 10 * _plScale + 10)
         height: 24 * _plScale
         visible: root.path !== "" && root.searchPreviewThumb === "" && _plPos > 0
-        opacity: _hovered ? 1.0 : 0.45
+        opacity: _hovered ? 1.0 : 0.7
         z: 200
 
         property real _plScale: cardWrapper.height > 0 ? cardWrapper.height / 450 : 1
@@ -620,7 +642,7 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.cyan, 0.6)
+                    fillColor: CP.alpha(CP.void2, 0.85)
                     strokeColor: playlistBadge._hovered
                                 ? CP.alpha(CP.yellow, 0.9)
                                 : CP.alpha(CP.yellow, 0.6)

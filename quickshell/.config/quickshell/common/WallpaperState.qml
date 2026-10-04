@@ -174,6 +174,25 @@ QtObject {
     property var  catalogEntries: []
     property bool catalogReady:   false
 
+    // The picker rebuilds itself from this array every time it opens, and the
+    // array is read from disk only at startup. A download or a deletion that
+    // touched nothing but the picker's own model was therefore undone by the
+    // next open: new wallpapers vanished, deleted ones came back. These keep
+    // it current the moment something changes; reloadCatalog() later replaces
+    // the placeholder fields with what the regenerated file has (thumbnail,
+    // extracted colour).
+    function addCatalogEntry(entry) {
+        if (!entry || !entry.path) return
+        var next = catalogEntries.filter(function (e) { return e.path !== entry.path })
+        next.push(entry)
+        catalogEntries = next
+    }
+
+    function removeCatalogEntry(path) {
+        if (!path) return
+        catalogEntries = catalogEntries.filter(function (e) { return e.path !== path })
+    }
+
     function reloadCatalog() {
         catalogReady = false
         _catalogProc.running = false

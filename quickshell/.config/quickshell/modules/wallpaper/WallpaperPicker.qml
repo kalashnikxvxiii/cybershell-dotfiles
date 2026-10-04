@@ -16,6 +16,9 @@ Scope {
     readonly property string scriptsDir: "/home/kalashnikxv/.config/quickshell/scripts"
     readonly property string themerDir: "/home/kalashnikxv/.config/hypr/scripts"
     readonly property string wpeBaseDir: "/home/kalashnikxv/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960"
+    // Where steamcmd assembles an item before moving it into place.
+    readonly property string wpeStagingDir:
+        root.wpeBaseDir.replace("/content/", "/downloads/")
     readonly property bool isActiveScreen:
         WallpaperState.pickerOpen && screen.name === WallpaperState.activeScreen
     
@@ -35,6 +38,16 @@ Scope {
     property bool   wpePreviewActive:       false
     property bool   deleteDialogOpen:       false
     property bool   previewShown:           false
+    // Why the last WPE preview or download did not happen. Every failure
+    // along that path used to be silent: the shell script's output was
+    // discarded and a steamcmd failure only cleared state, so a broken
+    // preview looked exactly like one that had never been asked for.
+    property string previewError:           ""
+    // A preview asked for with the arrow keys leaves the pointer wherever
+    // it was -- usually over the results panel or the preview card, which
+    // are exactly the items that keep the picker opaque. The preview then
+    // runs behind a UI that never dims, and looks like it never started.
+    property bool   _previewKeyboard:       false
     property bool   downloading:            false
     property bool   _skipInit:              false
     property real   downloadProgress:       0
@@ -344,6 +357,26 @@ Scope {
         id: bgRefreshProc
         command: ["bash", "-c", root.scriptsDir + "/wallpaper-picker.sh generate > /dev/null"]
         running: false
+        // Regeneration only rewrites the file; the picker reads the in-memory
+        // copy, so it has to be reloaded or the next open shows the old list.
+        // A change requested mid-run gets one more pass instead of being lost:
+        // setting running = true on a running process does nothing, and a
+        // download finishing then would never reach the file.
+        onExited: {
+            if (root._catalogDirty) {
+                root._catalogDirty = false
+                Qt.callLater(function () { bgRefreshProc.running = true })
+                return
+            }
+            WallpaperState.reloadCatalog()
+        }
+    }
+
+    property bool _catalogDirty: false
+
+    function _requestCatalogRefresh() {
+        if (bgRefreshProc.running) { root._catalogDirty = true; return }
+        bgRefreshProc.running = true
     }
 
     Timer {
@@ -482,7 +515,7 @@ Scope {
             if (isWpe && root._trialDownloads[identifier] === true) {
                 var wpeDir = root.wpeBaseDir + "/" + identifier
                 root._skipInit = true
-                wallpaperModel.append({
+                var promotedEntry = {
                     path:       wpeDir,
                     thumb:      wpeDir,
                     title:      dlTitle || identifier,
@@ -490,7 +523,9 @@ Scope {
                     type:       "scene",
                     color:      "#888888",
                     videoFile:  ""
-                })
+                }
+                wallpaperModel.append(promotedEntry)
+                WallpaperState.addCatalogEntry(promotedEntry)
                 root._skipInit = false
                 for (var ai = 0; ai < repeater.count; ai++) {
                     var ait = repeater.itemAt(ai)
@@ -510,7 +545,13 @@ Scope {
                 root.downloadCount++
                 completionGlitch.start()
                 // Regen catalog so the new WPE persists across restarts
-                bgRefreshProc.running = true
+                // Unmarked and rebuilt by one command, so the rebuild cannot
+                // run first and skip the item that was just added. Kept off
+                // bgRefreshProc, whose command is shared with three other
+                // callers that must keep the plain rebuild.
+                Quickshell.execDetached(["bash", "-c",
+                    "rm -f '" + wpeDir + "/.qs-trial'; "
+                    + root.scriptsDir + "/wallpaper-picker.sh generate > /dev/null"])
                 return
             }
 
@@ -584,7 +625,9 @@ Scope {
             WallpaperState.setScreenWallpaper(sn, "")
             WallpaperState.setScreenKind(sn, "wpe")
             Quickshell.execDetached(["bash", "-c",
-                root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
+                // A restore is not a preview: going through the themer puts the
+                // pid in pid_<screen>, which is where everything else looks.
+                root.themerDir + "/wallpaper-themer.sh restore-screen "
                 + sn + " '" + path + "'"])
         } else {
             WallpaperState.setScreenWallpaper(sn, path)
@@ -605,10 +648,17 @@ Scope {
                         root._pendingDownloadUrl = root.downloadingUrl
                         root._pendingDownloadTitle = root.downloadingTitle
                         root.downloadingUrl = ""
+                        root.previewError = "STEAM LOGIN REQUIRED"
                         steamAuthDialog.step = "password"
                         steamAuthDialog.open = true
                     } else {
                         root.downloadingUrl = ""
+                        if (data === "ERROR:NO_PROJECT")
+                            root.previewError = "DOWNLOAD INCOMPLETE - NO PROJECT.JSON"
+                        else if (data.startsWith("ERROR:STEAM_FAIL:"))
+                            root.previewError = data.substring(17).toUpperCase()
+                        else
+                            root.previewError = "DOWNLOAD FAILED"
                     }
                     return
                 }
@@ -624,7 +674,12 @@ Scope {
                     // Read title from project.json
                     root._skipInit = true
                     var wpeId = wpePath.substring(wpePath.lastIndexOf("/") + 1)
-                    wallpaperModel.append({
+                    if (root._trialDownloads[wpeId] === true) {
+                        var tdDone = Object.assign({}, root._trialDownloads)
+                        delete tdDone[wpeId]
+                        root._trialDownloads = tdDone
+                    }
+                    var wpeEntry = {
                         path: wpePath,
                         thumb: wpePath,
                         title: root.downloadingTitle || wpeId,
@@ -632,7 +687,9 @@ Scope {
                         type: wpeType,
                         color: "#888888",
                         videoFile: wpeVideoFile
-                    })
+                    }
+                    wallpaperModel.append(wpeEntry)
+                    WallpaperState.addCatalogEntry(wpeEntry)
                     root._skipInit = false
                     for (var i = 0; i < repeater.count; i++) {
                         var it = repeater.itemAt(i)
@@ -649,7 +706,7 @@ Scope {
                     root.downloadCount++
                     completionGlitch.start()
                     // Regenerate catalog in background so new WPE persists
-                    bgRefreshProc.running = true
+                    root._requestCatalogRefresh()
                 } else if (data.startsWith("SAVED:")) {
                     var savedPath = data.substring(6)
                     // Add to catalog and carousel
@@ -658,7 +715,7 @@ Scope {
                                 ? root.downloadingTitle
                                 : fname.substring(0, fname.lastIndexOf("."))
                     root._skipInit = true
-                    wallpaperModel.append({
+                    var savedEntry = {
                         path: savedPath,
                         thumb: savedPath,
                         title: title,
@@ -666,7 +723,13 @@ Scope {
                         type: "image",
                         color: "#888888",
                         videoFile: ""
-                    })
+                    }
+                    wallpaperModel.append(savedEntry)
+                    // Into the in-memory catalog too, or the next open drops
+                    // it; and a regeneration, which static downloads never
+                    // asked for, so the file catches up as well.
+                    WallpaperState.addCatalogEntry(savedEntry)
+                    root._requestCatalogRefresh()
                     root._skipInit = false
                     for (var i = 0; i < repeater.count; i++) {
                         var it = repeater.itemAt(i)
@@ -715,7 +778,9 @@ Scope {
                 "if grep -q 'Invalid Password\\|Cached credentials not found\\|Steam Guard\\|Two-factor' /tmp/steamcmd_out.txt; then " +
                 "  printf 'ERROR:STEAM_AUTH\\n'; exit 1; fi; " +
                 "if ! grep -q 'Success. Downloaded' /tmp/steamcmd_out.txt; then " +
-                "  printf 'ERROR:STEAM_FAIL\\n'; exit 1; fi; " +
+                "  R=$(sed 's/\\x1b\\[[0-9;]*m//g' /tmp/steamcmd_out.txt " +
+                "     | grep -oE 'ERROR![^.]{0,80}' | head -1); " +
+                "  printf 'ERROR:STEAM_FAIL:%s\\n' \"${R:-unknown reason}\"; exit 1; fi; " +
                 "printf 'PROGRESS:100\\n'; " +
                 "WPE_DIR=\"$REAL_HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960/" + url + "\"; " +
                 "if [ -d \"$WPE_DIR\" ] && [ -f \"$WPE_DIR/project.json\" ]; then " +
@@ -729,8 +794,9 @@ Scope {
                 "  PREV=$(find \"$WPE_DIR\" -name 'preview.*' -type f 2>/dev/null | head -1); " +
                 "  [ -n \"$PREV\" ] && { magick \"${PREV}[0]\" -resize x420 -quality 70 \"$THUMB\" 2>/dev/null || " +
                 "    ffmpeg -y -i \"$PREV\" -vframes 1 -q:v 2 -vf 'scale=-1:420' \"$THUMB\" 2>/dev/null; }; " +
+                "  rm -f \"$WPE_DIR/.qs-trial\"; " +
                 "  printf 'SAVED_WPE:%s|%s|%s|%s\\n' \"$WPE_DIR\" \"$TYPE\" \"$VFILE\" \"$THUMB\"; " +
-                "fi"]
+                "else printf 'ERROR:NO_PROJECT\\n'; fi"]
             downloadProc.running = true
             return
         }
@@ -763,10 +829,17 @@ Scope {
                     if (data === "ERROR:STEAM_AUTH") {
                         root._pendingTrialWpeId = root._currentTrialId
                         root._currentTrialId = ""
+                        root.previewError = "STEAM LOGIN REQUIRED"
                         steamAuthDialog.step = "password"
                         steamAuthDialog.open = true
                     } else {
                         root._currentTrialId = ""
+                        if (data === "ERROR:NO_PROJECT")
+                            root.previewError = "DOWNLOAD INCOMPLETE - NO PROJECT.JSON"
+                        else if (data.startsWith("ERROR:STEAM_FAIL:"))
+                            root.previewError = data.substring(17).toUpperCase()
+                        else
+                            root.previewError = "STEAM DOWNLOAD FAILED"
                     }
                     return
                 }
@@ -793,31 +866,107 @@ Scope {
         }
     }
 
-    function _startTrialDownload(wpeId) {
+    // The retry after a Steam login carries only the id, and a download with
+    // no known total reports no progress at all.
+    function _sizeForResult(fullUrl) {
+        var m = filterBar.resultsModel
+        if (!m) return 0
+        for (var i = 0; i < m.count; i++) {
+            var r = m.get(i)
+            if (r && r.fullUrl === fullUrl) return r.fileSize || 0
+        }
+        return 0
+    }
+
+    function _startTrialDownload(wpeId, sizeBytes) {
         // Cancel any in-progress trial first
         trialWpeDlProc.running = false
         root._currentTrialId = wpeId
+        root.previewError = ""
         root._trialDownloading = true
         root._trialDownloadProgress = 0
         trialWpeDlProc.command = ["bash", "-c",
             "REAL_HOME=\"$HOME\"; " +
-            "printf 'PROGRESS:10\\n'; " +
+            "printf 'PROGRESS:2\\n'; " +
+            "TOTAL=" + (sizeBytes > 0 ? sizeBytes : 0) + "; " +
+            "STAGE=\"$REAL_HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/" +
+            "downloads/431960/" + wpeId + "\"; " +
             "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login STEAM_USER " +
-            "+workshop_download_item 431960 " + wpeId + " +quit > /tmp/steamcmd_out.txt 2>&1; " +
+            "+workshop_download_item 431960 " + wpeId + " +quit > /tmp/steamcmd_out.txt 2>&1 & " +
+            "SC=$!; " +
+            // steamcmd reports no percentage of its own, so the staging
+            // directory is the only honest source. Held below 100 so the bar
+            // does not claim completion before the item is in place.
+            "while kill -0 $SC 2>/dev/null; do " +
+            "  if [ \"$TOTAL\" -gt 0 ]; then " +
+            "    CUR=$(du -sb \"$STAGE\" 2>/dev/null | cut -f1); " +
+            "    if [ -n \"$CUR\" ]; then " +
+            "      P=$((CUR * 96 / TOTAL)); [ \"$P\" -gt 96 ] && P=96; " +
+            "      printf 'PROGRESS:%s\\n' \"$P\"; " +
+            "    fi; " +
+            "  fi; " +
+            "  sleep 0.5; " +
+            "done; " +
+            "wait $SC; " +
             "if grep -q 'Invalid Password\\|Cached credentials not found\\|Steam Guard\\|Two-factor' /tmp/steamcmd_out.txt; then " +
             "  printf 'ERROR:STEAM_AUTH\\n'; exit 1; fi; " +
             "if ! grep -q 'Success. Downloaded' /tmp/steamcmd_out.txt; then " +
-            "  printf 'ERROR:STEAM_FAIL\\n'; exit 1; fi; " +
+            // Carries steamcmd's own line up to the banner. Pointing at a log
+            // file is no better than the silence it replaced.
+            "  R=$(sed 's/\\x1b\\[[0-9;]*m//g' /tmp/steamcmd_out.txt " +
+            "     | grep -oE 'ERROR![^.]{0,80}' | head -1); " +
+            "  printf 'ERROR:STEAM_FAIL:%s\\n' \"${R:-unknown reason}\"; exit 1; fi; " +
             "printf 'PROGRESS:100\\n'; " +
             "WPE_DIR=\"$REAL_HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/content/431960/" + wpeId + "\"; " +
-            "[ -d \"$WPE_DIR\" ] && [ -f \"$WPE_DIR/project.json\" ] && " +
-            "  printf 'SAVED_WPE:%s\\n' \"$WPE_DIR\""]
+            "if [ -d \"$WPE_DIR\" ] && [ -f \"$WPE_DIR/project.json\" ]; then " +
+            // Marks it as preview-only, so a catalogue rebuild skips it.
+            "  touch \"$WPE_DIR/.qs-trial\"; " +
+            "  printf 'SAVED_WPE:%s\\n' \"$WPE_DIR\"; " +
+            "else printf 'ERROR:NO_PROJECT\\n'; fi"]
         trialWpeDlProc.running = true
+    }
+
+    // An interrupted fetch leaves a partial payload in steamcmd's staging
+    // directory plus the empty content directory it had made for the move.
+    // steamcmd cleans up neither, and nothing ever reads them again.
+    //
+    // Its .acf bookkeeping is deliberately left alone: that file is shared
+    // state for every wallpaper on disk, and a later download of the same
+    // item completes normally with the stale entry still in it -- verified.
+    function _discardTrialLeftovers(wpeId) {
+        // Never touch an item the catalogue owns.
+        if (!wpeId) return
+        // A rebuild that ran while the preview was up may have catalogued it,
+        // which is what puts the "in library" tick on a search result.
+        if (root.localBasenames[wpeId] === true) {
+            var lb = Object.assign({}, root.localBasenames)
+            delete lb[wpeId]
+            root.localBasenames = lb
+        }
+        // steamcmd may outlive the shell that started it, so it is killed
+        // here before the directories go, or it would write them back. The
+        // bracket keeps the pattern from matching this very command line,
+        // which would otherwise kill the cleanup before it deletes anything.
+        var pat = "workshop_download_item 431960 ["
+                + wpeId.charAt(0) + "]" + wpeId.substring(1)
+        var dir = root.wpeBaseDir + "/" + wpeId
+        Quickshell.execDetached(["bash", "-c",
+            // A complete item without the marker was promoted to the library
+            // and has to survive; an incomplete one has no project.json yet
+            // and is always safe to drop.
+            "if [ -f '" + dir + "/project.json' ] "
+            + "&& [ ! -f '" + dir + "/.qs-trial' ]; then exit 0; fi; "
+            + "pkill -f '" + pat + "' 2>/dev/null; sleep 0.6; "
+            + "rm -rf '" + dir + "' '" + root.wpeStagingDir + "/" + wpeId + "'"])
     }
 
     function _activateWpePreview(wpeId) {
         var sn = root.screen.name
         var wpeDir = root.wpeBaseDir + "/" + wpeId
+        // Selecting the result posted "not downloaded yet"; leaving that up
+        // once the preview actually starts reports a failure that is over.
+        root.previewError = ""
+        root._previewKeyboard = true
         root.previewShown = true
         root.wpePreviewActive = true
         root._searchPreviewIdx = carousel.selectedSearchIdx
@@ -826,9 +975,36 @@ Scope {
         // Desktop preview: plugin transparent + spawn linux-wallpaperengine
         WallpaperState.setScreenWallpaper(sn, "")
         WallpaperState.setScreenKind(sn, "wpe")
-        Quickshell.execDetached(["bash", "-c",
+        // Through a Process rather than execDetached: the script now reports
+        // why a launch failed, and discarding that was what made this path
+        // impossible to diagnose.
+        wpePreviewProc.running = false
+        wpePreviewProc.command = ["bash", "-c",
             root.scriptsDir + "/wallpaper-picker.sh preview-wpe "
-            + sn + " '" + wpeDir + "'"])
+            + sn + " '" + wpeDir + "'"]
+        wpePreviewProc.running = true
+    }
+
+    Process {
+        id: wpePreviewProc
+        command: ["true"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                if (!data.startsWith("ERROR:")) return
+                root.wpePreviewActive = false
+                if (data === "ERROR:NO_DIR")
+                    root.previewError = "WALLPAPER FILES NOT FOUND ON DISK"
+                else if (data === "ERROR:NO_PROJECT")
+                    root.previewError = "DOWNLOAD INCOMPLETE - NO PROJECT.JSON"
+                else if (data === "ERROR:NO_ENGINE")
+                    root.previewError = "LINUX-WALLPAPERENGINE NOT INSTALLED"
+                else if (data.startsWith("ERROR:WPE_EXIT:"))
+                    root.previewError = "ENGINE QUIT: " + data.substring(15).toUpperCase()
+                else
+                    root.previewError = data.substring(6).toUpperCase()
+            }
+        }
     }
 
     Process {
@@ -857,6 +1033,9 @@ Scope {
         root._skipInit = true
         wallpaperModel.remove(idx)
         root._skipInit = false
+        // And from the in-memory catalog: left there, the next open rebuilt
+        // the carousel with it, pointing at a file that no longer exists.
+        WallpaperState.removeCatalogEntry(path)
         
         // Remove from localBasenames
         var bn = path.substring(path.lastIndexOf("/") + 1)
@@ -870,7 +1049,7 @@ Scope {
         carousel.updateCards()
 
         // Regenerate catalog to persist deletion
-        bgRefreshProc.running = true
+        root._requestCatalogRefresh()
 
         root.deleteDialogOpen = false
     }
@@ -1037,6 +1216,7 @@ Scope {
     }
 
     function updateSearchPreview(thumbPath, fullUrl) {
+        root.previewError = ""
         var isGif = fullUrl.toLowerCase().endsWith(".gif")
         var isWpe = /^\d+$/.test(fullUrl)
 
@@ -1063,6 +1243,11 @@ Scope {
             if (root.localBasenames[fullUrl] === true
                 || root._trialDownloads[fullUrl] === true) {
                 root._pendingWpeScenePath = root.wpeBaseDir + "/" + fullUrl
+            } else {
+                // Selecting alone never downloads: only the arrow key starts
+                // the steamcmd trial. Saying so beats a card that just sits
+                // there showing the thumbnail.
+                root.previewError = "NOT DOWNLOADED YET - PRESS DOWN TO FETCH"
             }
             gifPreviewDelay.restart()
         } else if (isGif) {
@@ -1108,7 +1293,7 @@ Scope {
             favLoadProc.running = true
             filterBar.favoritesOnly = false
             // Refresh cache in background for next open
-            bgRefreshProc.running = true
+            root._requestCatalogRefresh()
             WallpaperState.resetFilters()
             root.previewShown = false
             panelSlider._panelAnim = false
@@ -1126,15 +1311,12 @@ Scope {
             }
             // Phase 2: clean up trial WPE downloads that were not promoted to catalog
             var trialIds = Object.keys(root._trialDownloads)
-            for (var t = 0; t < trialIds.length; t++) {
-                var tid = trialIds[t]
-                if (root.localBasenames[tid] !== true) {
-                    Quickshell.execDetached(["rm", "-rf",
-                        root.wpeBaseDir + "/" + tid])
-                }
-            }
+            for (var t = 0; t < trialIds.length; t++)
+                root._discardTrialLeftovers(trialIds[t])
             root._trialDownloads = ({})
-            // Cancel any in-flight trial download
+            // Cancel any in-flight trial download. Its id is not in
+            // _trialDownloads yet, so the loop above cannot have cleaned it.
+            root._discardTrialLeftovers(root._currentTrialId)
             trialWpeDlProc.running = false
             root._trialDownloading = false
             root._trialDownloadProgress = 0
@@ -1192,13 +1374,17 @@ Scope {
             anchors.fill: parent
             hoverEnabled: true
             acceptedButtons: Qt.NoButton
+            // Reaching for the mouse means wanting the interface back, so
+            // hover governs again from here on.
+            onPositionChanged: root._previewKeyboard = false
         }
 
         Item {
             id: mainLayout
             anchors.fill: parent
             focus: true
-            opacity: root.previewShown && !_hoveringElement ? 0.2 : 1.0
+            opacity: root.previewShown
+                    && (root._previewKeyboard || !_hoveringElement) ? 0.2 : 1.0
 
             Behavior on opacity { NumberAnimation { duration: 300 } }
 
@@ -1215,7 +1401,7 @@ Scope {
                     searchResultsPanel,
                     searchPreviewCard,
                     deleteDialog,
-                    panelSlider
+                    playlistPanel,
                 ]
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i]
@@ -2237,55 +2423,56 @@ Scope {
                     }
                 }
 
+                // ── Preview error banner ──────────────────────────────────────
+                // Sits over the card rather than replacing it: the thumbnail
+                // stays readable, so it is clear which result the message is
+                // about.
                 Item {
-                    id: _wpeWarn
-                    anchors.fill: parent
+                    id: previewErrorBanner
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 14
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: Math.min(parent.width - 28, errText.implicitWidth + 44)
+                    height: 30
+                    z: 22
                     visible: opacity > 0
-                    opacity: 0
-                    z: 20
-
-                    Rectangle {
-                        anchors.fill: parent
-                        color: CP.alpha(CP.red, 0.25)
-                    }
+                    opacity: root.previewError !== "" ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: 140 } }
 
                     CutShape {
                         anchors.fill: parent
-                        anchors.margins: 8
-                        fillColor: "transparent"
-                        strokeColor: CP.red
-                        strokeWidth: 2
-                        inset: 1
-                        cutTopLeft: 28
-                        cutBottomRight: 28
+                        fillColor: CP.alpha(CP.void2, 0.94)
+                        strokeColor: CP.alpha(CP.red, 0.9)
+                        strokeWidth: 1
+                        inset: 0.5
+                        cutTopLeft: 8
+                        cutBottomRight: 8
                     }
 
-                    Column {
+                    Row {
                         anchors.centerIn: parent
-                        spacing: 6
+                        spacing: 8
 
                         Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: "\uf071"      // warning icon
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "\uf071"
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 32
+                            font.pixelSize: 13
                             color: CP.red
                         }
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: "WPE PREVIEW NOT SUPPORTED"
-                            font.family: "Oxanium"
-                            font.pixelSize: 11
-                            font.letterSpacing: 3
-                            color: Colours.accentDanger
-                        }
-                    }
 
-                    SequentialAnimation {
-                        id: _wpeWarnAnim
-                        NumberAnimation { target: _wpeWarn; property: "opacity"; to: 1.0; duration: 100 }
-                        PauseAnimation { duration: 1500 }
-                        NumberAnimation { target: _wpeWarn; property: "opacity"; to: 0.0; duration: 300 }
+                        Text {
+                            id: errText
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: Math.min(implicitWidth, previewErrorBanner.parent.width - 72)
+                            text: root.previewError
+                            font.family: "Oxanium"
+                            font.pixelSize: 10
+                            font.letterSpacing: 1.5
+                            font.bold: true
+                            color: Colours.accentDanger
+                            elide: Text.ElideRight
+                        }
                     }
                 }
 
@@ -2725,7 +2912,7 @@ Scope {
                     if (root._pendingTrialWpeId !== "") {
                         var tid = root._pendingTrialWpeId
                         root._pendingTrialWpeId = ""
-                        _startTrialDownload(tid)
+                        _startTrialDownload(tid, root._sizeForResult(tid))
                     }
                 }
             }
@@ -2946,6 +3133,7 @@ Scope {
 
                                 // WPE: stop previous (if any) then start new
                                 root.previewShown = true
+                                root._previewKeyboard = true
                                 root.wpePreviewActive = true
                                 WallpaperState.setScreenWallpaper(root.screen.name, "")
                                 WallpaperState.setScreenKind(root.screen.name, "wpe")
@@ -2961,6 +3149,7 @@ Scope {
                                         + root.screen.name])
                                 }
                                 root.previewShown = true
+                                root._previewKeyboard = true
                                 root.wpePreviewActive = false
                                 WallpaperState.setScreenWallpaper(root.screen.name, upEntry.path)
                                 WallpaperState.setScreenKind(root.screen.name, "static")
@@ -2980,7 +3169,23 @@ Scope {
                             var dlEntry = filterBar.resultsModel.get(carousel.selectedSearchIdx)
 
                             if (root.previewShown && root._searchPreviewIdx === carousel.selectedSearchIdx) {
-                                // Same result - remove preview
+                                // Same result - remove preview.
+                                // A fetch still in flight has to go too: left
+                                // running it would finish and apply the
+                                // wallpaper after it had been cancelled.
+                                if (root._trialDownloading) {
+                                    var cancelledId = root._currentTrialId
+                                    trialWpeDlProc.running = false
+                                    root._trialDownloading = false
+                                    root._trialDownloadProgress = 0
+                                    root._currentTrialId = ""
+                                    root._discardTrialLeftovers(cancelledId)
+                                }
+                                // The launcher script may still be in its
+                                // post-spawn check; the engine it started is
+                                // killed by stop-preview-wpe just below.
+                                wpePreviewProc.running = false
+                                root.previewError = ""
                                 if (root.wpePreviewActive) {
                                     Quickshell.execDetached(["bash", "-c",
                                         root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "
@@ -3000,6 +3205,7 @@ Scope {
                                         + root.screen.name])
                                 }
                                 root.previewShown = true
+                                root._previewKeyboard = true
                                 root.wpePreviewActive = false
                                 root._searchPreviewIdx = carousel.selectedSearchIdx
                                 root.searchPreviewLoading = true
@@ -3016,7 +3222,7 @@ Scope {
                                     } else {
                                         // Not yet on disk → trigger trial steamcmd download
                                         root.searchPreviewLoading = false
-                                        _startTrialDownload(wpeId)
+                                        _startTrialDownload(wpeId, dlEntry.fileSize || 0)
                                     }
                                     event.accepted = true
                                     break
@@ -3036,7 +3242,7 @@ Scope {
                             break
                         }
                         // Down - out from search context: dismiss preview
-                        if (root.wpePreviewShown) {
+                        if (root.previewShown) {
                             if (root.wpePreviewActive) {
                                 Quickshell.execDetached(["bash", "-c",
                                     root.scriptsDir + "/wallpaper-picker.sh stop-preview-wpe "

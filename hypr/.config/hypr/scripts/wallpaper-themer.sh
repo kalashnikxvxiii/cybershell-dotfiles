@@ -37,7 +37,7 @@ toggle_pool() {
 get_static_wallpapers() {
     find "$WALLPAPER_DIR" -maxdepth 1 -type f \
         \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \
-           -o -iname "*.gif" -o -iname "*.webp" \)
+            -o -iname "*.gif" -o -iname "*.webp" \)
 }
 
 get_wpe_wallpapers() {
@@ -90,6 +90,18 @@ get_wpe_preview() {
 # WPE process management
 # ---------------------------------------------------------------------------
 
+# Waits until no engine is left on the screen. A fixed sleep is not enough:
+# a scene with mpv takes longer than that to shut down, and whoever launches
+# next finds it still alive -- two engines on one screen.
+wait_wpe_gone() {
+    local screen="$1" i
+    for i in $(seq 1 40); do
+        pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 || return 0
+        sleep 0.1
+    done
+    return 1
+}
+
 kill_wpe_on_screen() {
     local screen="$1"
     local pid_file="$STATE_DIR/pid_${screen}"
@@ -101,9 +113,11 @@ kill_wpe_on_screen() {
         rm -f "$pid_file"
     fi
     # Kill tutti i WPE orfani sullo stesso screen
-    if pkill -f "linux-wallpaperengine.*--screen-root $screen" 2>/dev/null; then
-        sleep 0.3
-    fi
+    pkill -f "linux-wallpaperengine.*--screen-root $screen" 2>/dev/null
+    wait_wpe_gone "$screen"
+    # The preview bookkeeping goes too: the process is dead, but its pid file
+    # used to survive this function and point at nothing.
+    rm -f "/tmp/qs-wpe-preview-pid-${screen}"
 }
 
 start_wpe_on_screen() {
@@ -129,6 +143,10 @@ start_wpe_on_screen() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
+    pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 && \
+        { echo "$(date '+%d/%m %T') DOUBLE on $screen from ${FUNCNAME[0]}" \
+            >> "$STATE_DIR/wpe-double.log"
+          notify-send -u critical "WPE" "Two engines on $screen (${FUNCNAME[0]})"; } 
     linux-wallpaperengine "${wpe_args[@]}" > "$STATE_DIR/wpe_${screen}.log" 2>&1 &
     local new_pid=$!
     disown $new_pid
@@ -163,6 +181,10 @@ start_wpe_direct() {
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
 
+    pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 && \
+        { echo "$(date '+%d/%m %T') DOUBLE on $screen from ${FUNCNAME[0]}" \
+            >> "$STATE_DIR/wpe-double.log"
+          notify-send -u critical "WPE" "Two engines on $screen (${FUNCNAME[0]})"; } 
     linux-wallpaperengine "${wpe_args[@]}" > "$STATE_DIR/wpe_${screen}.log" 2>&1 &
     local new_pid=$!
     disown $new_pid
@@ -179,8 +201,8 @@ start_wpe_direct() {
 
 is_wpe_running_on_screen() {
     local screen="$1"
-    local pid_file="$STATE_DIR/pid_${screen}"
-    [ -f "$pid_file" ] || return 1
+    local pid_file; pid_file=$(get_wpe_pid_file "$screen")
+    [ -n "$pid_file" ] || return 1
     local pid
     pid=$(cat "$pid_file" 2>/dev/null)
     [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null
@@ -192,6 +214,19 @@ is_wpe_running_on_screen() {
 
 get_audio_volume() {
     cat "$AUDIO_VOLUME_FILE" 2>/dev/null || echo "0"
+}
+
+# The pid file whose process is actually alive, preview first -- that is what
+# is on screen. Testing existence alone is not enough: a preview kills the
+# themer's engine without clearing its file, so that file would shadow the
+# live one while pointing at a dead process.
+get_wpe_pid_file() {
+    local screen="$1" f p
+    for f in "/tmp/qs-wpe-preview-pid-${screen}" "$STATE_DIR/pid_${screen}"; do
+        [ -f "$f" ] || continue
+        p=$(cat "$f" 2>/dev/null)
+        [ -n "$p" ] && kill -0 "$p" 2>/dev/null && { echo "$f"; return; }
+    done
 }
 
 get_pw_clients_for_pid() {
@@ -228,8 +263,8 @@ get_inputs_for_pid() {
 
 get_wpe_inputs_for_screen() {
     local screen="$1"
-    local pid_file="$STATE_DIR/pid_${screen}"
-    [ -f "$pid_file" ] || return
+    local pid_file; pid_file=$(get_wpe_pid_file "$screen")
+    [ -n "$pid_file" ] || return
     local wpe_pid
     wpe_pid=$(cat "$pid_file" 2>/dev/null) || return
 
@@ -237,14 +272,16 @@ get_wpe_inputs_for_screen() {
     all_inputs+=$(get_inputs_for_pid "$wpe_pid")$'\n'
 
     # Video wallpapers: mpv child process
-    local entry
-    entry=$(get_current_wp "$screen")
-    if is_wpe "$entry" && [ "$(get_wpe_type "$entry")" = "video" ]; then
+    local wpe_id
+    wpe_id=$(tr '\0' ' ' < "/proc/${wpe_pid}/cmdline" 2>/dev/null \
+            | sed -n 's/.*--bg \([0-9][0-9]*\).*/\1/p')
+    if [ -n "$wpe_id" ]; then
         local mpv_pid
         while IFS= read -r mpv_pid; do
             all_inputs+=$(get_inputs_for_pid "$mpv_pid")$'\n'
-        done < <(pgrep -f "$WPE_DIR/$(get_wpe_id "$entry")" 2>/dev/null)
+        done < <(pgrep -f "$WPE_DIR/$wpe_id" 2>/dev/null)
     fi
+
 
     echo "$all_inputs" | grep -v '^$' | sort -u
 }
@@ -520,7 +557,7 @@ _wpe_health_check() {
     [ "$current" != "$expected_entry" ] && return
     # Se il processo è ancora vivo, tutto ok
     local pid
-    pid=$(cat "$STATE_DIR/pid_${screen}" 2>/dev/null)
+    pid=$(cat "$(get_wpe_pid_file "$screen")" 2>/dev/null)
     [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && return
     # WPE crashato — riprova con un altro wallpaper (max 3 tentativi)
     local exclude="$expected_entry"
@@ -565,7 +602,7 @@ start_screen() {
             --outputs "$screen"
 
         local wpe_pid
-        wpe_pid=$(cat "$STATE_DIR/pid_${screen}" 2>/dev/null)
+        wpe_pid=$(cat "$(get_wpe_pid_file "$screen")" 2>/dev/null)
         if [ -n "$wpe_pid" ] && kill -0 "$wpe_pid" 2>/dev/null; then
             apply_audio_for_screen_async "$screen" "$entry" "$wpe_pid" "$(get_audio_volume)"
         fi
@@ -610,13 +647,23 @@ change_both() {
         [ -n "$p" ] && awww img "$p" --outputs "HDMI-A-1" &
     fi
 
-    # Kill ALL WPE in one-shot, single wait
-    for arg in "$@"; do
-        sn="${arg%%:*}"
-        [ -n "$sn" ] && pkill -9 -f "linux-wallpaperengine.*--screen-root $sn" 2>/dev/null
+    # Kill ALL WPE in one-shot, then wait for every one of them to be gone.
+    # This loop used to range over "$@", copied from playlist_apply -- but
+    # change_both is always called without arguments, so it killed nothing and
+    # the new engines were launched on top of the old ones (SUPER+W in "both"
+    # mode). The screens are the two this function changes.
+    local scr
+    for scr in DP-1 HDMI-A-1; do
+        pkill -9 -f "linux-wallpaperengine.*--screen-root $scr" 2>/dev/null
     done
     rm -f "$STATE_DIR"/pid_*
-    sleep 0.5
+    # A real wait rather than a fixed sleep: teardown of a scene with mpv can
+    # outlast it, even after SIGKILL. Killed in parallel above, so waiting in
+    # turn here costs the slowest exit, not the sum of them.
+    for scr in DP-1 HDMI-A-1; do
+        wait_wpe_gone "$scr"
+        rm -f "/tmp/qs-wpe-preview-pid-${scr}"
+    done
 
     # Avvia entrambi
     save_state "DP-1" "$dp1_wp"
@@ -720,6 +767,26 @@ set_wallpaper() {
     trap - EXIT
 }
 
+restore_screen() {
+    local screen="$1" entry="$2"
+    [ -z "$screen" ] || [ -z "$entry" ] && {
+        echo "Usage: wallpaper-themer.sh restore-screen <screen> <entry>" >&2
+        return 1
+    }
+    # Puts a wallpaper back and tracks it as one. The picker needs this when it
+    # cancels a preview: the restore used to go through preview-wpe, so the
+    # wallpaper that came back stayed counted as a preview and the health check
+    # believed it was dead.
+    #
+    # Deliberately WITHOUT apply_colors: the colours never changed during the
+    # preview, so regenerating them is wasted work and a visible kitty reload.
+    #
+    # And deliberately WITHOUT the lock: acquire_lock fails immediately when
+    # another change is in flight, and a restore that silently does nothing
+    # leaves the preview on screen. preview-wpe held no lock either.
+    start_screen "$screen" "$entry"
+}
+
 # Usage: Playlist_apply <screen1>:<path1> [<screen2>:<path2> ...]
 playlist_apply() {
     [ $# -eq 0 ] && return 1
@@ -733,8 +800,20 @@ playlist_apply() {
         sn="${arg%%:*}"
         [ -n "$sn" ] && pkill -9 -f "linux-wallpaperengine.*--screen-root $sn" 2>/dev/null
     done
-    rm -f "$STATE_DIR"/pid_*
-    sleep 0.3
+    # Wait until the killed engines have actually exited. The fixed sleep lost
+    # the race: the next launch found the old engine still alive, and the
+    # double-engine probe caught it from start_wpe_direct.
+    #
+    # Only the screens being changed lose their bookkeeping. A blanket pid_*
+    # removal used to wipe the file of a screen this call never touched, so
+    # that screen's engine kept running while the audio controls and the
+    # health check could no longer find it.
+    for arg in "$@"; do
+        sn="${arg%%:*}"
+        [ -n "$sn" ] || continue
+        wait_wpe_gone "$sn"
+        rm -f "$STATE_DIR/pid_${sn}" "/tmp/qs-wpe-preview-pid-${sn}"
+    done
 
     # Phase 2: applica ogni entry in parallelo
     local pids=()
@@ -920,6 +999,12 @@ get_video_remaining() {
 
 # ---------------------------------------------------------------------------
 
+# Dispatch only when run as a command. When the file is sourced -- to reuse its
+# functions in a test, say -- the default below would otherwise run `restore`:
+# every screen's engine killed and relaunched, and the wallust palette
+# regenerated, as a side effect of merely loading it.
+[[ "${BASH_SOURCE[0]}" != "$0" ]] && return 0
+
 case "${1:-restore}" in
     restore)        restore ;;
     smart)          change_smart ;;
@@ -934,7 +1019,9 @@ case "${1:-restore}" in
     audio-up)       audio_volume_up ;;
     audio-down)     audio_volume_down ;;
     set)            set_wallpaper "$2" "$3" ;;
+    restore-screen) restore_screen "$2" "$3" ;;
     adopt-wpe)      adopt_wpe_preview "$2" "$3" ;;
     playlist-apply) shift; playlist_apply "$@" ;;
+    preview-audio)  apply_audio_for_screen_async "$2" "$3" "$4" "$(get_audio_volume)" ;;
     *)              change_smart ;;
 esac
