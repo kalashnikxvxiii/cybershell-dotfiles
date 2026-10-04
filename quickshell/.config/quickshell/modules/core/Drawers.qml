@@ -19,7 +19,10 @@ Scope {
         screen: root.screen
         WlrLayershell.namespace: "drawers"
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.keyboardFocus: drawerState.dashboardOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: (drawerState.dashboardOpen
+                                    || AudioControlState.popupOpen
+                                    || (AiState.open && AiState.screenName === root.screen.name)) 
+                                    ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         anchors.top: true
         anchors.bottom: true
@@ -52,10 +55,20 @@ Scope {
                 required property Item modelData
                 readonly property real leftExt: modelData.lyricsDrawerExtent ?? 0
 
-                x: modelData.x - leftExt
+                // Each child decides how much of itself takes the pointer. The
+                // fallbacks keep the dashboard behaving exactly as before: it gates on
+                // inputHeight and lets its width through
+                readonly property real iw: modelData.inputWidth ?? modelData.width
+                readonly property real ih: modelData.inputHeight ?? modelData.height
+                // Lets a child expose a strip of itself instead of its left edge:
+                // the dock is always full width, but closed it only takes the
+                // pointer on the border hairline
+                readonly property real ix: modelData.inputX ?? 0
+
+                x: modelData.x - leftExt + ix
                 y: win.barHeight + modelData.y
-                width: modelData.width + leftExt
-                height: modelData.inputHeight ?? 0
+                width: iw + leftExt
+                height: ih
                 intersection: Intersection.Subtract
             }
         }
@@ -74,6 +87,8 @@ Scope {
                 id: panels
                 drawerState: root.drawerState
                 bar: bar
+                // the wave follows the same MouseArea the drawers already use
+                dock.cursorY: interactions.dockCursorY
             }
 
             Bar {

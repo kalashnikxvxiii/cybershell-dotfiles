@@ -22,10 +22,24 @@ MouseArea {
     // Tight trigger for the top panel: screen top edge only
     readonly property int topTriggerPx: 2
     // Side trigger strips (same as mask triggerPx)
-    readonly property int sideTriggerPx: 2
+    // readonly property int sideTriggerPx: 2
+
+    // The dock item is always full width; what takes the pointer is inputX +
+    // inputWidth. Reading those here is what gives the hover its hysteresis:
+    // closed it needs the border hairline, open the whole blob area holds it
+    function inDock(dock) {
+        const absTop = bar.barHeight + dock.y
+        if (mouseY < absTop - 4 || mouseY > absTop + dock.height + 4) return false
+        const left = dock.x + dock.inputX
+        return mouseX >= left - 4 && mouseX <= left + dock.inputWidth + 4
+    }
+
+    // Cursor position inside the dock, for the magnification wave.
+    // -1 when the cursor is elsewhere, so the dock can flatten out
+    readonly property real dockCursorY:
+        containsMouse ? mouseY - bar.barHeight - panels.dock.y : -1
 
     // Geometry helpers
-
     // Check X: panel.x is relative to Panels (same horizontal origin as the window)
     function withinPanelX(panel) {
         const lyricsExt = panel.lyricsDrawerExtent ?? 0
@@ -70,35 +84,20 @@ MouseArea {
     hoverEnabled: true
     acceptedButtons: Qt.NoButton    // non-blocking: clicks always pass through to children
 
-    // Mouse leaves the window -> close all hover-based panels
     onContainsMouseChanged: {
         if (!containsMouse) {
             drawerState.dashboardOpen = false
-            // Future: add other hover-based panels here
-            // e.g.: drawerState.launcherOpen = false
+            drawerState.dockOpen = false
+            // The chat is NOT closed here, on purpose: see below
         } else {
-            // Check entry immediately, don't wait for the first onPositionChanged
             drawerState.dashboardOpen = inTopPanel(panels.dashboard)
+            drawerState.dockOpen = inDock(panels.dock)
         }
     }
 
     // Continuous tracking: update visibility based on mouse position
     onPositionChanged: {
-        if (drawerState.dashboardOpen) {
-            // const _p = panels.dashboard
-            // console.log("[Interactions]",
-            //     "mouseX:", mouseX,
-            //     "panel.x:", _p.x,
-            //     "panelWidth:", _p.panelWidth,
-            //     "lyricsExt:", _p.lyricsDrawerExtent,
-            //     "left:", _p.x - (_p.lyricsDrawerExtent),
-            //     "right:", _p.x + (_p.panelWidth ?? 0),
-            //     "withinX:", withinPanelX(_p),
-            //     "inTop:", inTopPanel(_p))
-        }
         drawerState.dashboardOpen = inTopPanel(panels.dashboard)
-        // Future: one line per new hover-based panel
-        // e.g.: drawerState.launcherOpen = inBottomPanel(panels.launcher)
-        //       drawerState.sidebarOpen  = inRightPanel(panels.sidebar)
+        drawerState.dockOpen = inDock(panels.dock)
     }
 }
