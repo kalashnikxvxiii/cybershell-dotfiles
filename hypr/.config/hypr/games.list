@@ -1,0 +1,9 @@
+# Finestre da trattare sempre come giochi (pattern Lua, una per riga)
+#   class:<pattern>   → app_id / WM_CLASS
+#   title:<pattern>   → titolo iniziale
+# SUPER+ALT+G aggiunge/rimuove la finestra attiva da qui.
+
+# Last Lantern (build Electron)
+class:^last%-lantern$
+class:^Last Lantern$
+title:^Last Lantern
