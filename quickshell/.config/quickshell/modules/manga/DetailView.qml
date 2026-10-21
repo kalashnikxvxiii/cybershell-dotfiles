@@ -5,6 +5,7 @@
 // disagree, so a series can match a language filter and have nothing in it.
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 import QtQuick
 
 Item {
@@ -547,14 +548,14 @@ Item {
 
                     readonly property string label: "CH " + row.modelData.number
                         + (!row.many && row.only.title ? "  ·  " + row.only.title : "")
-                    property real marqueeOffset: 0
+                    readonly property real marqueeOffset: marqueeActive ? mq.offset : 0
                     readonly property real marqueeGap: 40
                     // Only when it actually overflows: a short title that slid
                     // around under the cursor would be noise, not feedback.
                     readonly property bool marqueeActive:
                         chapMa.containsMouse && title1.implicitWidth > width
 
-                    onMarqueeActiveChanged: if (!marqueeActive) marqueeOffset = 0
+                    onMarqueeActiveChanged: if (!marqueeActive) mq.restart()
 
                     Text {
                         id: title1
@@ -581,20 +582,13 @@ Item {
                         color: title1.color
                     }
 
-                    SequentialAnimation {
+                    MarqueeDriver {
+                        id: mq
                         running: chapNum.marqueeActive
-                        loops: Animation.Infinite
-                        PropertyAction { target: chapNum; property: "marqueeOffset"; value: 0 }
-                        PauseAnimation { duration: 900 }
-                        NumberAnimation {
-                            target: chapNum
-                            property: "marqueeOffset"
-                            from: 0
-                            to: -(title1.implicitWidth + chapNum.marqueeGap)
-                            duration: Math.max(2500, title1.implicitWidth * 18)
-                            easing.type: Easing.Linear
-                        }
-                        PauseAnimation { duration: 600 }
+                        distance: title1.implicitWidth + chapNum.marqueeGap
+                        holdStartMs: 900
+                        scrollMs: Math.max(2500, title1.implicitWidth * 18)
+                        holdEndMs: 600
                     }
                 }
 

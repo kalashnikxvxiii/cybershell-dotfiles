@@ -111,13 +111,10 @@ Item {
 
                     // Active tab pulses, per the tightness rule for pending or
                     // armed states.
-                    SequentialAnimation on opacity {
-                        running: chip.current
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 1.0; to: 0.72; duration: 1100 }
-                        NumberAnimation { from: 0.72; to: 1.0; duration: 1100 }
-                    }
-                    onCurrentChanged: if (!chip.current) chip.opacity = 1.0
+                    opacity: chipPulse.k
+                    // The overlay's content lives on in a hidden window between captures,
+                    // where `visible` stays true: gate on the session itself
+                    Pulse { id: chipPulse; running: chip.current && SnipState.active; from: 1.0; to: 0.72; halfMs: 1100 }
 
                     MouseArea {
                         id: ma

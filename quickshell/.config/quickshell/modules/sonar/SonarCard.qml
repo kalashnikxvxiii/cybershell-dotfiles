@@ -273,6 +273,7 @@ FocusScope {
         entries: root.entries
         revision: root.netView ? SonarState.netRev : SonarState.btRev
         sweeping: root.netView ? SonarState.scanning : SonarState.discovering
+        active: root.shown
         selectedKey: SonarState.selectedKey
         onPicked: key => SonarState.selectedKey = (SonarState.selectedKey === key ? "" : key)
     }

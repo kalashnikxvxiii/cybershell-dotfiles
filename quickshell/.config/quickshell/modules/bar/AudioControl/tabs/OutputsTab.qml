@@ -2,12 +2,18 @@
 // Signal Flow: SINK ROUTING (EndpointCard hero) + ALTERNATIVE ENDPOINTS list + PIPELINE mini-viz
 import "../../../../common/Colors.js" as CP
 import "../../../../common"
+import "../../../../common/effects"
 import ".." as AC
 import QtQuick
 
 Item {
     id: root
     implicitHeight: scroll.contentHeight
+
+    // Moves the pipeline particles of both links: a Ticker instead of one
+    // NumberAnimation per particle, which kept the popup rendering at the
+    // monitor's refresh rate
+    Ticker { id: linkTick; running: root.visible }
 
     readonly property int otherCount: {
         var n = 0
@@ -167,12 +173,9 @@ Item {
                             color: Colours.accentPrimary
                             opacity: 1.0 - index * 0.4
                             anchors.verticalCenter: parent.verticalCenter
-                            NumberAnimation on x {
-                                from: 0; to: link1.width
-                                duration: 2400; loops: Animation.Infinite
-                                running: root.visible
-                            }
-                            Component.onCompleted: x = index * (link1.width / 2)
+                            x: linkTick.elapsed > 0
+                                ? link1.width * ((linkTick.elapsed % 2400) / 2400)
+                                : index * (link1.width / 2)
                         }
                     }
                 }
@@ -228,12 +231,9 @@ Item {
                             color: Colours.accentSecondary
                             opacity: 1.0 - index * 0.4
                             anchors.verticalCenter: parent.verticalCenter
-                            NumberAnimation on x {
-                                from: 0; to: link2.width
-                                duration: 2400; loops: Animation.Infinite
-                                running: root.visible
-                            }
-                            Component.onCompleted: x = index * (link2.width / 2)
+                            x: linkTick.elapsed > 0
+                                ? link2.width * ((linkTick.elapsed % 2400) / 2400)
+                                : index * (link2.width / 2)
                         }
                     }
                 }

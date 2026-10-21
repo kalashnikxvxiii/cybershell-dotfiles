@@ -19,6 +19,7 @@
 //}
 
 import QtQuick
+import "effects"
 
 Item {
     id: root
@@ -49,6 +50,15 @@ Item {
     property bool _linesReady: false
     Component.onCompleted: _linesReady = true
 
+    // One beat of the shell clock moves every line (see effects/Ticker.qml).
+    // The NumberAnimation per line this replaces rendered the whole window at
+    // the monitor's refresh rate whenever any of them was mid-sweep, which with
+    // several lines is nearly always
+    Ticker {
+        id: lineTick
+        running: root.linesEnabled && root._linesReady && root.visible
+    }
+
     Repeater {
         model: (root.linesEnabled && root._linesReady
                 && root.width > 0 && root.height > 0) ? root.linesCount : 0
@@ -60,17 +70,25 @@ Item {
             color: root.linesColor
             opacity: 0
 
-            SequentialAnimation {
-                loops: Animation.Infinite
-                running: true
+            // A pass is a random pause, then a sweep across the screen, then
+            // hidden again; the next pause is drawn when the sweep starts
+            property real _clock: 0          // ms since the pause began / the sweep began
+            property real _pause: Math.random() * root.linesMaxPause
+            property real _sweepMs: 0        // 0 while pausing
+            property real _from: 0
+            property real _to: 0
 
-                // Random pause before the next pass
-                PauseAnimation { id: linePause; duration: Math.random() * root.linesMaxPause }
+            Connections {
+                target: lineTick
 
-                // Randomize line properties
-                ScriptAction {
-                    script: {
-                        linePause.duration = Math.random() * root.linesMaxPause
+                function onTicked() {
+                    lineRect._clock += lineTick.delta
+
+                    if (lineRect._sweepMs === 0) {
+                        if (lineRect._clock < lineRect._pause) return
+
+                        // Randomize line properties
+                        lineRect._pause = Math.random() * root.linesMaxPause
                         const goRight = Math.random() > 0.5
                         lineRect.width = root.linesMinWidth
                                         + Math.random() * (root.linesMaxWidth - root.linesMinWidth)
@@ -78,23 +96,24 @@ Item {
                         const opMin = Math.min(root.linesMinOpacity, root.linesMaxOpacity)
                         const opMax = Math.max(root.linesMinOpacity, root.linesMaxOpacity)
                         lineRect.opacity = opMin + Math.random() * (opMax - opMin)
-                        lineMoveAnim.from = goRight ? -lineRect.width : root.width
-                        lineMoveAnim.to   = goRight ? root.width : -lineRect.width
-                        lineMoveAnim.duration = root.linesBaseSpeed
-                                                + Math.random() * root.linesSpeedVariation
+                        lineRect._from = goRight ? -lineRect.width : root.width
+                        lineRect._to   = goRight ? root.width : -lineRect.width
+                        lineRect._sweepMs = root.linesBaseSpeed
+                                            + Math.random() * root.linesSpeedVariation
+                        lineRect._clock = 0
+                    }
+
+                    // Horizontal sweep
+                    const u = Math.min(1, lineRect._clock / lineRect._sweepMs)
+                    lineRect.x = lineRect._from + (lineRect._to - lineRect._from) * u
+
+                    // Hide at end of pass
+                    if (u >= 1) {
+                        lineRect.opacity = 0
+                        lineRect._sweepMs = 0
+                        lineRect._clock = 0
                     }
                 }
-
-                // Horizontal sweep
-                NumberAnimation {
-                    id: lineMoveAnim
-                    target: lineRect
-                    property: "x"
-                    easing.type: Easing.Linear
-                }
-
-                // Hide at end of pass
-                PropertyAction { target: lineRect; property: "opacity"; value: 0 }
             }
         }
     }

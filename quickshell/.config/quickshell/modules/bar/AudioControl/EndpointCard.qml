@@ -8,6 +8,7 @@
 //   [optional Oscilloscope 340×34 below metadata if showOscilloscope = true]
 import "../../../common/Colors.js" as CP
 import "../../../common"
+import "../../../common/effects"
 import QtQuick
 import CyberAudio.Services
 
@@ -61,21 +62,24 @@ Item {
         target: root.nodeTarget
         captureSink: root.mode === "sink"
     }
-    readonly property real vuL: root.showOscilloscope ? 0 : root._toBar(cardLevel.peakL)
-    readonly property real vuR: root.showOscilloscope ? 0 : root._toBar(cardLevel.peakR)
+    // Sampled at 30Hz instead of following the provider's ~90 updates a
+    // second: each one re-laid the meters and kept the popup rendering at the
+    // monitor's refresh rate
+    property real vuL: 0
+    property real vuR: 0
 
     // Peak hold (3s decay)
     property real _peakL: 0
     property real _peakR: 0
-    Timer {
-        interval: 100
-        repeat: true
+    Ticker {
         running: root.visible
-        onTriggered: {
+        onTicked: {
+            root.vuL = root.showOscilloscope ? 0 : root._toBar(cardLevel.peakL)
+            root.vuR = root.showOscilloscope ? 0 : root._toBar(cardLevel.peakR)
             if (root.vuL > root._peakL) root._peakL = root.vuL
-            else root._peakL = Math.max(0, root._peakL - 0.0333)
+            else root._peakL = Math.max(0, root._peakL - 0.0111)
             if (root.vuR > root._peakR) root._peakR = root.vuR
-            else root._peakR = Math.max(0, root._peakR - 0.0333)
+            else root._peakR = Math.max(0, root._peakR - 0.0111)
         }
     }
 

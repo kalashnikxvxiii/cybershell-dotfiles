@@ -113,11 +113,11 @@ Item {
                 height: nameLabel.implicitHeight
                 clip: true
 
-                property real marqueeOffset: 0
+                readonly property real marqueeOffset: marqueeActive ? marquee.offset : 0
                 readonly property real marqueeGap: 40
                 readonly property bool marqueeActive: nameLabel.implicitWidth > width
 
-                onMarqueeActiveChanged: if (!marqueeActive) marqueeOffset = 0
+                onMarqueeActiveChanged: if (!marqueeActive) marquee.restart()
 
                 Text {
                     id: nameLabel
@@ -138,21 +138,10 @@ Item {
                     color: nameLabel.color
                 }
 
-                SequentialAnimation {
+                MarqueeDriver {
+                    id: marquee
                     running: nameViewport.marqueeActive && root.visible
-                    loops: Animation.Infinite
-
-                    PropertyAction { target: nameViewport; property: "marqueeOffset"; value: 0 }
-                    PauseAnimation { duration: 1500 }
-                    NumberAnimation {
-                        target: nameViewport
-                        property: "marqueeOffset"
-                        from: 0
-                        to: -(nameLabel.implicitWidth + nameViewport.marqueeGap)
-                        duration: 8000
-                        easing.type: Easing.Linear
-                    }
-                    PauseAnimation { duration: 1000 }
+                    distance: nameLabel.implicitWidth + nameViewport.marqueeGap
                 }
             }
             Text {

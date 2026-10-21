@@ -124,7 +124,9 @@ Item {
             AnimatedImage {
                 anchors.fill: parent
                 source: Qt.resolvedUrl("../../assets/cyberpunk-frame.gif").toString().replace("file://", "")
-                playing: true
+                // Frozen while the dashboard is closed: decoding a GIF off screen
+                // still costs a frame decode per tick
+                playing: root.visible
                 fillMode: Image.PreserveAspectFit
                 layer.enabled: true
                 layer.effect: MultiEffect {

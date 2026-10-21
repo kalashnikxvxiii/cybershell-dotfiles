@@ -1,5 +1,6 @@
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 import "BezierPresets.js" as Presets
 import QtQuick
 
@@ -91,12 +92,8 @@ Item {
                     cutTopLeft: 2
                     cutBottomRight: 2
 
-                    SequentialAnimation on opacity {
-                        running: pulseOverlay.visible
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 1.0; to: 0.35; duration: 250 }
-                        NumberAnimation { from: 0.35; to: 1.0; duration: 250 }
-                    }
+                    opacity: deletePulse.k
+                    Pulse { id: deletePulse; running: pulseOverlay.visible; from: 1.0; to: 0.35; halfMs: 250 }
                 }
 
                 Canvas {

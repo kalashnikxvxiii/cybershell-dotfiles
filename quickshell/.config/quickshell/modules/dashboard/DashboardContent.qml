@@ -108,15 +108,33 @@ Item {
         Layout.preferredHeight: item ? item.implicitHeight : naturalHeight
         Layout.alignment: Qt.AlignTop
 
+        // Any part of the pane inside the viewport, mid-swipe included
+        readonly property bool inView: {
+            if (pane.index === view.currentIndex) return true
+            const vx  = Math.floor(view.visibleArea.xPosition * view.contentWidth)
+            const vex = Math.floor(vx + view.visibleArea.widthRatio * view.contentWidth)
+            return vex > x && vx < x + naturalWidth
+        }
+
         Component.onCompleted: active = Qt.binding(() => {
             if (pane.index === 0) return true
             // Always loaded if it's the current tab
             if (pane.index === view.currentIndex) return true
             // Load if partially visible (during swipe)
-            const vx  = Math.floor(view.visibleArea.xPosition * view.contentWidth)
-            const vex = Math.floor(vx + view.visibleArea.widthRatio * view.contentWidth)
-            return vex > x && vx < x + naturalWidth
+            return pane.inView
         })
+
+        // A tab stays loaded once it has been shown, but while it is out of
+        // sight it is hidden: the Flickable only clips it, so its animations,
+        // GIFs and pollers (all gated on `visible`) would keep going and keep
+        // the whole window rendering. The Loader itself stays visible, because
+        // the RowLayout skips invisible children and the tabs would shift.
+        Binding {
+            target: pane.item
+            property: "visible"
+            value: pane.inView
+            when: pane.item !== null
+        }
     }
 
     Behavior on implicitWidth { Anim { duration: 260 }}

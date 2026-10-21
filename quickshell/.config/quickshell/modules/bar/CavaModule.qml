@@ -5,6 +5,7 @@ import CyberAudio.Services
 import QtQuick
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 Item {
     id: root
@@ -13,11 +14,40 @@ Item {
 
     property bool showBackground: true
 
+    // The visualizer only has something to show while it is on screen and audio
+    // is playing: the copy on a secondary screen is never shown at all, and
+    // without playback there is nothing to capture or analyse. The capture
+    // thread is joined on the GUI thread when the last reference goes, and an
+    // idle one (no audio for 100 ms+) only notices at its next 500 ms tick: the
+    // whole shell froze that long. Dropping the reference as soon as playback
+    // stops, while chunks are still arriving, makes the join immediate
+    readonly property bool live: root.visible && (Players.active?.isPlaying ?? false)
+
     // ── Register the CavaProvider service ──────────────────────────────────
-    ServiceRef { service: Audio.cava }
+    ServiceRef { service: root.live ? Audio.cava : null }
 
     // ── Audio data (float 0-1, already normalized with Monstercat smoothing)
-    property var cavaValues: Audio.cava.values
+    // A snapshot, not a binding: the provider emits ~90 times a second (one
+    // 512-sample chunk at 44.1kHz) and every emission would rebind every bar and
+    // push a frame of the whole fullscreen window. 30Hz reads the same on a bar
+    // 24px tall
+    property var cavaValues: []
+    // Playing silence (or a paused tab that still reports "playing") leaves the
+    // spectrum flat: an unchanged one is not pushed on, so the bars do not
+    // rebind 30 times a second for nothing
+    property real _sig: -1
+    Ticker {
+        running: root.live
+        triggeredOnStart: true
+        onTicked: {
+            const v = Audio.cava.values
+            let sig = 0
+            for (let i = 0; i < v.length; i++) sig += v[i] * (i + 1)
+            if (sig === root._sig) return
+            root._sig = sig
+            root.cavaValues = v
+        }
+    }
     readonly property int barCount: Math.max(1, Math.round(root.width / 6))
 
     function levelAt(index) {

@@ -191,11 +191,11 @@ Item {
                     Behavior on fillColor   { CAnim {} }
                     Behavior on strokeColor { CAnim {} }
 
-                    SequentialAnimation on opacity {
-                        running: AudioControlState.eqPending
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 1.0; to: 0.55; duration: 1200; easing.type: Easing.InOutSine }
-                        NumberAnimation { from: 0.55; to: 1.0; duration: 1200; easing.type: Easing.InOutSine }
+                    opacity: eqPendingPulse.k
+                    Pulse {
+                        id: eqPendingPulse
+                        running: root.visible && AudioControlState.eqPending
+                        from: 1.0; to: 0.55; halfMs: 1200; sine: true
                     }
                 }
                 Row {

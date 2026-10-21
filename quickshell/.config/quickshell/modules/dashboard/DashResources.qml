@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 // Vertical bars for CPU / RAM / Disk
 
@@ -116,11 +117,12 @@ Row {
             property var _h: (function(){ var a=[]; for(var i=0;i<10;i++) a.push(0); return a })()
             property var _v: (function(){ var a=[]; for(var i=0;i<10;i++) a.push(0); return a })()
 
-            Timer {
-                interval: 16
+            // Two simulation steps per beat of the shell clock (~60 a second, as
+            // the 16ms timer this replaces ran them) but one repaint: the three
+            // bars used to wake the window on their own phases
+            Ticker {
                 running: trackBar._simActive
-                repeat: true
-                onTriggered: { trackBar._step(); waveCanvas.requestPaint() }
+                onTicked: { trackBar._step(); trackBar._step(); waveCanvas.requestPaint() }
             }
 
             function _step() {

@@ -12,6 +12,7 @@
 //   }
 import "../../../common/Colors.js" as CP
 import "../../../common"
+import "../../../common/effects"
 import QtQuick
 import QtQuick.Effects
 
@@ -64,7 +65,13 @@ Item {
             Behavior on opacity { CAnim {} }
         }
 
-        // 4 particles (left → right loop)
+        // 4 particles (left → right loop). One Ticker moves them all: a
+        // NumberAnimation per particle would keep the popup rendering at the
+        // monitor's refresh rate
+        Ticker {
+            id: flowTick
+            running: root.active && !root.muted && root.visible
+        }
         Repeater {
             model: 4
             delegate: Rectangle {
@@ -75,14 +82,10 @@ Item {
                 opacity: muted ? 0 : (1.0 - index * 0.2)
                 anchors.verticalCenter: parent.verticalCenter
 
-                NumberAnimation on x {
-                    from: -3
-                    to: root.width
-                    duration: 1800
-                    loops: Animation.Infinite
-                    running: root.active && !root.muted && root.visible
-                }
-                Component.onCompleted: x = -3 + (index * (root.width / 4))
+                // Until the first run the particles rest spread along the track
+                x: flowTick.elapsed > 0
+                    ? -3 + (root.width + 3) * ((flowTick.elapsed % 1800) / 1800)
+                    : -3 + (index * (root.width / 4))
                 Behavior on opacity { CAnim {} }
             }
         }

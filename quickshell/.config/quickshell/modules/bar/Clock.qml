@@ -38,7 +38,9 @@ Item {
         color: CP.aberrationRed(0.65)
         opacity: root._aberrating ? 1.0 : 0.0
         z: 0
-        Behavior on opacity { NumberAnimation { duration: 25 } }
+        // No 25ms fade here: a leaf animation, however short, makes every
+        // window of the shell render while it runs, and a burst toggles this four
+        // times. The ghost layers cut in and out instead
     }
 
     // ── Cyan channel (−3px left) ───────────────────────────────────────────
@@ -51,7 +53,7 @@ Item {
         color: CP.aberrationCyan(0.65)
         opacity: root._aberrating ? 1.0 : 0.0
         z: 0
-        Behavior on opacity { NumberAnimation { duration: 25 } }
+        // Cuts in and out, like abeRed above
     }
 
     // ── Glow shadow layer 2 (far) ──────────────────────────────────────────
@@ -92,8 +94,11 @@ Item {
     }
 
     // ── Continuous stepped glitch ──────────────────────────────────────────
+    // Both loops run only while the clock is shown: the primary screen keeps a
+    // second, hidden copy in the centre section, and its changes would still
+    // make the whole window render
     SequentialAnimation {
-        running: true; loops: Animation.Infinite
+        running: root.visible; loops: Animation.Infinite
 
         PropertyAction  { target: root;       property: "_aberrating"; value: false }
         PropertyAction  { target: label;      property: "color";       value: CP.yellow }
@@ -134,7 +139,7 @@ Item {
 
     // ── Opacity flicker (breathing) ────────────────────────────────────────
     SequentialAnimation {
-        running: true; loops: Animation.Infinite
+        running: root.visible; loops: Animation.Infinite
         PropertyAction  { target: root; property: "opacity"; value: 1.0 }
         PauseAnimation  { duration: 2400 }
         PropertyAction  { target: root; property: "opacity"; value: 0.85 }

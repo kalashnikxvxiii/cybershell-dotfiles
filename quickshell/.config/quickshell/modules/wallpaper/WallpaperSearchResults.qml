@@ -321,16 +321,20 @@ Item {
                         anchors.top: parent.top
                         anchors.bottom: parent.bottom
                         width: parent.width * searchResultsPanel.downloadProgress
-                        color: CP.cyan
-
-                        SequentialAnimation on color {
-                            loops: Animation.Infinite
-                            running: searchResultsPanel.downloading
-                            ColorAnimation { to: CP.cyan; duration: 500 }
-                            ColorAnimation { to: CP.magenta; duration: 60 }
-                            ColorAnimation { to: CP.yellow; duration: 60 }
-                            ColorAnimation { to: CP.cyan; duration: 60 }
+                        // While downloading the bar flickers: cyan for 500ms, then
+                        // 60ms each through magenta and yellow back to cyan. On the
+                        // shared clock, not a looping ColorAnimation
+                        color: {
+                            if (!searchResultsPanel.downloading) return CP.cyan
+                            const t = flickerTick.elapsed % 680
+                            if (t < 500) return CP.cyan
+                            const stops = [Qt.color(CP.cyan), Qt.color(CP.magenta), Qt.color(CP.yellow), Qt.color(CP.cyan)]
+                            const k = Math.floor((t - 500) / 60)
+                            const u = ((t - 500) % 60) / 60
+                            const a = stops[k], b = stops[k + 1]
+                            return Qt.rgba(a.r + (b.r - a.r) * u, a.g + (b.g - a.g) * u, a.b + (b.b - a.b) * u, 1)
                         }
+                        Ticker { id: flickerTick; running: searchResultsPanel.visible && searchResultsPanel.downloading }
                     }
                 }
             }

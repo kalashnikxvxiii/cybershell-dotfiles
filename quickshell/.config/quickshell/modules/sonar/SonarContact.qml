@@ -5,6 +5,7 @@
 import QtQuick
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 Item {
     id: row
@@ -46,13 +47,8 @@ Item {
 
         // A pending connection blinks rather than spinning: the shell has no
         // spinners, and the blink reads at this size.
-        SequentialAnimation on opacity {
-            running: row.busy
-            loops: Animation.Infinite
-            NumberAnimation { to: 0.25; duration: 320 }
-            NumberAnimation { to: 1; duration: 320 }
-        }
-        onOpacityChanged: if (!row.busy && opacity !== 1) opacity = 1
+        opacity: busyBlink.k
+        Pulse { id: busyBlink; running: SonarState.open && row.busy; from: 1; to: 0.25; halfMs: 320 }
     }
 
     Text {

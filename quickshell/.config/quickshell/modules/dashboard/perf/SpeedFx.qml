@@ -14,6 +14,7 @@
 import QtQuick
 import "../../../common/Colors.js" as CP
 import "../../../common"
+import "../../../common/effects"
 
 Canvas {
     id: fx
@@ -60,9 +61,11 @@ Canvas {
     // Hex only: block shades rendered as grey smudges at this size.
     readonly property string _glyphs: "0123456789ABCDEF"
 
-    FrameAnimation {
+    // 30Hz rather than every frame: a full repaint of the particle canvas at
+    // the monitor's refresh rate (240Hz on DP-1) is eight times the work
+    Ticker {
         running: fx.visible && (fx.streaming || fx._alive > 0)
-        onTriggered: fx._step(Math.min(frameTime, 0.05))
+        onTicked: fx._step(Math.min(delta / 1000, 0.05))
         onRunningChanged: if (!running) { fx._paintClock = 0; fx.requestPaint() }
     }
 

@@ -5,6 +5,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 // Vertical clock: hours / separator / minutes
 // Adapted from Caelestia dash/DateTime.qml
@@ -94,26 +95,26 @@ Item {
         }
     }
 
+    Ticker { id: panTicker; running: root.visible }
+
     AnimatedImage {
         id: bgGif
         height: parent.height
         width: sourceSize.width > 0 ? Math.ceil(height * sourceSize.width / sourceSize.height) : parent.width
         Component.onCompleted: source = root.gifSource
         fillMode: Image.Stretch
-        playing: true
+        // Paused while the dashboard is closed: a decoding GIF and a looping
+        // pan dirty the scene graph on every vsync even when nothing is on screen
+        playing: root.visible
 
-        SequentialAnimation on x {
-            loops: Animation.Infinite
-            NumberAnimation {
-                to: -(Math.max(0, bgGif.width - root.width))
-                duration: 14000
-                easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-                to: 0
-                duration: 14000
-                easing.type: Easing.InOutSine
-            }
+        // Slow pan out and back, 14s each way, eased like InOutSine. Stepped by
+        // a Ticker: the NumberAnimation this replaces rendered the dashboard at
+        // the monitor's full refresh rate
+        x: {
+            const d = Math.max(0, bgGif.width - root.width)
+            const t = panTicker.elapsed % 28000
+            const u = t < 14000 ? t / 14000 : 1 - (t - 14000) / 14000
+            return -d * (0.5 - 0.5 * Math.cos(Math.PI * u))
         }
     }
 

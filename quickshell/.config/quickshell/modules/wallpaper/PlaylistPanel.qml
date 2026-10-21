@@ -106,16 +106,20 @@ Item {
                             spacing: 6
 
                             Text {
+                                id: _playingMark
                                 visible: PlaylistState.playingName !== "" && PlaylistState.isPlaying
                                 text: "▶"
                                 font.pixelSize: 13
                                 color: Colours.accentPrimary
                                 anchors.verticalCenter: parent.verticalCenter
-                                SequentialAnimation on opacity {
-                                    running: parent.visible
-                                    loops: Animation.Infinite
-                                    NumberAnimation { from: 1.0; to: 0.5; duration: 1200; easing.type: Easing.InOutSine }
-                                    NumberAnimation { from: 0.5; to: 1.0; duration: 1200; easing.type: Easing.InOutSine }
+                                opacity: _playingMarkPulse.k
+                                // Gated on the picker being open as well as on `visible`: the
+                                // panel lives on in a hidden window, where `visible` stays true,
+                                // and a playlist can play for hours with the picker closed
+                                Pulse {
+                                    id: _playingMarkPulse
+                                    running: _playingMark.visible && WallpaperState.pickerOpen
+                                    from: 1.0; to: 0.5; halfMs: 1200; sine: true
                                 }
                             }
                             Item {
@@ -711,7 +715,7 @@ Item {
                     property real _now: Date.now()
 
                     Timer {
-                        running: _countdown.visible
+                        running: _countdown.visible && WallpaperState.pickerOpen
                         interval: 250
                         repeat: true
                         onTriggered: _countdown._now = Date.now()
@@ -737,11 +741,11 @@ Item {
                             width: 5; height: 5; radius: 1
                             color: Colours.accentSecondary
                             anchors.verticalCenter: parent.verticalCenter
-                            SequentialAnimation on opacity {
-                                running: _countdown.visible
-                                loops: Animation.Infinite
-                                NumberAnimation { from: 1.0; to: 0.35; duration: 800; easing.type: Easing.InOutSine }
-                                NumberAnimation { from: 0.35; to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                            opacity: _cdDotPulse.k
+                            Pulse {
+                                id: _cdDotPulse
+                                running: _countdown.visible && WallpaperState.pickerOpen
+                                from: 1.0; to: 0.35; halfMs: 800; sine: true
                             }
                         }
 
@@ -801,11 +805,11 @@ Item {
                         Behavior on fillColor { ColorAnimation { duration: 150 } }
                         Behavior on strokeColor { ColorAnimation { duration: 150 } }
 
-                        SequentialAnimation on opacity {
-                            running: _playBtn._wouldSwitch
-                            loops: Animation.Infinite
-                            NumberAnimation { from: 1.0; to: 0.55; duration: 900; easing.type: Easing.InOutSine }
-                            NumberAnimation { from: 0.55; to: 1.0; duration: 900; easing.type: Easing.InOutSine }
+                        opacity: _playBtnPulse.k
+                        Pulse {
+                            id: _playBtnPulse
+                            running: _playBtn._wouldSwitch && WallpaperState.pickerOpen
+                            from: 1.0; to: 0.55; halfMs: 900; sine: true
                         }
                     }
                     Text {
@@ -977,6 +981,7 @@ Item {
 
                                 // Pulsing ▶ icon when playing
                                 Text {
+                                    id: _chipMark
                                     visible: playing
                                     anchors.left: parent.left
                                     anchors.leftMargin: 6
@@ -984,11 +989,11 @@ Item {
                                     text: "▶"
                                     font.pixelSize: 8
                                     color: Colours.accentPrimary
-                                    SequentialAnimation on opacity {
-                                        running: parent.visible
-                                        loops: Animation.Infinite
-                                        NumberAnimation { from: 1.0; to: 0.45; duration: 1100; easing.type: Easing.InOutSine }
-                                        NumberAnimation { from: 0.45; to: 1.0; duration: 1100; easing.type: Easing.InOutSine }
+                                    opacity: _chipMarkPulse.k
+                                    Pulse {
+                                        id: _chipMarkPulse
+                                        running: _chipMark.visible && WallpaperState.pickerOpen
+                                        from: 1.0; to: 0.45; halfMs: 1100; sine: true
                                     }
                                 }
 

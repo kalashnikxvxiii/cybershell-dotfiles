@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QString>
 #include <atomic>
+#include <functional>
+#include <mutex>
 #include <thread>
 #include <vector>
 #include "service.hpp"
@@ -31,6 +33,10 @@ public:
     [[nodiscard]] QString target()      const { return m_target; }
     [[nodiscard]] quint32 channels()    const { return m_channels; }
 
+    // The worker registers a callback that makes its loop return right away;
+    // stop() calls it so the join does not wait for the next idle timer tick.
+    void setWake(std::function<void()> fn);
+
 protected:
     explicit AudioCollector(QObject* parent = nullptr);
     AudioCollector(QString streamName, bool captureSink, quint32 channels, QObject* parent = nullptr);
@@ -45,6 +51,8 @@ protected:
 
 private:
     std::jthread m_thread;
+    std::mutex m_wakeMutex;
+    std::function<void()> m_wake;
     std::vector<float> m_buffer1, m_buffer2;
     std::atomic<std::vector<float>*> m_readBuffer;
     std::atomic<std::vector<float>*> m_writeBuffer;

@@ -115,10 +115,28 @@ public:
         pw_loop_update_timer(pw_main_loop_get_loop(m_loop), timerSource, &ts, nullptr, false);
         m_timer = timerSource;
 
+        // stop() signals this event from the GUI thread: without it the join
+        // would wait for the idle timer, up to 500 ms, and freeze the shell.
+        m_wakeSrc = pw_loop_add_event(
+            pw_main_loop_get_loop(m_loop),
+            [](void* data, uint64_t) {
+                auto* self = static_cast<PipeWireWorker*>(data);
+                pw_main_loop_quit(self->m_loop);
+            },
+            this
+        );
+        m_collector->setWake([this]() {
+            pw_loop_signal_event(pw_main_loop_get_loop(m_loop), m_wakeSrc);
+        });
+
         // Run until stop requested
         while (!m_token.stop_requested()) {
             pw_main_loop_run(m_loop);
         }
+
+        // Waits for a stop() that is signalling right now, so the loop is
+        // never destroyed under it.
+        m_collector->setWake(nullptr);
 
         pw_stream_destroy(m_stream);
         pw_main_loop_destroy(m_loop);
@@ -130,6 +148,7 @@ private:
     pw_main_loop* m_loop = nullptr;
     pw_stream* m_stream = nullptr;
     spa_source* m_timer = nullptr;
+    spa_source* m_wakeSrc = nullptr;
     bool m_idle = true;
     int m_expirations = 0;
 
@@ -211,8 +230,17 @@ void AudioCollector::start() {
     });
 }
 
+void AudioCollector::setWake(std::function<void()> fn) {
+    std::lock_guard lock(m_wakeMutex);
+    m_wake = std::move(fn);
+}
+
 void AudioCollector::stop() {
     m_thread.request_stop();
+    {
+        std::lock_guard lock(m_wakeMutex);
+        if (m_wake) m_wake();
+    }
     if (m_thread.joinable()) m_thread.join();
 }
 

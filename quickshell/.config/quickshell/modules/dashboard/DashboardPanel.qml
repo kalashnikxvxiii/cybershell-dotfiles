@@ -102,6 +102,7 @@ Item {
                 id: vhsBand
                 width: parent.width
                 height: 42
+                y: vhsOverlay.bandY(vhsTicker.elapsed)
 
                 Rectangle {
                     anchors.fill: parent
@@ -114,41 +115,36 @@ Item {
                 }
             }
 
-            SequentialAnimation {
-                running: root.drawerState.dashboardOpen
-                loops: Animation.Infinite
+            // The band's pass timeline as [duration ms, y from, y to] segments
+            // (equal from/to = hold). Stepped by a Ticker: as NumberAnimations
+            // these passes rendered the dashboard at the monitor's full refresh
+            // rate, for a band drawn at 4.5% opacity
+            Ticker { id: vhsTicker; running: root.drawerState.dashboardOpen }
 
-                // Pass 1: smooth scroll, no glitch
-                PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 3200; easing.type: Easing.Linear }
-                PauseAnimation  { duration: 480 }
-
-                // Pass 2: forward jump mid-run
-                PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.38; duration: 1900; easing.type: Easing.Linear }
-                ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.65 }
-                PauseAnimation  { duration: 38 }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 1100; easing.type: Easing.Linear }
-                PauseAnimation  { duration: 350 }
-
-                // Pass 3: backward jump (VHS tracking artifact)
-                PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.52; duration: 2100; easing.type: Easing.Linear }
-                ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.18 }
-                PauseAnimation  { duration: 45 }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 2400; easing.type: Easing.Linear }
-                PauseAnimation  { duration: 420 }
-
-                // Pass 4: double micro-jump forward
-                PropertyAction  { target: vhsBand; property: "y"; value: -vhsBand.height }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.27; duration: 1400; easing.type: Easing.Linear }
-                ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.46 }
-                PauseAnimation  { duration: 28 }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height * 0.66; duration: 900; easing.type: Easing.Linear }
-                ScriptAction    { script: vhsBand.y = vhsOverlay.height * 0.77 }
-                PauseAnimation  { duration: 20 }
-                NumberAnimation { target: vhsBand; property: "y"; to: vhsOverlay.height + vhsBand.height; duration: 620; easing.type: Easing.Linear }
-                PauseAnimation  { duration: 600 }
+            function bandY(t) {
+                const H = vhsOverlay.height
+                const top = -vhsBand.height
+                const bot = H + vhsBand.height
+                const segs = [
+                    // Pass 1: smooth scroll, no glitch
+                    [3200, top, bot], [480, bot, bot],
+                    // Pass 2: forward jump mid-run
+                    [1900, top, 0.38 * H], [38, 0.65 * H, 0.65 * H], [1100, 0.65 * H, bot], [350, bot, bot],
+                    // Pass 3: backward jump (VHS tracking artifact)
+                    [2100, top, 0.52 * H], [45, 0.18 * H, 0.18 * H], [2400, 0.18 * H, bot], [420, bot, bot],
+                    // Pass 4: double micro-jump forward
+                    [1400, top, 0.27 * H], [28, 0.46 * H, 0.46 * H], [900, 0.46 * H, 0.66 * H],
+                    [20, 0.77 * H, 0.77 * H], [620, 0.77 * H, bot], [600, bot, bot]
+                ]
+                let total = 0
+                for (let i = 0; i < segs.length; i++) total += segs[i][0]
+                let r = t % total
+                for (let i = 0; i < segs.length; i++) {
+                    if (r < segs[i][0])
+                        return segs[i][1] + (segs[i][2] - segs[i][1]) * (r / segs[i][0])
+                    r -= segs[i][0]
+                }
+                return bot
             }
         }
 

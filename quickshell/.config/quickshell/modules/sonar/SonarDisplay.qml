@@ -12,6 +12,7 @@
 import QtQuick
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 Item {
     id: face
@@ -22,6 +23,10 @@ Item {
     property string selectedKey: ""
     // Set while the source is actually scanning: the sweep stops when it is not.
     property bool   sweeping: true
+    // False while the panel holding the face is closed. The panel keeps its
+    // content alive in a hidden window, where `visible` stays true, so
+    // visibility alone cannot say whether anyone is looking
+    property bool   active: true
     // Bumped by the owner when the entry set changes, so the blip bookkeeping
     // can follow entries that come and go.
     property int    revision: 0
@@ -33,8 +38,8 @@ Item {
     readonly property real maxR: Math.min(width, height) / 2 - 10
 
     // ── Sweep state ──────────────────────────────────────────────────────
-    // The angle is a plain number driven by the frame loop rather than a
-    // NumberAnimation: the blips need to compare against it every frame, and
+    // The angle is a plain number driven by a timer rather than a
+    // NumberAnimation: the blips need to compare against it every step, and
     // an animator would not publish it.
     property real _angle: -Math.PI / 2
     property real _pingClock: 0
@@ -43,9 +48,13 @@ Item {
 
     readonly property real sweepPeriod: 3.4
 
-    FrameAnimation {
-        running: face.visible
-        onTriggered: face._step(Math.min(frameTime, 0.05))
+    // Stepped at 30Hz, not every frame. The face is a Canvas redrawn from
+    // scratch (forty wedges plus the blips), and repainting it at the monitor's
+    // refresh rate (240Hz on DP-1) was the whole cost of keeping the panel open;
+    // a sweep that turns once every 3.4s moves ~3 degrees per step
+    Ticker {
+        running: face.visible && face.active
+        onTicked: face._step(Math.min(delta / 1000, 0.1))
     }
 
     function _keyAngle(key) {

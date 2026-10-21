@@ -141,7 +141,10 @@ Item {
                         anchors.fill: parent
                         opacity: 0.11
                         readonly property int spacing: 3
-                        property real offset: 0
+                        // Quarter-pixel steps: the lines slide 3px in 2.4s, so a
+                        // finer offset would only repaint the canvas for nothing
+                        readonly property real offset: Math.round(scanTick.elapsed % 2400 / 2400 * spacing * 4) / 4
+                        Ticker { id: scanTick; running: scanCanvas.visible }
 
                         onOffsetChanged: requestPaint()
                         onPaint: {
@@ -157,13 +160,6 @@ Item {
                                 ctx.lineTo(width, y + 0.5)
                                 ctx.stroke()
                             }
-                        }
-                        NumberAnimation on offset {
-                            from: 0
-                            to: scanCanvas.spacing          // == spacing -> seamless loop
-                            duration: 2400                  // slow, ~2.4s per cycle
-                            loops: Animation.Infinite
-                            running: scanCanvas.visible
                         }
                     }
 
@@ -256,12 +252,8 @@ Item {
                     width: 6; height: 6
                     color: CP.neon
                     anchors.verticalCenter: parent.verticalCenter
-                    SequentialAnimation on opacity {
-                        loops: Animation.Infinite
-                        running: cycleTimer.running
-                        NumberAnimation { from: 1; to: 0.3; duration: 600 }
-                        NumberAnimation { from: 0.3; to: 1; duration: 600 }
-                    }
+                    opacity: liveDot.k
+                    Pulse { id: liveDot; running: cycleTimer.running; from: 1; to: 0.3; halfMs: 600 }
                 }
                 Text {
                     text: "LIVE"

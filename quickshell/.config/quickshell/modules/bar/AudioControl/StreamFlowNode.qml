@@ -6,6 +6,7 @@
 //           [██████████████░░░] (inline level meter under flow line)
 import "../../../common/Colors.js" as CP
 import "../../../common"
+import "../../../common/effects"
 import QtQuick
 import CyberAudio.Services
 
@@ -57,6 +58,20 @@ Item {
         captureSink: false
     }
     ServiceRef { service: root.visible ? nodeLevel : null }
+
+    // The meter follows the provider (~90 updates a second) through a 30Hz
+    // sample, eased toward the target the way the 60ms Behavior it replaces
+    // did. Binding the bar straight to the provider kept the popup rendering at
+    // the monitor's refresh rate for as long as anything played
+    property real _level: 0
+    Ticker {
+        running: root.visible && !root.muted
+        onTicked: {
+            const target = root._vu(nodeLevel.peak)
+            const next = root._level + (target - root._level) * 0.65
+            root._level = Math.abs(next - target) < 0.004 ? target : next
+        }
+    }
 
     // App category icon glyph (based on application.name heuristics)
     readonly property string iconGlyph: {
@@ -190,6 +205,7 @@ Item {
                 color: root.accent
             }
             // 2 particles
+            Ticker { id: flowTick; running: !root.muted && root.visible }
             Repeater {
                 model: 2
                 delegate: Rectangle {
@@ -199,14 +215,9 @@ Item {
                     color: root.accent
                     opacity: 1.0 - index * 0.4
                     anchors.verticalCenter: parent.verticalCenter
-                    NumberAnimation on x {
-                        from: 0
-                        to: flowLine.width - 6
-                        duration: 1800
-                        loops: Animation.Infinite
-                        running: !root.muted && root.visible
-                    }
-                    Component.onCompleted: x = index * (flowLine.width / 2)
+                    x: flowTick.elapsed > 0
+                        ? (flowLine.width - 6) * ((flowTick.elapsed % 1800) / 1800)
+                        : index * (flowLine.width / 2)
                 }
             }
         }
@@ -251,9 +262,8 @@ Item {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                width: parent.width * root._vu(nodeLevel.peak)
+                width: parent.width * root._level
                 color: CP.alpha(root.accent, 0.9)
-                Behavior on width { NumberAnimation { duration: 60 } }
             }
         }
     }

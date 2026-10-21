@@ -1,6 +1,7 @@
 import "../../common/Colors.js" as CP
 import "./WallpaperConst.js" as WC
 import "../../common"
+import "../../common/effects"
 import Quickshell.Io
 import QtQuick
 
@@ -279,11 +280,10 @@ Item {
             visible: root.expanded && searchInput.text === "" 
                     && _activePrefixes.indexOf("#") === -1
 
-            property real _phase: 0
+            // Position in the placeholder's 9s scroll cycle, 0..1
+            readonly property real _phase: (phaseTick.elapsed % 9000) / 9000
             readonly property real _overflow:
                 Math.max(0, placeholderText.implicitWidth - width)
-            
-            onVisibleChanged: if (visible) _phase = 0
 
             Text {
                 id: placeholderText
@@ -314,12 +314,12 @@ Item {
                 }
             }
 
-            NumberAnimation on _phase {
+            // A Ticker, not a NumberAnimation: that would keep the picker
+            // rendering at the monitor's refresh rate for as long as it is open
+            Ticker {
+                id: phaseTick
                 running: emptyPlaceholder.visible && emptyPlaceholder._overflow > 0
-                from: 0
-                to: 1
-                duration: 9000
-                loops: Animation.Infinite
+                onRunningChanged: if (running) elapsed = 0
             }
         }
 

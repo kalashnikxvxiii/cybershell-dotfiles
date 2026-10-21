@@ -7,6 +7,7 @@ import Quickshell.Services.Mpris
 import QtQuick
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 Item {
     id: root
@@ -50,19 +51,19 @@ Item {
 
     visible: player !== null
 
-    onDisplayTextChanged: {
-        textViewport.marqueeOffset = 0
-    }
+    onDisplayTextChanged: marquee.restart()
 
-    Timer {
+    // The fill is one pixel high and moves about a pixel a second: polling
+    // faster only wakes the window for nothing
+    Ticker {
         id: progressTimer
-        interval: 100
-        repeat: true
-        running: player
+        every: 8    // ~4Hz
+        running: root.visible
+                && player
                 && player.positionSupported
                 && player.playbackState == MprisPlaybackState.Playing
         
-        onTriggered: {
+        onTicked: {
             //console.log("progress tick", root.width, root.progress, progressBarBg.width)
             if (!root.player) {
                 root.progress = 0
@@ -102,16 +103,12 @@ Item {
         height: label1.implicitHeight
         clip: true
 
-        property real marqueeOffset: 0
+        readonly property real marqueeOffset: marqueeActive ? marquee.offset : 0
         property real marqueeGap: 40
         property bool marqueeActive: player && root.displayText.length > 0
                                 && label1.implicitWidth > width
 
-        onMarqueeActiveChanged: {
-            if (!marqueeActive) {
-                marqueeOffset = 0
-            }
-        }
+        onMarqueeActiveChanged: if (!marqueeActive) marquee.restart()
 
         // Artist/Title text
         Text {
@@ -141,30 +138,12 @@ Item {
             styleColor: label1.styleColor
         }
 
-        // Marquee animation: pause, scroll, pause...
-        SequentialAnimation {
-            id: marqueeAnim
-            running: textViewport.marqueeActive
-            loops: Animation.Infinite
-
-            // reset: text starts at origin
-            PropertyAction {
-                target: textViewport
-                property: "marqueeOffset"
-                value: 0
-            }
-            PauseAnimation { duration: 1500 }
-
-            // scroll left
-            NumberAnimation {
-                target: textViewport
-                property: "marqueeOffset"
-                from: 0
-                to: -(label1.implicitWidth + textViewport.marqueeGap)
-                duration: 8000
-                easing.type: Easing.Linear
-            }
-            PauseAnimation { duration: 1000 }
+        // Marquee: hold 1.5s, scroll 8s (linear), hold 1s, jump back to the
+        // origin. A Timer, not a NumberAnimation: see MarqueeDriver
+        MarqueeDriver {
+            id: marquee
+            running: textViewport.marqueeActive && root.visible
+            distance: label1.implicitWidth + textViewport.marqueeGap
         }
     }
 

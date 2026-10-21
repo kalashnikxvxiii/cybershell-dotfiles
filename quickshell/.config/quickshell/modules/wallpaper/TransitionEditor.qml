@@ -839,12 +839,8 @@ Item {
                     width: 8; height: 8
                     color: TransitionConfig.isDirty ? CP.amber : CP.neon
                     anchors.verticalCenter: parent.verticalCenter
-                    SequentialAnimation on opacity {
-                        running: TransitionConfig.isDirty
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 1.0; to: 0.4; duration: 600 }
-                        NumberAnimation { from: 0.4; to: 1.0; duration: 600 }
-                    }
+                    opacity: dirtyPulse.k
+                    Pulse { id: dirtyPulse; running: TransitionConfig.editorOpen && TransitionConfig.isDirty; from: 1.0; to: 0.4; halfMs: 600 }
                 }
 
                 Text {

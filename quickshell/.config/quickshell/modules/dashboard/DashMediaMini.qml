@@ -12,6 +12,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 
 Item {
     id: root
@@ -57,18 +58,18 @@ Item {
         running: false
     }
 
-    // Position pulse: MPRIS doesn't push position. Tick at 100ms and recompute
+    // Position pulse: MPRIS doesn't push position. Tick at ~5Hz and recompute
     // ratio directly (same pattern as MprisModule). No Behavior needed —
-    // updates are frequent enough to feel fluid.
-    Timer {
+    // the arc moves a few pixels a second.
+    Ticker {
         id: progressTimer
-        interval: 100
-        repeat: true
-        running: root.activePlayer
+        every: 6    // ~5Hz: the arc moves about 3px a second
+        running: root.visible
+                 && root.activePlayer
                  && root.activePlayer.positionSupported
                  && root.activePlayer.playbackState === MprisPlaybackState.Playing
         triggeredOnStart: true
-        onTriggered: {
+        onTicked: {
             const p = root.activePlayer
             if (!p || !p.lengthSupported || p.length <= 0) {
                 root.playerProgress = 0
@@ -105,7 +106,11 @@ Item {
                 onHoveredChanged: root.coverHovered = hovered
             }
 
-            ServiceRef { service: Audio.cava }
+            // FFT capture only while the card is on screen and something plays:
+            // nobody reads it otherwise. Released at pause, not at hide: joining
+            // an idle capture thread blocks the GUI thread for up to 500 ms (see
+            // CavaModule), which showed as the closing dashboard hanging at the end
+            ServiceRef { service: root.visible && (root.activePlayer?.isPlaying ?? false) ? Audio.cava : null }
 
             // Circular audio wave
             Canvas {
@@ -117,8 +122,26 @@ Item {
                 enabled: false
                 z: -10
 
-                property var cavaValues: Audio.cava.values
-                onCavaValuesChanged: requestPaint()
+                property var cavaValues: []
+                onVisibleChanged: if (visible) requestPaint()
+
+                // Snapshot at 30Hz instead of following the FFT's ~90 emissions a
+                // second: each one re-ran the whole path in JS. An unchanged
+                // frame (paused, decayed to zero) is not repainted at all
+                property real _sig: -1
+                Ticker {
+                    running: audioWave.visible
+                    triggeredOnStart: true
+                    onTicked: {
+                        const v = Audio.cava.values
+                        let sig = 0
+                        for (let i = 0; i < v.length; i++) sig += v[i] * (i + 1)
+                        if (sig === audioWave._sig) return
+                        audioWave._sig = sig
+                        audioWave.cavaValues = v
+                        audioWave.requestPaint()
+                    }
+                }
 
                 property color accent: root.coverAccent
                 onAccentChanged: requestPaint()
