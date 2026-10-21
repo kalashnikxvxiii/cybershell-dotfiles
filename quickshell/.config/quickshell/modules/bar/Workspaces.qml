@@ -571,61 +571,26 @@ Item {
                 property int  winCount: tops.length
                 property bool isEmpty: winCount === 0
 
-                property string wsIcon:
-                    isUrgent ? "⚡" :
-                    isActive  ? "●" :
-                    isEmpty   ? "○" : "·"
-
-                property color baseColor:
-                    isUrgent ? CP.red    :
-                    isActive  ? CP.yellow :
-                                CP.cyan
+                // RamShape states: active = solid cyan, with windows = faint
+                // cyan, empty = red outline
+                readonly property color stateColor:
+                    isUrgent ? CP.red :
+                    isActive ? CP.cyan :
+                    !isEmpty ? CP.alpha(CP.cyan, hoverHandler.hovered ? 0.3 : 0.15) :
+                               CP.alpha(CP.red, 0.5)
+                // Written by the hover glitch instead of stateColor, so the
+                // state binding survives it; transparent = no glitch
+                property color _glitchTint: "transparent"
 
                 implicitWidth: showIcons
-                    ? Math.min(wsBtn.winCount, 3) * 10 + (Math.min(winCount, 3) - 1) * 2 + 16
-                    : Math.max(wsLabel.implicitWidth + 24, Math.min(winCount, 5) * 6 + 30)
-                implicitHeight: 16
+                    ? Math.min(winCount, 3) * 14 + (Math.min(winCount, 3) - 1) * 2 + 10
+                    : 10
+                implicitHeight: 20
 
-                // Cut-corner shape (same pattern as the dashboard panel, cut=4)
-                CutShape {
-                    id: wsBg
+                RamShape {
                     anchors.fill: parent
-                    fillColor: Qt.rgba(
-                        wsBtn.baseColor.r, wsBtn.baseColor.g, wsBtn.baseColor.b,
-                        hoverHandler.hovered ? 0.18 : (wsBtn.isActive ? 0.12 : 0.08)
-                    )
-                    strokeColor: Qt.rgba(
-                        wsBtn.baseColor.r, wsBtn.baseColor.g, wsBtn.baseColor.b,
-                        wsBtn.isActive ? 0.55 : 0.22
-                    )
-                    strokeWidth: 1
-                    inset: 0.5
-                    cutTopRight: 4
-                    cutBottomLeft: 4
-                }
-
-                // -- Label (empty workspace or no icons) ------------------
-                Text {
-                    id: wsLabel
-                    visible: !wsBtn.showIcons
-                    anchors { top: parent.top; topMargin: 1; horizontalCenter: parent.horizontalCenter }
-                    text:               wsBtn.wsIcon
-                    font.family:        "Oxanium"
-                    font.pixelSize:     11
-                    font.letterSpacing: 2
-                    color:              wsBtn.baseColor
-                    transform: Translate { id: wsLabelShift; x: 0 }
-
-                    // Simulated glow
-                    Text {
-                        anchors.centerIn: parent
-                        anchors.horizontalCenterOffset: 1
-                        anchors.verticalCenterOffset:   1
-                        text:   wsLabel.text
-                        font:   wsLabel.font
-                        color:  Qt.rgba(Qt.color(wsBtn.baseColor).r, Qt.color(wsBtn.baseColor).g, Qt.color(wsBtn.baseColor).b, 0.35)
-                        z: -1
-                    }
+                    color: wsBtn._glitchTint.a > 0 ? wsBtn._glitchTint : wsBtn.stateColor
+                    filled: wsBtn.isActive || wsBtn.isUrgent || !wsBtn.isEmpty
                 }
 
                 // -- App icons ------------------------------
@@ -696,27 +661,27 @@ Item {
                     id: btnGlitch
                     running: false; loops: 1
 
-                    PropertyAction { target: wsBtn;      property: "baseColor"; value: wsBtn.baseColor }
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: "transparent" }
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 0 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "baseColor"; value: CP.magenta }
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: CP.magenta }
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 0.55 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 4 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "baseColor"; value: CP.yellow }
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: CP.yellow }
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: -3 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "baseColor"; value: wsBtn.baseColor }
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: "transparent" }
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 0.7 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 2 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "baseColor"; value: CP.magenta }                    
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: CP.magenta }                    
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: -1 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "baseColor"; value: wsBtn.baseColor }                    
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: "transparent" }                    
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 0 }
                     PauseAnimation { duration: 88 }
