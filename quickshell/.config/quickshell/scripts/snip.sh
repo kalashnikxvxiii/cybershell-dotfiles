@@ -15,7 +15,8 @@
 set -uo pipefail
 
 TRIGGER="/tmp/qs-snip-trigger"
-PIDF="/tmp/qs-snip-recorder.pid"
+# Must match SnipAction.recordPidFile
+PIDF="${XDG_RUNTIME_DIR:-/tmp}/qs-snip/recorder.pid"
 
 action="${1:-screenshot}"
 mode="overlay"
@@ -25,7 +26,8 @@ emit() { printf '%s\n' "$*" > "$TRIGGER"; }
 
 # Stopping a recording must not ask for a region again. The action script decides
 # to stop by finding a live pid, so it needs no geometry and no freeze.
-if [ "$action" = "record" ] && [ -f "$PIDF" ] && kill -0 "$(cat "$PIDF")" 2>/dev/null; then
+rec=$(cat "$PIDF" 2>/dev/null)
+if [ "$action" = "record" ] && [ -n "$rec" ] && [ "$(cat "/proc/$rec/comm" 2>/dev/null)" = wf-recorder ]; then
     emit "direct|record|0|0|1|1||0|0|1|$(date +%s%N)"
     exit 0
 fi

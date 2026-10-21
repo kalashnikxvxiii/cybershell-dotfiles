@@ -796,7 +796,14 @@ Singleton {
             var ch = d.chapter || ({})
             var files = dataSaver ? (ch.dataSaver || []) : (ch.data || [])
             var seg = dataSaver ? "/data-saver/" : "/data/"
-            if (!ch.hash || files.length === 0) {
+            // The hash names a cache directory: anything but a plain token
+            // would let the response pick a path outside the cache
+            var hashOk = typeof ch.hash === "string" && ch.hash.length > 0
+            for (var h = 0; hashOk && h < ch.hash.length; h++) {
+                var hc = ch.hash.charCodeAt(h)
+                hashOk = (hc >= 48 && hc <= 57) || (hc >= 97 && hc <= 122) || (hc >= 65 && hc <= 90)
+            }
+            if (!hashOk || files.length === 0) {
                 root.loadingPages = false
                 root.pagesError = "no pages"
                 root.failed("pages", root.pagesError)

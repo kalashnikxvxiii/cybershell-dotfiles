@@ -37,7 +37,8 @@ Singleton {
     // machine. The first Search asks for confirmation and records the answer in
     // this file, so the warning survives a shell restart.
     property string consentFile: (Quickshell.env("HOME") || "") + "/.cache/qs-snip/upload-consent"
-    property string recordPidFile: "/tmp/qs-snip-recorder.pid"
+    // In the per-user runtime dir, not /tmp: the pid in it gets signalled
+    property string recordPidFile: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/qs-snip/recorder.pid"
 
     // ── Shell quoting ────────────────────────────────────────────────────
     // Returns the value ALREADY wrapped in single quotes. Callers must never
@@ -153,13 +154,16 @@ Singleton {
             return prelude
                 + `PIDF=${sq(root.recordPidFile)}; SAVE_DIR=${sq(root.saveDir)}; `
                 + dropSource
-                + `if [ -f "$PIDF" ] && kill -0 "$(cat "$PIDF")" 2>/dev/null; then `
-                +   `kill -INT "$(cat "$PIDF")"; rm -f "$PIDF"; `
+                // Signalled only if it is still wf-recorder: a stale file
+                // can name a pid that has since been reused by anything
+                + `REC=$(cat "$PIDF" 2>/dev/null); `
+                + `if [ -n "$REC" ] && [ "$(cat "/proc/$REC/comm" 2>/dev/null)" = wf-recorder ]; then `
+                +   `kill -INT "$REC"; rm -f "$PIDF"; `
                 +   `notify-send -a 'Snip' 'RECORDING' 'stop'; exit 0; fi; `
                 + `mkdir -p "$SAVE_DIR" || exit 1; `
                 + `OUT="$SAVE_DIR/record-$(date +%Y-%m-%d_%H.%M.%S).mp4"; `
                 + `wf-recorder -g "${gx},${gy} ${gw}x${gh}" -f "$OUT" & `
-                + `echo $! > "$PIDF"; `
+                + `mkdir -p "$(dirname "$PIDF")" && echo $! > "$PIDF"; `
                 + `notify-send -a 'Snip' 'RECORDING' 'in corso — stesso tasto per fermare'`;
         }
         }
