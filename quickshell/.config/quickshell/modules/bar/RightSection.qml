@@ -70,10 +70,10 @@ Item {
 
                     // Network + bluetooth, between the clock and the tray, on
                     // the primary screen only.
-                    SonarModule {
-                        height: parent.height
-                        showBackground: false
-                    }
+                    // SonarModule {
+                    //     height: parent.height
+                    //     showBackground: false
+                    // }
 
                     Item {
                         width: trayCtl.expandedContentWidth
