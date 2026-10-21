@@ -29,6 +29,8 @@ Scope {
     property string liveTail: ""
     property string _pending: ""
     property bool _turnDone: false
+    property var todos: []
+    property string suggestion: ""
 
     // Read only at launch: `/effort` moves it afterwards, this is what a
     // restart comes back up with
@@ -130,7 +132,9 @@ Scope {
     readonly property var effortLevels: root.modelInfo.supportedEffortLevels ?? []
 
     onMessagesChanged: root.changed()
-    onCacheStampChanged: root._armExpiry()
+    // Saved with the tab: a restart must not forget when the cache dies
+    onCacheStampChanged: { root._armExpiry(); root.changed() }
+    onRecapChanged: root.changed()
     onEffortChanged: root.changed()
     onCustomTitleChanged: root.changed()
 
@@ -154,28 +158,150 @@ Scope {
         return true
     }
 
+    // -- Queue ---------------------------------------------
+    //
+    // What is sent while a turn runs (a compaction included) waits here and
+    // goes out once the turn is over, one per turn, in order. The CLI would
+    // take it at once and fold it into the turn in flight: the transcript
+    // here has one reply per prompt, so the shell holds it instead
+    property var queued: []
+    property real liveAt: 0
+
+    function unqueue(i) { root.queued = root.queued.filter((_, k) => k !== i) }
+
+    function _uuid() {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0
+            return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16)
+        })
+    }
+
     // paths travel as a list under the words, or alone: the model runs on this
     // machine and opens each one with its own tools
     function ask(text, paths) {
         const t = (text ?? "").trim()
         const p = paths ?? []
-        if ((t === "" && p.length === 0) || root.session.busy || root.loading) return false
+        if ((t === "" && p.length === 0) || root.loading) return false
         const body = p.length === 0 ? t
             : (t === "" ? "" : t + "\n\n")
             + "Attached paths:\n" + p.map(x => "- " + x).join("\n")
+        if (root.session.busy) {
+            root.queued = root.queued.concat([body])
+            return true
+        }
+        root._dispatch(body)
+        return true
+    }
+
+    function _dispatch(body) {
+        const id = root._uuid()
         root.messages = root.messages.concat([
-            { role: "user", parts: [{ kind: "text", text: body }] }
+            { role: "user", uuid: id, at: Date.now(), parts: [{ kind: "text", text: body }] }
         ])
         root._clearAway()
         root._clearStream()
         root._resetTurn()
         root._turnStart = Date.now()
         root.elapsedMs = 0
-        root.session.send(body)
+        root.session.send(body, id)
+        root.suggestion = ""
+    }
+
+    // -- /btw ------------------------------------------------
+    //
+    // A side question: answered from the context as it stands, a turn in
+    // flight included, and never part of the conversation. The earlier ones
+    // go with it, as the CLI does, so a follow-up makes sense
+    property var side: null             // { question, answer, error, pending }
+    property string _sideId: ""
+    property var _sideHistory: []
+
+    function askSide(question) {
+        const q = (question ?? "").trim()
+        if (q === "") return false
+        root._sideId = root.session.askSide(q, root._sideHistory)
+        root.side = { question: q, answer: "", error: "", pending: true }
         return true
     }
 
+    function dismissSide() {
+        root._sideId = ""
+        root.side = null
+    }
+
+    // -- Rewind and fork ------------------------------------
+    //
+    // Both start from a prompt of this transcript. The CLI names it by the
+    // uuid it was sent with; a row saved before rows kept one is found by its
+    // words. A rewind is previewed first (a dry run): what it would undo is
+    // on screen before anything is undone
+    property var rewindPreview: null    // { row, action, uuid, pending, ok, files, ins, del, error }
+    property string _rwPreviewId: ""
+    property string _rwId: ""
+    property var _rwDone: null
+    property var _anchorDone: null
+
+    function anchor(row, done) {
+        const m = root.messages[row]
+        if (!m || m.role !== "user" || anchorProc.running || root.session.sessionId === "") {
+            done({})
+            return
+        }
+        const text = m.parts[0]?.text ?? ""
+        let n = 0
+        for (let i = 0; i < row; i++)
+            if (root.messages[i].role === "user" && (root.messages[i].parts[0]?.text ?? "") === text) n++
+        root._anchorDone = done
+        anchorProc.command = ["python3", Quickshell.env("HOME")
+            + "/.config/quickshell/scripts/ai-sessions.py", "anchor", root.session.cwd,
+            root.session.sessionId, m.uuid ?? "", String(n), text]
+        anchorProc.running = true
+    }
+
+    // `action` is what the confirmation will do: "rewind" or "fork-rewind"
+    function previewRewind(row, action) {
+        root.rewindPreview = { row: row, action: action, pending: true }
+        root.anchor(row, a => {
+            if (!root.rewindPreview || root.rewindPreview.row !== row) return
+            if (!a.uuid) {
+                root.rewindPreview = { row: row, action: action, pending: false, ok: false,
+                    error: "Prompt not found in the session transcript" }
+                return
+            }
+            root.rewindPreview = { row: row, action: action, uuid: a.uuid, before: a.before, pending: true }
+            root._rwPreviewId = root.session.rewindFiles(a.uuid, true)
+        })
+    }
+
+    function cancelRewind() {
+        root._rwPreviewId = ""
+        root.rewindPreview = null
+    }
+
+    function rewindFiles(uuid, done) {
+        root._rwDone = done ?? null
+        root._rwId = root.session.rewindFiles(uuid, false)
+    }
+
+    Process {
+        id: anchorProc
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let a = {}
+                try { a = JSON.parse(text) } catch (e) {}
+                const done = root._anchorDone
+                root._anchorDone = null
+                if (done) done(a)
+            }
+        }
+    }
+
     function clear() {
+        root.queued = []
+        root.dismissSide()
+        root._sideHistory = []
+        root.cancelRewind()
         root.messages = []
         root.openFolds = ({})
         root.customTitle = ""
@@ -183,17 +309,33 @@ Scope {
         root._clearStream()
         root._resetTurn()
         root.session.reset()
+        root.todos = []
+        root.suggestion = ""
+    }
+
+    // Not before the reply is committed: a new prompt clears the stream, and
+    // the tail of the last answer may still be typing itself out
+    function _dequeue() {
+        if (root.session.busy || root.queued.length === 0
+            || root.live !== null || root._turnDone) return
+        const next = root.queued[0]
+        root.queued = root.queued.slice(1)
+        root._dispatch(next)
     }
 
     // Picks up a session the CLI has on disk: the process comes back with its
     // context, the transcript is read back from the same file for the eyes
     function resume(id, title, dir) {
+        root.suggestion = ""
+        root.todos = []
+        root.queued = []
         root.messages = []
         root.openFolds = ({})
         root.customTitle = title ?? ""
         root._forgetAway()
         root._clearStream()
         root._resetTurn()
+        root.stampFromTranscript(id, dir || root.session.defaultCwd)
         loader.command = ["python3", Quickshell.env("HOME")
             + "/.config/quickshell/scripts/ai-sessions.py", "load", dir || root.session.defaultCwd, id]
         loader.running = true
@@ -213,6 +355,13 @@ Scope {
     function _expire() {
         if (root.session.busy) return
         root.cacheExpired = true
+    }
+
+    // Asked by the note once someone can read it, not at expiry: a tab
+    // nobody looks at gets no recap, and a restart does not write one for
+    // every expired tab at once
+    function requestRecap() {
+        if (!root.cacheExpired || recapProc.running || root.recap !== "") return
         const n = root.userTurns
         if (n < 3 || (root._recapTurns >= 0 && n - root._recapTurns < 2)) return
         root._recapTurns = n
@@ -262,6 +411,15 @@ Scope {
         recapProc.running = false
     }
 
+    // A tab saved before the stamp was, or a session picked up with /resume:
+    // the transcript says when the last request ran and what it cached
+    function stampFromTranscript(id, dir) {
+        if (!id || root.cacheStamp > 0) return
+        stamper.command = ["python3", Quickshell.env("HOME")
+            + "/.config/quickshell/scripts/ai-sessions.py", "usage", dir, id]
+        stamper.running = true
+    }
+
     // Another conversation in this tab: nothing of the last one carries over
     function _forgetAway() {
         root._clearAway()
@@ -292,7 +450,10 @@ Scope {
     }
 
     function _ensureLive() {
-        if (root.live === null) root.live = { role: "assistant", parts: [] }
+        if (root.live === null) {
+            root.live = { role: "assistant", parts: [] }
+            root.liveAt = Date.now()
+        }
     }
 
     function _appendPart(part) {
@@ -317,6 +478,26 @@ Scope {
                 try {
                     const rows = JSON.parse(text)
                     if (Array.isArray(rows)) root.messages = rows
+                } catch (e) {}
+            }
+        }
+        stderr: SplitParser { onRead: l => console.warn("[ai-sessions]", l) }
+    }
+
+    Process {
+        id: stamper
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // A turn ended meanwhile: its numbers are the newer ones
+                if (root.cacheStamp > 0) return
+                try {
+                    const r = JSON.parse(text)
+                    if (!(r.at > 0)) return
+                    // No TTL on record: the longer one, so the note may come
+                    // late but never claims a cache that is still warm
+                    root.session.restoreUsage(r.ttl > 0 ? r.ttl : 3600000, r.tokens ?? 0)
+                    root.cacheStamp = r.at
                 } catch (e) {}
             }
         }
@@ -358,9 +539,51 @@ Scope {
     Connections {
         target: root.session
 
+        // Late ones are dropped: the user has already moved on
+        function onSuggested(text) {
+            if (!root.session.busy && root.queued.length === 0) root.suggestion = text
+        }
+
         function onPermissionModeChanged() { root.changed() }
 
         function onSessionIdChanged() { root.changed() }
+
+        // Once a turn is over the next queued prompt goes. A beat later: the
+        // turn's own handlers commit its reply first
+        function onBusyChanged() {
+            if (!root.session.busy && root.queued.length > 0) Qt.callLater(root._dequeue)
+        }
+
+        function onSideAnswered(id, text, error) {
+            if (id !== root._sideId) return
+            root._sideId = ""
+            const q = root.side?.question ?? ""
+            root.side = { question: q, answer: text, error: error, pending: false }
+            if (error === "" && text !== "")
+                root._sideHistory = root._sideHistory.concat([{ question: q, response: text }])
+        }
+
+        function onFilesRewound(id, dry, res, error) {
+            if (id === root._rwPreviewId) {
+                root._rwPreviewId = ""
+                const p = root.rewindPreview
+                if (!p) return
+                root.rewindPreview = Object.assign({}, p, { pending: false,
+                    ok: error === "" && res.canRewind === true,
+                    files: (res.filesChanged ?? []).length,
+                    ins: res.insertions ?? 0, del: res.deletions ?? 0,
+                    error: error !== "" ? error : (res.error ?? "") })
+                return
+            }
+            if (id !== root._rwId) return
+            root._rwId = ""
+            const ok = error === "" && res.canRewind === true
+            if (ok) Toaster.success("CODE REWOUND", "Files restored to before the prompt", "\uf0e2")
+            else Toaster.error("REWIND FAILED", error !== "" ? error : (res.error ?? "Nothing to rewind"), "\uf0e2")
+            const done = root._rwDone
+            root._rwDone = null
+            if (done) done(ok)
+        }
 
         // A model that does not offer the level in force would leave the UI
         // showing an effort the CLI is not running at
@@ -399,6 +622,7 @@ Scope {
 
         function onToolStarted(name, input, id) {
             if (root._silent) return
+            if (name === "TodoWrite") root.todos = input?.todos ?? []
             root.turnCalls++
             root._sealTail()
             root._appendPart({ kind: "tool", name: name, input: input,
@@ -469,10 +693,13 @@ Scope {
             // Backlog drained and the turn is over: commit and go idle
             root._sealTail()
             if (root.live !== null) {
-                root.messages = root.messages.concat([root.live])
+                root.messages = root.messages.concat(
+                    [Object.assign({}, root.live, { at: root.liveAt })]
+                )
                 root.live = null
             }
             root._turnDone = false
+            if (root.queued.length > 0) Qt.callLater(root._dequeue)
         }
     }
 }

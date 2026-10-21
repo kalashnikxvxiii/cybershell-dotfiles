@@ -12,6 +12,10 @@ Column {
 
     property var blocks: []
     property color fg: "#d8e0e8"
+    // The block drawn right above this view by another one: a streaming
+    // answer is split in two views, and the first gap must not change when
+    // the two become one
+    property var prevBlock: null
 
     // A list level, and the column its text starts at: a block nested in an
     // item lines up with the item's text
@@ -37,7 +41,7 @@ Column {
             required property var modelData
             required property int index
             readonly property var b: modelData
-            readonly property int gap: root.gapOf(b, index > 0 ? root.blocks[index - 1] : null)
+            readonly property int gap: root.gapOf(b, index > 0 ? root.blocks[index - 1] : root.prevBlock)
             readonly property int indent: b.depth * root.step
 
             width: root.width

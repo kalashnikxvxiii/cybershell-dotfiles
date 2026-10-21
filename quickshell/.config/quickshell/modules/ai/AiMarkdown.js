@@ -13,6 +13,9 @@
 //   math { html }            dt { html }         dd { html }
 //   quote { kind, blocks }   details { summary, open, blocks }
 //   notes { items: [{ n, html }] }
+//
+// parse(src, null, true) keeps every line break, as a chat box does: what a
+// person typed on two lines stays on two lines
 .pragma library
 .import "AiHighlight.js" as H
 
@@ -121,10 +124,10 @@ function tex(s) {
             if (name === "sqrt") {
                 skip()
                 let root = ""
-                if (s[i] === "[") {
-                    const k = s.indexOf("]", i)
-                    root = tex(s.slice(i + 1, k)); i = k + 1
-                }
+                // An unclosed [ has no root: with k = -1, i would reset to 0
+                // and re-enter this \sqrt until the stack overflows
+                const k = s[i] === "[" ? s.indexOf("]", i) : -1
+                if (k > 0) { root = tex(s.slice(i + 1, k)); i = k + 1 }
                 return (root ? "<sup>" + root + "</sup>" : "") + '√<span style="text-decoration:overline">' + group() + "</span>"
             }
             if (name === "text" || name === "mathrm" || name === "textrm" || name === "operatorname"
@@ -418,14 +421,14 @@ function _table(rows, aligns, ctx) {
 
 const ALERTS = { note: "NOTE", tip: "TIP", important: "IMPORTANT", warning: "WARNING", caution: "CAUTION" }
 
-function parse(src, ctx) {
+function parse(src, ctx, breaks) {
     const lines = (src ?? "").replace(/\r/g, "").split("\n")
 
     // Footnote definitions first: references come before them in the text.
     // Nested parses (quotes, details) share the outer context
     const own = !ctx
     if (own) {
-        ctx = { notes: {}, defs: [] }
+        ctx = { notes: {}, defs: [], breaks: breaks === true }
         for (let k = 0; k < lines.length; k++) {
             const m = /^\[\^([^\]]+)\]:\s?(.*)$/.exec(lines[k])
             if (!m) continue
@@ -452,7 +455,7 @@ function parse(src, ctx) {
         // Two trailing spaces or a backslash end a line hard; any other break is a space
         let text = ""
         para.forEach((l, k) => {
-            const hard = l.endsWith("  ") || l.endsWith("\\")
+            const hard = ctx.breaks || l.endsWith("  ") || l.endsWith("\\")
             const body = hard ? l.replace(/\s+$/, "").replace(/\\$/, "") : l
             text += body.trim() + (k === para.length - 1 ? "" : hard ? "\n" : " ")
         })
@@ -634,7 +637,7 @@ function parse(src, ctx) {
 
         // A line right under a list item, no blank between: the item goes on
         if (lastItem && !wasBlank) {
-            lastItem.src += (lastItem.src.endsWith("  ") ? "\n" : " ") + t
+            lastItem.src += (ctx.breaks || lastItem.src.endsWith("  ") ? "\n" : " ") + t
             continue
         }
 

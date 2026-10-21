@@ -49,6 +49,12 @@ Singleton {
 
     function toggleFocusView() { root.focusView = !root.focusView }
 
+    // Which key sends: Enter (off) or Ctrl+Enter (on), Enter then breaking
+    // the line. Also a preference of the drawer
+    property bool ctrlEnterSend: false
+
+    function toggleCtrlEnterSend() { root.ctrlEnterSend = !root.ctrlEnterSend }
+
     // -- Tabs ------------------------------------------
     //
     // One AiChat per open conversation, each with its own process. The drawer
@@ -78,7 +84,41 @@ Singleton {
         const c = root._make()
         root.chats = [c]
         root.chat = c
+        authCheck.running = true
     }
+
+    // Wheter the CLI holds a login. While it does not, the drawer shows the
+    // sign-in view instead of a chat that cannot answer
+    property bool loggedIn: true
+
+    Process {
+        id: authCheck
+        command: ["claude", "auth", "status"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try { root.loggedIn = JSON.parse(text).loggedIn === true } catch (e) {}
+            }
+        }
+    }
+
+    Connections {
+        target: root.session
+        function onAuthLost() { root.loggedIn = false }
+        function onLoginDone() { root.loggedIn = true }
+    }
+
+    Process {
+        id: logoutProc
+        command: ["claude", "auth", "logout"]
+        onExited: code => {
+            if (code !== 0) return
+            root.loggedIn = false
+            // Every process still holds the old token in memory
+            for (const c of roots.chats) c.session.stop()
+        }
+    }
+
+    function logout() { logoutProc.running = true }
 
     function select(c) {
         if (!c || root.chats.indexOf(c) < 0) return
@@ -99,8 +139,8 @@ Singleton {
         if (i < 0) return
         const rest = root.chats.filter(x => x !== c)
         if (rest.length === 0) rest.push(root._make())
-        if (root.chat === c) root.select(rest[Math.min(i, rest.length - 1)])
         root.chats = rest
+        if (root.chat === c) root.select(rest[Math.min(i, rest.length - 1)])
         c.session.stop()
         c.destroy()
     }
@@ -118,6 +158,40 @@ Singleton {
         c.resume(id, title, dir)
         root.select(c)
     }
+
+    // A new tab with the conversation of `c` up to its prompt `row`, not
+    // included: the prompt comes back in the composer, to send again or to
+    // change. The original tab and its session stay as they are. With
+    // `rewind`, the files go back to before that prompt first
+    function fork(c, row, rewind) {
+        const m = c.messages[row]
+        if (!m || m.role !== "user" || c.session.busy) return
+        c.anchor(row, a => {
+            if (!a.uuid) {
+                Toaster.error("FORK FAILED", "Prompt not found in the session transcript", "\ue0a0")
+                return
+            }
+            const go = () => {
+                const f = root._make()
+                f.effort = c.effort
+                f.session.model = c.session.model
+                f.customTitle = (c.title !== "" ? c.title : "Chat") + " (fork)"
+                f.messages = c.messages.slice(0, row)
+                f.session.fork(c.session.sessionId, c.session.cwd, a.before)
+                f.session.restoreMode(c.session.durableMode)
+                root.chats = root.chats.concat([f])
+                root.select(f)
+                root.focusComposer(m.parts[0]?.text ?? "")
+            }
+            if (rewind) c.rewindFiles(a.uuid, ok => { if (ok) go() })
+            else go()
+        })
+    }
+
+    // The arrow on a prompt asks the chat view for its menu. The row whose
+    // menu is up keeps its arrow on screen
+    signal messageMenuRequested(int row, var button)
+    property int menuRow: -1
 
     // -- The front chat --------------------------------
     //
@@ -151,6 +225,104 @@ Singleton {
     // A selected block of the transcript holds the keyboard only for Ctrl+C:
     // anything else typed there belongs to the composer, key included
     signal focusComposer(string text)
+
+    // -- Selection across blocks --------------------------------
+    //
+    // Every paragraph, heading and code block is a TextEdit of its own, and a
+    // TextEdit selects only inside itself. Each AiRichText signs in here and
+    // the chat view feeds the drag, in scene coordinates: the pressed block
+    // keeps its own selection, the blocks in between are taken whole, the one
+    // under the pointer up to it. A plain list changed in place: nothing binds
+    // to it
+    property var textBlocks: []
+    // True once a drag has left its block: the others then keep theri
+    // selection on screen without the focus
+    property bool multiSelect: false
+    property var _selFrom: null
+    property int _selFromAt: 0
+    property var _selWindow: null       // one drawer per screen: never mix them
+
+    function registerText(t) { root.textBlocks.push(t) }
+    function unregisterText(t) {
+        const i = root.textBlocks.indexOf(t)
+        if (i >= 0) root.textBlocks.splice(i, 1)
+        if (root._selFrom === t) root._selFrom = null
+    }
+
+    // The blocks on show in the drawer of the drag, top to bottom, left to right
+    function _readingOrder() {
+        const out = []
+        for (const b of root.textBlocks) {
+            if (!b.visible || b.height <= 0 || b.Window.window !== root._selWindow) continue
+            const p = b.mapToItem(null, 0, 0)
+            out.push({ b: b, y: Math.round(p.y), x: p.x })
+        }
+        out.sort((a, c) => a.y - c.y || a.x - c.x)
+        return out.map(o => o.b)
+    }
+
+    // A press outside every blocks leaves the selection alone: a click beside
+    // it still means it
+    function selectStart(sx, sy) {
+        const hit = root.textBlocks.find(b => b.visible && b.contains(b.mapFromItem(null, sx, sy)))
+        root._selFrom = hit ?? null
+        if (!hit) return
+        const p = hit.mapFromItem(null, sx, sy)
+        root._selFromAt = hit.positionAt(p.x, p.y)
+        root._selWindow = hit.Window.window
+        root.multiSelect = false
+        for (const b of root.textBlocks) if (b !== hit) b.deselect()
+    }
+
+    function selectMove(sx, sy) {
+        const a = root._selFrom
+        if (a === null) return
+        const order = root._readingOrder()
+        const ai = order.indexOf(a)
+        if (ai < 0) return
+        // Under the pointer, or in a gap the last block that starts above it
+        let ci = order.findIndex(b => b.contains(b.mapFromItem(null, sx, sy)))
+        if (ci < 0) {
+            ci = 0
+            for (let i = 0; i < order.length; i++)
+                if (order[i].mapToItem(null, 0, 0).y <= sy) ci = i
+        }
+        const c = order[ci]
+        const q = c.mapFromItem(null, sx, sy)
+        const at = q.y < 0 ? 0 : q.y > c.height ? c.length
+            : c.positionAt(Math.max(0, Math.min(c.width, q.x)), q.y)
+        const lo = Math.min(ai, ci), hi = Math.max(ai, ci)
+        for (let i = 0; i < order.length; i++) {
+            const b = order[i]
+            // The anchors stays where the press was, or the block's own mouse
+            // handling would grow the selection from the wrong end
+            if (i === ai) b.select(root._selFromAt, ci > ai ? b.length : ci < ai ? 0 : at)
+            else if (i < lo || i > hi) b.deselect()
+            else if (i === ci) { if (ci > ai) b.select(0, at); else b.select(at, b.length) }
+            else b.selectAll()
+        }
+        root.multiSelect = ai !== ci
+    }
+
+    function clearSelection() {
+        for (const b of root.textBlocks) b.deselect()
+        root.multiSelect = false
+    }
+
+    // A rich text selection breaks its lines with U+2029 and U+2028
+    function selectedText() {
+        return root._readingOrder().map(b => b.selectedText).filter(s => s !== "")
+            .join("\n\n").replace(/[\u2028\u2029]/g, "\n")
+    }
+
+    function copySelection() {
+        const s = root.selectedText()
+        if (s !== "") Quickshell.execDetached(["wl-copy", "-n", "--", s])
+    }
+
+    // A right click on text, at a point in the target's own coordinates: the
+    // chat view hosts the menu, the text only asks for it
+    signal textMenuRequested(var target, real x, real y)
 
     function clearHistory() { root.chat.clear() }
 
@@ -275,6 +447,7 @@ Singleton {
                 if (typeof d.effort === "string" && d.effort) root._newEffort = d.effort
                 if (typeof d.model === "string" && d.model) root._newModel = d.model
                 if (typeof d.focusView === "boolean") root.focusView = d.focusView
+                if (typeof d.ctrlEnterSend === "boolean") root.ctrlEnterSend = d.ctrlEnterSend
                 const g = d.window ?? {}
                 if (typeof g.w === "number") root.panelW = g.w
                 if (typeof g.h === "number") root.panelH = g.h
@@ -288,8 +461,18 @@ Singleton {
                     if (typeof t.model === "string" && t.model) c.session.model = t.model
                     if (typeof t.title === "string") c.customTitle = t.title
                     if (Array.isArray(t.messages)) c.messages = t.messages
+                    // The countdown before the stamp: the TTL and the size
+                    // have to be there when the expiry is armed
+                    if (typeof t.recap === "string") c.recap = t.recap
+                    if (typeof t.recapTurns === "number") c._recapTurns = t.recapTurns
+                    if (typeof t.cacheStamp === "number" && t.cacheStamp > 0) {
+                        c.session.restoreUsage(t.cacheTtl ?? 0, t.contextTokens ?? 0)
+                        c.cacheStamp = t.cacheStamp
+                    }
                     if (typeof t.sessionId === "string" && t.sessionId !== "") {
                         c.session.restore(t.sessionId, t.cwd)
+                        // Saved before the countdown was
+                        c.stampFromTranscript(t.sessionId, c.session.cwd)
                         // The mode belongs to the conversation: only a resumed
                         // one gets it back, a fresh chat starts from the default
                         if (typeof t.mode === "string") c.session.restoreMode(t.mode)
@@ -314,6 +497,7 @@ Singleton {
             model: root._newModel,
             effort: root._newEffort,
             focusView: root.focusView,
+            ctrlEnterSend: root.ctrlEnterSend,
             window: { detached: root.detached, screen: root.screenName,
                 x: root.floatX, y: root.floatY, w: root.panelW, h: root.panelH },
             current: root.chats.indexOf(root.chat),
@@ -324,8 +508,15 @@ Singleton {
                 mode: c.session.durableMode,
                 // The CLI writes a session to disk only after its first turn:
                 // the id of one that never had a turn cannot be resumed
-                sessionId: c.messages.some(m => m.role === "user") ? c.session.sessionId : "",
+                // A fork has no id of its own until the CLI names it
+                sessionId: c.messages.some(m => m.role === "user") && !c.session.forking
+                    ? c.session.sessionId : "",
                 cwd: c.session.cwd,
+                cacheStamp: c.cacheStamp,
+                cacheTtl: c.session.cacheTtlMs,
+                contextTokens: c.session.contextTokens,
+                recap: c.recap,
+                recapTurns: c._recapTurns,
                 messages: c.messages
             }))
         }))
@@ -337,6 +528,7 @@ Singleton {
     on_NewModelChanged: saveTimer.restart()
     on_NewEffortChanged: saveTimer.restart()
     onFocusViewChanged: saveTimer.restart()
+    onCtrlEnterSendChanged: saveTimer.restart()
     // Restarted on every step of a drag: it writes once, after the drop
     onDetachedChanged: saveTimer.restart()
     onScreenNameChanged: saveTimer.restart()

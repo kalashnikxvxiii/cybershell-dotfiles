@@ -38,7 +38,7 @@ Item {
         { title: "SKILLS", accent: CP.neon, ns: "*",
         keys: ["run", "run-skill-generator", "reload-skills", "advisor"] },
         { title: "CUSTOMIZE", accent: CP.cyan, ns: "",
-        keys: ["focus", "config", "update-config", "mcp", "agents", "list-agents",
+        keys: ["focus", "ctrl-enter", "config", "update-config", "mcp", "agents", "list-agents",
             "workflow-launch-exec", "auto-mode-setup",
             "fewer-permission-prompts", "reload-plugins", "team-onboarding"] },
         { title: "USAGE", accent: CP.yellow, ns: "",
@@ -81,6 +81,13 @@ Item {
         return out
     }
 
+    property real _keepY: -1
+
+    function _pick(name) {
+        root._keepY = view.contentY
+        root.accepted(name)
+    }
+
     // The highlight follows its entry across a rebuild: flipping a setting
     // rebuilds the list, and the row just used must stay the one lit. A new
     // filter still starts from the top
@@ -93,6 +100,11 @@ Item {
         root._rowsFilter = root.activeFilter
         const i = same ? root.rows.findIndex(r => !r.header && r.name === root._currentName) : -1
         root.current = i >= 0 ? i : root._firstEntry()
+        if (same && root._keepY >= 0) {
+            const y = root._keepY
+            root._keepY = -1
+            Qt.callLater(() => { view.contentY = y })
+        }
     }
 
     readonly property int rowH: 22
@@ -135,7 +147,7 @@ Item {
     function accept() {
         if (root.current >= 0 && root.current < root.rows.length
             && !root.rows[root.current].header)
-            root.accepted(root.rows[root.current].name)
+            root._pick(root.rows[root.current].name)
     }
 
     // Opened from the button: the menu owns the filter and the focus, exactly
@@ -332,7 +344,7 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onEntered: root.current = index
-                onClicked: root.accepted(modelData.name)
+                onClicked: root._pick(modelData.name)
             }
         }
 

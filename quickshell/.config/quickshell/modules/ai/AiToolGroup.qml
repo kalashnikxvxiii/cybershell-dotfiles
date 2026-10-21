@@ -5,6 +5,7 @@
 // group still reports the only two things that matter at a glance — how many,
 // and whether any of them is still running or has failed.
 import QtQuick
+import "../../common/effects"
 import "../../common"
 import "../../common/Colors.js" as CP
 
@@ -46,6 +47,7 @@ Item {
             id: summary
             width: parent.width
             height: 17
+            opacity: summaryPulse.k
 
             Row {
                 anchors.verticalCenter: parent.verticalCenter
@@ -77,12 +79,7 @@ Item {
 
             // Only the summary pulses: animating the expanded rows as well would
             // turn the transcript into a strobe
-            SequentialAnimation on opacity {
-                running: root.anyRunning
-                loops: Animation.Infinite
-                NumberAnimation { from: 1.0; to: 0.6; duration: 600 }
-                NumberAnimation { from: 0.6; to: 1.0; duration: 600 }
-            }
+            Pulse { id: summaryPulse; running: root.visible && root.anyRunning; from: 1.0; to: 0.6; halfMs: 600 }
 
             MouseArea {
                 id: ma

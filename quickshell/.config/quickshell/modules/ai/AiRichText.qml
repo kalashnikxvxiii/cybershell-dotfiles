@@ -30,36 +30,52 @@ TextEdit {
     selectByKeyboard: true
     selectionColor: CP.alpha(CP.magenta, 0.4)
     selectedTextColor: "#f2f6f8"
+    // Kept on screen without the focus only while a selection spans blocks
+    persistentSelection: AiState.multiSelect
+    Component.onCompleted: AiState.registerText(root)
+    Component.onDestruction: AiState.unregisterText(root)
     font.family: "Oxanium"
     font.pixelSize: 12
     color: "#d8e0e8"
 
-    // "fn:" links are footnote references, with nowhere to go
-    onLinkActivated: l => { if (!l.startsWith("fn:")) Qt.openUrlExternally(l) }
+    // "fn:" links are footnote references, with nowhere to go. Only web and
+    // mail links leave the shell: the text comes from the model, and a file://
+    // or custom-scheme link would hand xdg-open whatever it was told to open
+    onLinkActivated: l => {
+        const u = String(l).toLowerCase()
+        if (u.startsWith("https://") || u.startsWith("http://") || u.startsWith("mailto:"))
+            Qt.openUrlExternally(l)
+    }
 
     // A click gives this block the keyboard, so Ctrl+C can reach it. Anything
     // that is not a copy goes back to the composer, typed key included: the
     // reader who starts writing after selecting expects the words in the box
     Keys.onPressed: event => {
         const ctrl = (event.modifiers & Qt.ControlModifier) !== 0
-        if (event.key === Qt.Key_Escape) {
-            root.deselect()
+        if (ctrl && event.key === Qt.Key_C && AiState.multiSelect) {
+            AiState.copySelection()
+            event.accepted = true
+        } else if (event.key === Qt.Key_Escape) {
+            AiState.clearSelection()
             AiState.focusComposer("")
             event.accepted = true
         } else if (!ctrl && !(event.modifiers & Qt.AltModifier) && event.text !== ""
             && event.key !== Qt.Key_Tab && event.key !== Qt.Key_Backtab) {
-            root.deselect()
+            AiState.clearSelection()
             AiState.focusComposer(event.key === Qt.Key_Return || event.key === Qt.Key_Enter
                 || event.key === Qt.Key_Backspace ? "" : event.text)
             event.accepted = true
         }
     }
 
-    // Takes no button: presses reach the TextEdit and its links, wheel events
-    // the list. Only the pointer shape is decided here
+    // The right button only: left presses reach the TextEdit and its links,
+    // wheel events the list (no handler, so the wheel is not taken). A right
+    // press on a selection keeps it; anywhere else the menu has nothing to
+    // copy but can still select the block
     MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.NoButton
+        acceptedButtons: Qt.RightButton
         cursorShape: root.hoveredLink !== "" ? Qt.PointingHandCursor : Qt.IBeamCursor
+        onPressed: mouse => AiState.textMenuRequested(root, mouse.x, mouse.y)
     }
 }

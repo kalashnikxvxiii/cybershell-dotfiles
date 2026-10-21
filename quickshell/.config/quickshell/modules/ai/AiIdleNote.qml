@@ -6,6 +6,7 @@
 // conversation is not cached at all. Under it, the CLI's recap for a user
 // coming back: what the goal was and what comes next
 import QtQuick
+import "../../common/effects"
 import "../../common"
 import "../../common/Colors.js" as CP
 import "AiHighlight.js" as Hl
@@ -27,6 +28,14 @@ Item {
     }
 
     property real _now: Date.now()
+
+    // The recap is written for someone reading: only once the note is on
+    // screen, in the tab in front, with the drawer open
+    readonly property bool _read: root.shown && AiState.open && root.chat === AiState.chat
+    on_ReadChanged: if (root._read) root.chat.requestRecap()
+    // Switching between two expired tabs leaves _read true throughout
+    onChatChanged: if (root._read) root.chat.requestRecap()
+    Component.onCompleted: if (root._read) root.chat.requestRecap()
 
     // The extension's format: minutes, then hours and minutes, then days
     function span(ms) {
@@ -101,15 +110,7 @@ Item {
             color: CP.magenta
             opacity: pulse.k
 
-            QtObject { id: pulse; property real k: 1 }
-
-            SequentialAnimation {
-                running: writing.visible
-                loops: Animation.Infinite
-                onStopped: pulse.k = 1
-                NumberAnimation { target: pulse; property: "k"; from: 1.0; to: 0.5; duration: 600 }
-                NumberAnimation { target: pulse; property: "k"; from: 0.5; to: 1.0; duration: 600 }
-            }
+            Pulse { id: pulse; running: writing.visible; from: 1.0; to: 0.5; halfMs: 600 }
         }
 
         Row {

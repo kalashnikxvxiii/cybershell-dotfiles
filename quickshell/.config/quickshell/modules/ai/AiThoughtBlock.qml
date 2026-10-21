@@ -5,6 +5,7 @@
 // happened. Folded it says only how long; unfolded, the summary the CLI
 // streamed. Same grammar as AiToolGroup, its neighbour
 import QtQuick
+import "../../common/effects"
 import "../../common/Colors.js" as CP
 import "AiHighlight.js" as Hl
 
@@ -65,15 +66,7 @@ Item {
                 }
             }
 
-            QtObject { id: pulse; property real k: 1 }
-
-            SequentialAnimation {
-                running: root.streaming
-                loops: Animation.Infinite
-                onStopped: pulse.k = 1
-                NumberAnimation { target: pulse; property: "k"; from: 1.0; to: 0.5; duration: 600 }
-                NumberAnimation { target: pulse; property: "k"; from: 0.5; to: 1.0; duration: 600 }
-            }
+            Pulse { id: pulse; running: root.visible && root.streaming; from: 1.0; to: 0.5; halfMs: 600 }
 
             MouseArea {
                 id: ma

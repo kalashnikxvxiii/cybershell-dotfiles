@@ -3,6 +3,11 @@
 
     ai-sessions.py list <cwd>...    sessions resumable from each <cwd>, newest first
     ai-sessions.py load <cwd> <id>  one session, as the drawer's message rows
+    ai-sessions.py usage <cwd> <id> when its last request ran and what it cached
+    ai-sessions.py anchor <cwd> <id> <uuid> <n> <text>
+                                    one prompt of a session, by uuid or else by
+                                    its words (the n-th with them), and the
+                                    message right before it
 
 `claude -p` has no /resume: the picker is the shell's job. The CLI keeps one
 JSONL per session under ~/.claude/projects/<cwd with every non-alphanumeric
@@ -14,6 +19,7 @@ import json
 import os
 import re
 import sys
+from datetime import datetime
 
 # Long tool inputs (a Write carries the whole file) are cut: the drawer only
 # shows a summary line, and every row is written back into the state file
@@ -91,7 +97,7 @@ def clip(v):
         return [clip(x) for x in v]
     return v
 
-def cmd_load(cwd, sid):
+def live_chain(cwd, sid):
     recs = {}
     leaf = None
     with open(os.path.join(project_dir(cwd), sid + ".jsonl"),
@@ -118,13 +124,24 @@ def cmd_load(cwd, sid):
         chain.append(rec)
         u = rec.get("parentUuid") or rec.get("logicalParentUuid")
     chain.reverse()
+    return chain
 
+def stamp(rec):
+    try:
+        return int(datetime.fromisoformat(
+            rec["timestamp"].replace("Z", "+00:00")).timestamp() * 1000)
+    except (KeyError, ValueError):
+        return 0
+
+def cmd_load(cwd, sid):
+    chain = live_chain(cwd, sid)
     rows = []
     errors = set()
     for rec in chain:
         t = prompt_text(rec)
         if t is not None:
-            rows.append({"role": "user", "parts": [{"kind": "text", "text": t }]})
+            rows.append({"role": "user", "uuid": rec["uuid"],
+                "at": stamp(rec), "parts": [{"kind": "text", "text": t }]})
             continue
         # Where the context was summarized: the boundary carries the numbers,
         # the synthetic prompt right after it the summary itself
@@ -153,7 +170,7 @@ def cmd_load(cwd, sid):
             continue
         # One record per content block: consecutive ones are the same reply
         if not rows or rows[-1]["role"] != "assistant":
-            rows.append({"role": "assistant", "parts": []})
+            rows.append({"role": "assistant", "parts": [], "at": stamp(rec)})
         for b in rec.get("message", {}).get("content") or []:
             if b.get("type") == "text" and b.get("text", "").strip():
                 rows[-1]["parts"].append({"kind": "text", "text": b["text"]})
@@ -173,11 +190,66 @@ def cmd_load(cwd, sid):
     rows = [r for r in rows if r["parts"]]
     print(json.dumps(rows[-MAX_ROWS:]))
 
+def cmd_usage(cwd, sid):
+    """The last request's time and size: what the idle note needs for a tab
+    whose countdown did not survive a restart, or a session just resumed."""
+    last = None
+    with open(os.path.join(project_dir(cwd), sid + ".jsonl"),
+        encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if '"usage"' not in line:
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("type") == "assistant" and not rec.get("isSidechain") \
+                    and rec.get("message", {}).get("usage") and rec.get("timestamp"):
+                last = rec
+    if last is None:
+        print("{}")
+        return
+    u = last["message"]["usage"]
+    c = u.get("cache_creation") or {}
+    at = datetime.fromisoformat(last["timestamp"].replace("Z", "+00:00"))
+    print(json.dumps({
+        "at": int(at.timestamp() * 1000),
+        "tokens": (u.get("input_tokens") or 0) + (u.get("cache_read_input_tokens") or 0)
+            + (u.get("cache_creation_input_tokens") or 0),
+        # The TTL of what that request wrote. Nothing written, nothing known:
+        # 0, and the caller picks
+        "ttl": 3600000 if c.get("ephemeral_1h_input_tokens") else
+            300000 if c.get("ephemeral_5m_input_tokens") else 0}))
+
+def cmd_anchor(cwd, sid, uuid, n, text):
+    """Where a fork or a rewind starts. A row the drawer saved before it kept
+    uuids has only its words: the n-th prompt with the same ones is the one.
+    `before` is the last message ahead of it, what --resume-session-at keeps:
+    empty for the first prompt, which leaves nothing to keep."""
+    chain = live_chain(cwd, sid)
+    at = -1
+    if uuid:
+        at = next((i for i, r in enumerate(chain) if r.get("uuid") == uuid), -1)
+    if at < 0:
+        hits = [i for i, r in enumerate(chain) if prompt_text(r) == text.strip()]
+        if hits:
+            at = hits[min(n, len(hits) - 1)]
+    if at < 0:
+        print("{}")
+        return
+    before = next((r["uuid"] for r in reversed(chain[:at])
+        if r.get("type") in ("user", "assistant")), "")
+    print(json.dumps({"uuid": chain[at]["uuid"], "before": before}))
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if len(a) >= 2 and a[0] == "list":
         cmd_list(a[1:])
     elif len(a) == 3 and a[0] == "load":
         cmd_load(a[1], a[2])
+    elif len(a) == 3 and a[0] == "usage":
+        cmd_usage(a[1], a[2])
+    elif len(a) == 6 and a[0] == "anchor":
+        cmd_anchor(a[1], a[2], a[3], int(a[4]), a[5])
     else:
         sys.exit(__doc__)

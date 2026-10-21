@@ -68,7 +68,7 @@ Item {
         id: lister
         running: false
         command: ["python3", Quickshell.env("HOME") + "/.config/quickshell/scripts/ai-sessions.py",
-            "list", AiState.session.defaultCwd, Quickshell.env("HOME")]
+            "list", AiState.session.defaultCwd, Quickshell.env("HOME") + "/Documenti/DE-docs"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -201,10 +201,11 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 8
 
-                // Filed outside DE-docs: it comes back up in that directory
+                // Filed outside the default directory: it comes back up
+                // in that one, named by its last folder
                 Text {
                     visible: entry.modelData.cwd !== AiState.session.defaultCwd
-                    text: "~"
+                    text: entry.modelData.cwd.split("/").pop()
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 10
                     font.bold: true

@@ -62,7 +62,7 @@ Item {
         Transition { from: "visible"; to: ""; Anim { target: root; property: "implicitWidth"; duration: 200; easing.type: Easing.InCubic } }
     ]
 
-    Keys.onEscapePressed: if (!chat.dismissTop()) AiState.close()
+    Keys.onEscapePressed: chat.pressEscape()
     onVisibleChanged: if (visible) root.forceActiveFocus()
 
     // -- Drag and resize --------------------------------------

@@ -1,9 +1,13 @@
-// AiChatView.qml - header, transcript, permission gate, composer.
+// AiChatView.qml - header, transcript (permission gate at its tail), composer.
 //
 // The composer carries the chrome: the action rail, the execution mode and the
 // model live in a toolbar inside the input frame, not in a header bar. That is
 // what lets the transcript keep the full width of a 460px drawer.
+//
+// The composer stays open while a turn runs: a message sent then is queued
+// and goes once the turn is over, /btw is answered aside at once.
 import QtQuick
+import "../../common/effects"
 import Quickshell
 import Quickshell.Io
 import "../../common"
@@ -16,6 +20,23 @@ Item {
     readonly property var rows: AiState.live !== null
         ? AiState.messages.concat([AiState.live])
         : AiState.messages
+
+    // What the list is built from: one entry per row, added and removed at
+    // the end only. The rows themselves are read by index. A JS array as the
+    // model is rebuilt whole on every change, and `rows` changes at each step
+    // of a reply: every message was laid out again (the flashing while tools
+    // ran) and the view went back to the top, which a held scroll position
+    // could not survive once the reply was committed
+    ListModel { id: rowModel }
+
+    function _syncRows() {
+        const n = root.rows.length
+        while (rowModel.count < n) rowModel.append({ k: 0 })
+        if (rowModel.count > n) rowModel.remove(n, rowModel.count - n)
+    }
+
+    onRowsChanged: root._syncRows()
+    Component.onCompleted: root._syncRows()
 
     readonly property color fg: "#d8e0e8"
     readonly property string scripts:
@@ -62,9 +83,17 @@ Item {
         // drawer rather than on the conversation: the shell does them
         const cmd = input.text.trim()
         if (cmd === "/resume") { root.openResume(); return }
-        if (cmd === "/clear" || cmd === "/focus") {
+        // A side question: answered aside, a turn in flight included
+        if (cmd === "/btw" || cmd.startsWith("/btw ")) {
+            if (!AiState.chat.askSide(cmd.slice(4))) return
+            input.text = ""
+            root.cmdOpen = false
+            return
+        }
+        if (cmd === "/clear" || cmd === "/focus" || cmd === "/ctrl-enter") {
             if (cmd === "/clear") AiState.clearHistory()
-            else AiState.toggleFocusView()
+            else if (cmd === "/focus") AiState.toggleFocusView()
+            else AiState.toggleCtrlEnterSend()
             input.text = ""
             root.cmdOpen = false
             return
@@ -108,7 +137,24 @@ Item {
     Connections {
         target: AiState
         function onChatChanged() { root._histIdx = -1; root._draft = "" }
+        // A click beside the selection still means the selection: a block
+        // keeps the keyboard, and its selection, until another one is clicked
+        // with the left button
+        function onTextMenuRequested(target, x, y) {
+            const f = root.Window.activeFocusItem
+            const t = target.selectedText === "" && f && f !== target
+                && f.readOnly === true && (f.selectedText ?? "") !== "" ? f : target
+            const p = target.mapToItem(root, x, y)
+            textMenu.openAt(t, p.x, p.y)
+        }
+        function onMessageMenuRequested(row, button) {
+            textMenu.close()
+            const p = button.mapToItem(root, button.width, 0)
+            msgMenu.openAt(row, p.x, p.y, p.y + button.height)
+        }
         function onFocusComposer(text) {
+            textMenu.close()
+            msgMenu.close()
             input.forceActiveFocus()
             if (text !== "") input.insert(input.cursorPosition, text)
         }
@@ -118,7 +164,9 @@ Item {
         input.insert(input.cursorPosition, s)
         input.forceActiveFocus()
     }
-
+    
+    // The CLI's ghost prompt: what the user would likely type next
+    readonly property string suggestion: AiState.session.busy ? "" : (AiState.chat?.suggestion ?? "")
     // Two ways in, one menu: the button hands the menu its own filter field and
     // the focus, typing "/" leaves both with the composer
     readonly property bool cmdTyped:
@@ -157,14 +205,25 @@ Item {
     // composer and by the panel, which gets the key when the composer has no
     // focus (just opened, or disabled while a reply streams)
     function dismissTop() {
-        if (root.detailsOpen) root.detailsOpen = false
+        if (textMenu.visible) textMenu.close()
+        else if (msgMenu.visible) msgMenu.close()
+        else if (root.detailsOpen) root.detailsOpen = false
         else if (root.accountOpen) root.accountOpen = false
         else if (root.resumeOpen) root.closeResume()
         else if (root.modelOpen) root.modelOpen = false
         else if (root.modeOpen) root.modeOpen = false
         else if (root.cmdOpen) root.closeCommands()
+        else if (AiState.chat.side !== null) AiState.chat.dismissSide()
         else return false
         return true
+    }
+
+    // Escape: the innermost surface first, then the running turn, then the
+    // drawer itself. The CLI stops a turn on the same key
+    function pressEscape() {
+        if (root.dismissTop()) return
+        if (AiState.session.busy) AiState.session.interrupt()
+        else AiState.close()
     }
 
     // -- Attach: a path, not an upload ------------------------------------
@@ -303,16 +362,8 @@ Item {
             color: CP.alpha(AiState.session.busy ? CP.yellow : CP.magenta, 0.65)
         }
 
-        QtObject { id: statePulse; property real k: 1 }
-
         // Pending states pulse, idle ones hold still
-        SequentialAnimation {
-            running: AiState.session.busy
-            loops: Animation.Infinite
-            onStopped: statePulse.k = 1
-            NumberAnimation { target: statePulse; property: "k"; from: 1.0; to: 0.55; duration: 900 }
-            NumberAnimation { target: statePulse; property: "k"; from: 0.55; to: 1.0; duration: 900 }
-        }
+        Pulse { id: statePulse; running: root.visible && AiState.session.busy; from: 1.0; to: 0.55; halfMs: 900 }
     }
 
     Rectangle {
@@ -333,12 +384,12 @@ Item {
     // -- Transcript ------------------------------------
     ListView {
         id: list
-        anchors { top: tabBar.bottom; left: parent.left; right: parent.right; bottom: turnStatus.top }
+        anchors { top: tabBar.bottom; left: parent.left; right: parent.right; bottom: todoCard.top }
         anchors.topMargin: 14
         anchors.bottomMargin: 10
         clip: true
         spacing: 18
-        model: root.rows
+        model: rowModel
         // The wheel scrolls, a drag selects text: with the left button free
         // to flick, every drag across a paragraph would move the list instead
         acceptedButtons: Qt.NoButton
@@ -367,32 +418,72 @@ Item {
         }
 
         delegate: AiMessage {
-            required property var modelData
+            id: msgRow
             required property int index
+            readonly property var row: root.rows[msgRow.index] ?? null
 
             width: list.width
-            role: modelData.role
-            parts: modelData.parts
-            rowIndex: index
-            live: AiState.live !== null && index === list.count - 1
+            role: msgRow.row?.role ?? "assistant"
+            at: msgRow.row?.at ?? 0
+            parts: msgRow.row?.parts ?? []
+            rowIndex: msgRow.index
+            live: AiState.live !== null && msgRow.index === root.rows.length - 1
             thinkingLive: live && AiState.thinkingNow
             // Only the last row can be streaming.
-            tailText: (AiState.live !== null && index === list.count - 1)
-                    ? AiState.liveTail : ""
+            tailText: live ? AiState.liveTail : ""
         }
 
-        // Under the last turn once the prompt cache has run out
+        // A request for authorization is the next step of the answer: it
+        // lands under it, in the transcript, and pushes it up instead of
+        // covering its last lines. Scrolled up, the view comes back down for it
+        Connections {
+            target: AiState.session
+            function onPendingPermissionChanged() {
+                if (AiState.session.pendingPermission === null) return
+                list.pinned = true
+                Qt.callLater(list.positionViewAtEnd)
+            }
+        }
+
+        // Under the last turn: the gate while a tool waits, the idle note
+        // once the prompt cache has run out
         footer: Item {
             width: list.width
-            height: idleNote.shown ? idleNote.height + list.spacing : 0
+            height: gate.height + (gate.height > 0 ? list.spacing : 0)
+                + (idleNote.shown ? idleNote.height + list.spacing : 0)
+
+            AiPermissionCard {
+                id: gate
+                y: list.spacing
+                x: 14
+                width: parent.width - 14
+                request: AiState.session.pendingPermission?.tool_name === "AskUserQuestion"
+                    ? null : AiState.session.pendingPermission
+                onAllow: always => AiState.session.approve(always)
+                onRefuse: AiState.session.deny("")
+            }
 
             AiIdleNote {
                 id: idleNote
-                y: list.spacing
+                y: (gate.height > 0 ? gate.y + gate.height : 0) + list.spacing
                 x: 14
                 width: parent.width - 14
                 chat: AiState.chat
             }
+        }
+    }
+
+    // Selection past the edge of a block. Over the list and not inside it: a
+    // handler declared in the ListView never sees the press. Passive, so the
+    // text below still gets its press, its drag on its links
+    Item {
+        anchors.fill: list
+        PointHandler {
+            acceptedButtons: Qt.LeftButton
+            onActiveChanged: if (active)
+                AiState.selectStart(point.scenePosition.x, point.scenePosition.y)
+            onPointChanged: if (active)
+                AiState.selectMove(point.scenePosition.x, point.scenePosition.y)
         }
     }
 
@@ -415,28 +506,52 @@ Item {
     // What the turn is doing, between the transcript and the composer
     AiTurnStatus {
         id: turnStatus
-        anchors { left: parent.left; right: parent.right; bottom: gate.top }
+        anchors { left: parent.left; right: parent.right; bottom: ask.top }
         anchors.bottomMargin: visible ? 8 : 0
         chat: AiState.chat
+    }
+
+    AiTodoCard {
+        id: todoCard
+        anchors { left: parent.left; right: parent.right; bottom: turnStatus.top }
+        anchors.bottomMargin: visible ? 8 : 0
+        todos: AiState.chat?.todos ?? []
+    }
+
+    // A question from the model: a form just over the composer, where the
+    // eye already is. A question is not a gate, so it is not in the transcript
+    AiAskCard {
+        id: ask
+        anchors { left: parent.left; right: parent.right; bottom: sideAnswer.top }
+        anchors.bottomMargin: visible ? 8 : 0
+        maxHeight: root.height * 0.6
+        request: AiState.session?.pendingPermission?.tool_name === "AskUserQuestion"
+            ? AiState.session.pendingPermission : null
+        onSubmitted: answers => AiState.session.answerQuestions(answers)
+        onCancelled: AiState.session.deny("The user dismissed the question.")
     }
 
     // ── Command palette ───────────────────────────────────────────────────
     AiCommandMenu {
         id: cmdMenu
-        anchors { left: parent.left; right: parent.right; bottom: gate.top }
+        anchors { left: parent.left; right: parent.right; bottom: attachMenu.top }
         anchors.bottomMargin: root.cmdActive ? 8 : 0
         visible: root.cmdActive
         // /resume and /focus are not in what the CLI declares: they are the
         // shell's own. /focus is a switch, and flips without closing the menu
         source: [{ name: "resume", description: "Resume a previous conversation in a tab" },
             { name: "focus", description: "Focus view: show only your prompts and Claude's responses",
-            toggle: AiState.focusView }]
+            toggle: AiState.focusView },
+            { name: "btw", description: "Ask a quick side question without interrupting Claude" },
+            { name: "ctrl-enter", description: "Send with Ctrl+Enter: Enter alone breaks the line",
+            toggle: AiState.ctrlEnterSend }]
             .concat(AiState.session.slashCommands)
         filter: root.cmdFilter
         onDismissed: root.closeCommands()
         onAccepted: name => {
             if (name === "resume") { root.openResume(); return }
             if (name === "focus") { AiState.toggleFocusView(); return }
+            if (name === "ctrl-enter") { AiState.toggleCtrlEnterSend(); return }
             input.text = "/" + name + " "
             input.cursorPosition = input.text.length
             root.closeCommands()
@@ -445,7 +560,7 @@ Item {
 
     AiResumeMenu {
         id: resumeMenu
-        anchors { left: parent.left; right: parent.right; bottom: gate.top }
+        anchors { left: parent.left; right: parent.right; bottom: attachMenu.top }
         anchors.bottomMargin: 8
         visible: root.resumeOpen
         onDismissed: root.closeResume()
@@ -455,9 +570,81 @@ Item {
         }
     }
 
+    // The answer to a /btw: beside the conversation, never in it
+    AiSideAnswer {
+        id: sideAnswer
+        anchors { left: parent.left; right: parent.right; bottom: attachMenu.top }
+        anchors.bottomMargin: visible ? 8 : 0
+        side: AiState.chat?.side ?? null
+        onDismissed: AiState.chat.dismissSide()
+    }
+
+    // Prompts sent while a turn runs: each goes once the turn before it ends
+    Column {
+        id: queueStrip
+        anchors { left: parent.left; right: parent.right; bottom: promptBox.top }
+        anchors.bottomMargin: AiState.chat?.queued.length > 0 ? 8 : 0
+        spacing: 4
+
+        Repeater {
+            model: AiState.chat?.queued ?? []
+
+            Item {
+                id: qrow
+                required property var modelData
+                required property int index
+                width: queueStrip.width
+                height: 22
+
+                CutShape {
+                    anchors.fill: parent
+                    fillColor: CP.alpha(CP.yellow, 0.05)
+                    strokeColor: CP.alpha(CP.yellow, 0.35)
+                    strokeWidth: 1
+                    inset: 0.5
+                    cutTopLeft: 5
+                }
+                Text {
+                    id: qtag
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\u25e2 QUEUED"
+                    font.family: "Oxanium"
+                    font.pixelSize: 8
+                    font.bold: true
+                    font.letterSpacing: 1.6
+                    color: CP.yellow
+                }
+                Text {
+                    anchors.left: qtag.right
+                    anchors.leftMargin: 8
+                    anchors.right: qx.left
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qrow.modelData.replace(/\s+/g, " ")
+                    elide: Text.ElideRight
+                    font.family: "Oxanium"
+                    font.pixelSize: 10
+                    color: CP.alpha(root.fg, 0.7)
+                }
+                AiIconButton {
+                    id: qx
+                    anchors.right: parent.right
+                    anchors.rightMargin: 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    frame: false
+                    glyph: "\uf00d"
+                    glyphSize: 10
+                    accent: CP.yellow
+                    onTriggered: AiState.chat.unqueue(qrow.index)
+                }
+            }
+        }
+    }
+
     AiAttachMenu {
         id: attachMenu
-        anchors { left: parent.left; right: parent.right; bottom: promptBox.top }
+        anchors { left: parent.left; right: parent.right; bottom: queueStrip.top }
         anchors.bottomMargin: paths.length > 0 ? 8 : 0
         paths: root.attachments
         onRemoved: p => root.detach(p)
@@ -495,16 +682,6 @@ Item {
         onModelPicked: v => { AiState.setModel(v); root.modelOpen = false; input.forceActiveFocus() }
         onEffortPicked: l => AiState.setEffort(l)
         onDismissed: { root.modelOpen = false; input.forceActiveFocus() }
-    }
-
-    // ── Permission gate ───────────────────────────────────────────────────
-    AiPermissionCard {
-        id: gate
-        anchors { left: parent.left; right: parent.right; bottom: attachMenu.top }
-        anchors.bottomMargin: request !== null ? 10 : 0
-        request: AiState.session.pendingPermission
-        onAllow: always => AiState.session.approve(always)
-        onRefuse: AiState.session.deny("")
     }
 
     // ── Composer ──────────────────────────────────────────────────────────
@@ -568,30 +745,55 @@ Item {
                     // The mic floats over the bottom-right corner: keep the text
                     // out from under it instead of letting the two overlap
                     rightPadding: 20
-                    enabled: !AiState.session.busy
+                    // Open while a turn runs too: what is sent then is queued,
+                    // and /btw is answered at once.
                     // Typing over a recalled prompt makes it a new draft
                     onTextChanged: if (!root._histSetting) root._histIdx = -1
 
+                    // Same menu as the transcript, with the editing actions
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+                        cursorShape: Qt.IBeamCursor
+                        onPressed: mouse => {
+                            input.forceActiveFocus()
+                            AiState.textMenuRequested(input, mouse.x, mouse.y)
+                        }
+                    }
+
                     Text {
+                        readonly property bool ghost: root.suggestion !== ""
+                            && !root.recording && !root.transcribing
                         anchors.fill: parent
                         anchors.rightMargin: 20
                         visible: input.text === ""
                         text: root.recording ? "Listening\u2026"
                             : root.transcribing ? "Transcribing\u2026"
+                            : ghost ? root.suggestion + " \u2192"
+                            : AiState.session.busy ? "Queue a message, or /btw to ask aside\u2026"
                             : "Plan, search, build anything\u2026"
-                        font.family: "Oxanium"
-                        font.pixelSize: 11
-                        color: CP.alpha(root.recording ? CP.red : CP.magenta, 0.32)
+                        wrapMode: Text.Wrap
+                        // A ghost of the input itself: same face, dimmed
+                        font.family: ghost ? input.font.family : "Oxanium"
+                        font.pixelSize: ghost ? input.font.pixelSize : 11
+                        color: ghost ? CP.alpha(root.fg, 0.32)
+                            : CP.alpha(root.recording ? CP.red : CP.magenta, 0.32)
                     }
 
                     // Enter sends, Shift+Enter breaks the line: the shell convention
-                    // for a prompt box, not a text editor. While the palette is up
-                    // the arrows and Enter belong to it instead
+                    // for a prompt box, not a text editor. With /ctrl-enter on it is
+                    // Ctrl+Enter that sends and Enter breaks the line. While the
+                    // palette is up the arrows and Enter belong to it instead
                     Keys.onPressed: event => {
                         if (event.key === Qt.Key_Escape) {
                             // Innermost surface first: Escape peels one layer at a
                             // time and only closes the drawer once nothing is open
-                            if (!root.dismissTop()) AiState.close()
+                            root.pressEscape()
+                            event.accepted = true
+                        } else if (event.key === Qt.Key_Right && input.text === ""
+                            && root.suggestion !== "") {
+                            input.text = root.suggestion
+                            input.cursorPosition = input.length
                             event.accepted = true
                         } else if (event.key === Qt.Key_F
                             && (event.modifiers & Qt.ControlModifier)
@@ -622,7 +824,8 @@ Item {
                             cmdMenu.accept()
                             event.accepted = true
                         } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                            && !(event.modifiers & Qt.ShiftModifier)) {
+                            && !(event.modifiers & Qt.ShiftModifier)
+                            && (!AiState.ctrlEnterSend || (event.modifiers & Qt.ControlModifier))) {
                             root.send()
                             event.accepted = true
                         }
@@ -676,7 +879,6 @@ Item {
                     accent: CP.cyan
                     frame: false
                     glyphSize: 12
-                    enabled: !AiState.session.busy
                     onTriggered: {
                         if (root.cmdOpen && cmdMenu.ownFilter) root.closeCommands()
                         else { root.cmdOpen = true; cmdMenu.openStandalone() }
@@ -723,9 +925,11 @@ Item {
                 }
 
                 // One button, two jobs: it sends, and while a turn runs it
-                // stops it. Glyph only, an arrow up or a square
+                // stops it, unless there is something typed to queue. Glyph
+                // only, an arrow up or a square
                 AiChip {
                     readonly property bool stops: AiState.session.busy
+                        && input.text.trim() === "" && root.attachments.length === 0
                     glyph: stops ? "\uf04d" : "\uf062"
                     glyphSize: 10
                     accent: stops ? CP.red : CP.magenta
@@ -735,6 +939,15 @@ Item {
                 }
             }
         }
+    }
+
+    // Over the chat while there is no login. Under the account menu and the
+    // header: closing the drawer or switching tab still works
+    AiLoginView {
+        anchors { top: headerSep.bottom; left: parent.left
+            right: parent.right; bottom: parent.bottom }
+        anchors.topMargin: 1
+        visible: !AiState.loggedIn
     }
 
     // -- Account ---------------------------------------
@@ -748,6 +961,10 @@ Item {
             root.accountOpen = false
             root.detailsOpen = true
             AiState.session.requestUsage()
+        }
+        onLogoutRequested: {
+            root.accountOpen = false
+            AiState.logout()
         }
     }
 
@@ -800,4 +1017,34 @@ Item {
             }
         }
     }
+
+    // -- Text menu ---------------------------------
+    //
+    // After the drop zone: on top of everything. The catcher behind it takes
+    // the press that dismisses the menu, so that click does nothing else; the
+    // wheel goes through, and closes it, since the text under it moves
+    MouseArea {
+        anchors.fill: parent
+        visible: textMenu.visible || msgMenu.visible
+        acceptedButtons: Qt.AllButtons
+        onPressed: { textMenu.close(); msgMenu.close() }
+        onWheel: wheel => { textMenu.close(); msgMenu.close(); wheel.accepted = false }
+    }
+
+    AiMessageMenu { id: msgMenu }
+
+    Binding { target: AiState; property: "menuRow"; value: msgMenu.row }
+
+    AiTextMenu {
+        id: textMenu
+        onQuoted: text => {
+            // A rich text selection breaks its lines with U+2029 and U+2028
+            const q = text.replace(/[\u2028\u2029]/g, "\n").trim().split("\n").map(l => "> " + l).join("\n") + "\n\n"
+            const at = input.text === "" || input.text.endsWith("\n") ? "" : "\n\n"
+            input.insert(input.length, at + q)
+            input.cursorPosition = input.length
+            input.forceActiveFocus()
+        }
+    }
+
 }

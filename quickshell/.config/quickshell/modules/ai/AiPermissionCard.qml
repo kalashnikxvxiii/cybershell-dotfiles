@@ -4,6 +4,7 @@
 // the whole authorization gate: nothing the model does to the system happens
 // without a click here.
 import QtQuick
+import "../../common/effects"
 import "../../common"
 import "../../common/Colors.js" as CP
 
@@ -43,12 +44,8 @@ Item {
     }
 
     // Waiting on a human: pulse, per the design system's pending convention.
-    SequentialAnimation on opacity {
-        running: root.pending
-        loops: Animation.Infinite
-        NumberAnimation { from: 1.0; to: 0.78; duration: 700 }
-        NumberAnimation { from: 0.78; to: 1.0; duration: 700 }
-    }
+    opacity: pendingPulse.k
+    Pulse { id: pendingPulse; running: root.visible && root.pending; from: 1.0; to: 0.78; halfMs: 700 }
 
     Column {
         id: content

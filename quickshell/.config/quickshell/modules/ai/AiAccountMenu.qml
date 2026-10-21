@@ -12,6 +12,7 @@ Item {
     id: root
 
     signal detailsRequested()
+    signal logoutRequested()
 
     readonly property color fg: "#d8e0e8"
     readonly property var session: AiState.session
@@ -140,6 +141,31 @@ Item {
                 label: modelData.label
                 utilization: modelData.utilization
                 resetsAt: modelData.resetsAt
+            }
+        }
+
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: CP.alpha(CP.magenta, 0.22)
+        }
+
+        Text {
+            text: "LOG OUT"
+            font.family: "Oxanium"
+            font.pixelSize: 9
+            font.letterSpacing: 1
+            font.underline: out.containsMouse
+            color: out.containsMouse ? CP.red : CP.alpha(CP.red, 0.65)
+            Behavior on color { ColorAnimation { duration: 100 } }
+
+            MouseArea {
+                id: out
+                anchors.fill: parent
+                anchors.margins: -4
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.logoutRequested()
             }
         }
     }

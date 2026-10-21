@@ -7,6 +7,7 @@
 // steps one by one, reasoning and calls interleaved as they happened, and
 // ends with a row that folds it back
 import QtQuick
+import "../../common/effects"
 import "../../common"
 import "../../common/Colors.js" as CP
 
@@ -102,15 +103,7 @@ Item {
                 }
             }
 
-            QtObject { id: pulse; property real k: 1 }
-
-            SequentialAnimation {
-                running: root.runningLabel !== ""
-                loops: Animation.Infinite
-                onStopped: pulse.k = 1
-                NumberAnimation { target: pulse; property: "k"; from: 1.0; to: 0.55; duration: 600 }
-                NumberAnimation { target: pulse; property: "k"; from: 0.55; to: 1.0; duration: 600 }
-            }
+            Pulse { id: pulse; running: root.visible && root.runningLabel !== ""; from: 1.0; to: 0.55; halfMs: 600 }
 
             MouseArea {
                 id: ma

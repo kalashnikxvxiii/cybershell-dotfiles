@@ -1,6 +1,7 @@
 // AiIconButton.qml - the square glyph button of the composer rail: attach,
 // dictate, command palette. Same 120ms hover as the rest of the system.
 import QtQuick
+import "../../common/effects"
 import "../../common"
 import "../../common/Colors.js" as CP
 
@@ -41,17 +42,9 @@ Item {
         Behavior on strokeColor { ColorAnimation { duration: 120 } }
     }
 
-    // The pulse drives a plain number, not `opacity` directly: an animation
-    // written ON a property leaves it stuck at its last value when it stops
-    QtObject { id: pulse; property real k: 1 }
-
-    SequentialAnimation {
-        running: root.on || root.busy
-        loops: Animation.Infinite
-        onStopped: pulse.k = 1
-        NumberAnimation { target: pulse; property: "k"; from: 1.0; to: 0.35; duration: 520 }
-        NumberAnimation { target: pulse; property: "k"; from: 0.35; to: 1.0; duration: 520 }
-    }
+    // The pulse is a plain number, not an animation written on `opacity`: that
+    // would leave it stuck at its last value when it stops
+    Pulse { id: pulse; running: root.visible && (root.on || root.busy); from: 1.0; to: 0.35; halfMs: 520 }
 
     Text {
         anchors.centerIn: parent

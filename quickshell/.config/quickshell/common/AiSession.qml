@@ -16,14 +16,27 @@ Item {
     id: root
 
     property string model: "sonnet"
-    // Where it thinks from: CLAUDE.md and the memory index live here. The CLI
-    // also files its sessions by cwd, and --resume only finds them from there:
-    // a session picked up from elsewhere runs in its own directory
-    readonly property string defaultCwd: Quickshell.env("HOME") + "/Documenti/DE-docs"
+    // Where it thinks from: as a terminal `claude` does. The CLI also files
+    // its sessions by cwd, and --resume only finds them from there: a session
+    // picked up from elsewhere runs in its own directory
+    readonly property string defaultCwd: Quickshell.env("HOME")
     property string cwd: defaultCwd
     readonly property string sessionId: _sessionId
     readonly property bool busy: _busy
     readonly property bool alive: proc.running
+
+    // -- Sign-in ----------------------------------------
+    //
+    // The CLI does the OAuth itself; the drawer only drives it, the way the
+    // extension does: ask for the URLs, open the browser, wait for the CLI to
+    // say it is done. "" is not signing in, "starting" waits for the URLs,
+    // "browser" has them. Verified on CLI 2.1.295, also with no login at all
+    readonly property string loginStage: _loginStage
+    readonly property string loginUrl: _loginUrl
+    readonly property string loginError: _loginError
+    // The CLI answered a turn with authentication_failed / signed in
+    signal authLost()
+    signal loginDone()
 
     // Pending tool authorization, or null. The UI binds to this
     readonly property var pendingPermission: _pending
@@ -45,11 +58,6 @@ Item {
     // has to send again once the cache is gone. Read per request, from the
     // assistant message, because `result` sums every request of the turn
     readonly property real contextTokens: _contextTokens
-
-    // The tools the model is given. --tools is a whitelist: anything left
-    // out does not exist for the model, which is why it once answered it
-    // had no way to search the web
-    readonly property string tools: "Read,Write,Edit,Glob,Grep,Bash,WebSearch,WebFetch"
 
     // -- Account and plan limits ----------------------------
     //
@@ -97,10 +105,14 @@ Item {
     signal toolResult(string id, string text, bool isError)
     signal turnFinished(var result)
     signal sessionError(string message)
+    signal suggested(string text)       // predicted next prompt, after a turn
     // The context was summarized, by /compact or because it was full:
     // { trigger, pre_tokens, post_tokens, duration_ms }
     signal compacted(var meta)
     signal compactSummary(string text)      // what the model will remember of it
+    // Answers to control requests that carry a result back
+    signal filesRewound(string requestId, bool dryRun, var result, string error)
+    signal sideAnswered(string requestId, string text, string error)
 
     // A summary is being written. The CLI says when it starts and when it
     // ends, nothing in between: there is no progress to report
@@ -123,7 +135,7 @@ Item {
     readonly property var models: _models
     // Commands whose UX is bound to a terminal: dead weight in a drawer
     property var _termCommands: ["doctor", "color", "focus", "reload-plugins"]
-    property string _permissionMode: "manual"
+    property string _permissionMode: "auto"
     property real _cacheTokens: 0
     property real _cacheTtlMs: 0
     property real _contextTokens: 0
@@ -135,6 +147,12 @@ Item {
     property var _ctl: ({})
     // This launch passed --resume and the CLI has not confirmed it yet
     property bool _resuming: false
+    property string _loginStage: ""
+    property string _loginUrl: ""
+    property string _loginError: ""
+    property string _loginId: ""
+    property string _waitId: ""
+    property string _codeId: ""
     // A mode to put back once the CLI anwers initialize. A launch flag would
     // not do: the response reports "default" even when launched with manual
     property string _wantMode: ""
@@ -147,21 +165,101 @@ Item {
     property bool _stopping: false
     property bool _compacting: false
     property real _compactFrom: 0
+    // A fork in flight: the message of the original session the new one stops
+    // at, until the CLI has named the new session
+    property string _forkAt: ""
+    readonly property bool forking: _forkAt !== ""
+    // request_id -> dry run, of rewind_files requests still unanswered
+    property var _rewinds: ({})
+    property var _sides: ({})
     // The next synthetic user message is the summary of this boundary
     property bool _awaitSummary: false
 
     // -- Public API ---------------------------------------------
 
+    // claude.ai subscription (true) or Console / API billing (false)
+    function login(withClaudeAi) {
+        root._loginError = ""
+        root._loginStage = "starting"
+        root._loginId = "login_" + Date.now()
+        _push({ type: "control_request", request_id:root._loginId,
+            request: { subtype: "claude_authenticate", loginWithClaudeAi: withClaudeAi } })
+    }
+
+    // The code the callback page shows, "code#state". Needed only when the
+    // browser cannot reach the CLI's local callback
+    function submitLoginCode(text) {
+        const t = (text ?? "").trim()
+        if (t === "") return
+        const i = t.indexOf("#")
+        root._loginError = ""
+        root._codeId = "code_" + Date.now()
+        _push({ type: "control_request", request_id: root._codeId,
+            request: { subtype: "claude_oauth_callback",
+                authorizationCode: i >= 0 ? t.slice(0, i) : t,
+                state: i >= 0 ? t.slice(i + 1) : "" } })
+    }
+
+    // The wait is still pending on the CLI's side, holding the callback port:
+    // ending the process is what lets go of it
+    function cancelLogin() {
+        root._loginStage = ""
+        root._loginId = ""
+        root._waitId = ""
+        root._codeId = ""
+        root._queue = []
+        if (proc.running) {
+            root._stopping = true
+            root.running = false
+        }
+    }
+
+    function _loginFailed(message) {
+        root._loginError = message
+        root._loginStage = ""
+        root._waitId = ""
+    }
+
     // Pre-warm on drawer open so the first message does not pay for startup
     function start() { if (!proc.running) proc.running = true }
 
-    function send(text) {
+    // The uuid becomes the prompt's id in the transcript: what a rewind or a
+    // fork names it by later. Verified on CLI 2.1.289
+    function send(text, uuid) {
         if (!text) return
         root._busy = true
-        _push({
+        const m = {
             type: "user",
             message: { role: "user", content: [ { type: "text", text: text }] }
-        })
+        }
+        if (uuid) m.uuid = uuid
+        _push(m)
+    }
+
+    // Puts the files back as they were before the prompt `uuid`. A dry run
+    // only says what would change. Needs the checkpoints the launch turns on:
+    // edits made before that have nothing to go back to
+    function rewindFiles(uuid, dryRun) {
+        const id = "rewind_" + Date.now()
+        const r = root._rewinds
+        r[id] = dryRun === true
+        root._rewinds = r
+        _push({ type: "control_request", request_id: id,
+            request: { subtype: "rewind_files", user_message_id: uuid, dry_run: dryRun === true } })
+        return id
+    }
+
+    // /btw: answered from the context as it is, while a turn runs too, and
+    // never written into the conversation. `history` holds the earlier ones
+    function askSide(question, history) {
+        const id = "side_" + Date.now()
+        const s = root._sides
+        s[id] = true
+        root._sides = s
+        const req = { subtype: "side_question", question: question }
+        if ((history ?? []).length > 0) req.history = history
+        _push({ type: "control_request", request_id: id, request: req })
+        return id
     }
 
     function interrupt() {
@@ -182,7 +280,18 @@ Item {
             root._allowlist = l         // reassign: nested writes do not notify
         }
         root._pending = null
-        _respondPermission(p.request_id, { behavior: "allow", updateInput: p.input })
+        _respondPermission(p.request_id, { behavior: "allow", updatedInput: p.input })
+    }
+
+    // AskUserQuestion: the answers ride back inside the tool's own input.
+    // The key is updatedInput: with any other spelling the CLI keeps the
+    // original input, and the model is told the user did not answer
+    function answerQuestions(answers) {
+        if (!root._pending) return
+        const p = root._pending
+        root._pending = null
+        _respondPermission(p.request_id, { behavior: "allow",
+            updatedInput: Object.assign({}, p.input, { answers: answers }) })
     }
 
     function deny(reason) {
@@ -241,7 +350,28 @@ Item {
         root.cwd = dir || root.defaultCwd
     }
 
-    function restoreMode(m) { if (!proc.running) root._wantMode = m ?? ""}
+    // Like restore(), into a copy: the next launch takes the session `id` up
+    // to the message `at` into a new one, and leaves the original as it is.
+    // No `at` (the fork is at the first prompt): nothing to copy, a new chat
+    function fork(id, dir, at) {
+        if (proc.running) return
+        root._sessionId = at ? (id ?? "") : ""
+        root._forkAt = at ?? ""
+        root.cwd = dir || root.defaultCwd
+    }
+
+    // "default" is only what a manual launch used to report, never a pick:
+    // a tab saved with it comes back in the launch mode
+    function restoreMode(m) {
+        if (!proc.running) root._wantMode = m && m !== "default" ? m : ""
+    }
+
+    // What the last turn cached, from before a restart: a real turn's
+    // numbers always win over these
+    function restoreUsage(ttl, tokens) {
+        if (root._cacheTtlMs <= 0) root._cacheTtlMs = ttl ?? 0
+        if (root._contextTokens <= 0) root._contextTokens = tokens ?? 0
+    }
 
     readonly property string _initId: "boot_initialize"
 
@@ -268,6 +398,7 @@ Item {
     function reset(id, dir) {
         root._pending = null
         root._sessionId = id ?? ""
+        root._forkAt = ""
         root.cwd = dir || root.defaultCwd
         root._resuming = false
         root._wantMode = ""         // a new chat starts from the default mode
@@ -316,7 +447,6 @@ Item {
         id: proc
         running: false
         stdinEnabled: true          // keeps stdin open: no EOF, no early exit
-        // CLAUDE.md and the memory index live here, so this is where it thinks from
         workingDirectory: root.cwd
 
         command: [
@@ -325,9 +455,12 @@ Item {
             "--output-format", "stream-json",
             "--include-partial-messages",
             "--verbose",            // required by stream-json output
-            "--strict-mcp-config",  // no MCP servers: ~4k tokens saved
-            "--tools", root.tools,
-            "--permission-mode", "manual",
+            "--prompt-suggestions",
+            // No --tools and no --strict-mcp-config: the model gets what a
+            // terminal session gets (subagents, skills, MCP servers, ...)
+            // The CLI's own deafault. It falls back to "default" on a model
+            // without the safety classifier (Haiku): verified on CLI 2.1.289
+            "--permission-mode", "auto",
             "--permission-prompts", "host",
             "--permission-prompt-tool", "stdio",    // undocumented in the option list,
                                                     // and required for can_use_tool
@@ -339,6 +472,15 @@ Item {
             "--model", root.model
         ].concat(root.effort ? ["--effort", root.effort] : [])
         .concat(root._sessionId ? ["--resume", root._sessionId] : [])
+        .concat(root._sessionId && root._forkAt
+            ? ["--fork-session", "--resume-session-at", root._forkAt] : [])
+        
+        // Off in print mode unless asked for: without it a rewind has no
+        // snapshot to go back to. Verified on CLI 2.1.289
+        environment: ({ CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING: "true",
+            CLAUDE_CODE_ENABLE_TODO_TOOLS: "1",
+            // Print mode turns suggestions off unless forced. Verified on CLI 2.1.295
+            CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION: "1" })
 
         onStarted: {
             root._resuming = root._sessionId !== ""
@@ -356,7 +498,12 @@ Item {
                 // A stray non-JSON line must never take the parser down
                 try { ev = JSON.parse(line) } catch (e) { return }  // never throw in the parser
 
-                if (ev.session_id && !root._sessionId) root._sessionId = ev.session_id
+                // A fork runs under a new id from its first event on
+                if (ev.session_id && (!root._sessionId
+                        || (root._forkAt !== "" && ev.session_id !== root._sessionId))) {
+                    root._sessionId = ev.session_id
+                    root._forkAt = ""
+                }
 
                 switch (ev.type) {
                     case "stream_event": {
@@ -378,7 +525,7 @@ Item {
                         // Session allowlist: approved once, never asked again
                         if (root._allowlist[r.tool_name]) {
                             root._respondPermission(ev.request_id,
-                                { behavior: "allow", updateInput: r.input })
+                                { behavior: "allow", updatedInput: r.input })
                             break
                         }
                         root._pending = {
@@ -398,6 +545,7 @@ Item {
                         // only the tool calls from here
                         for (const c of (ev?.message?.content ?? []))
                             if (c.type === "tool_use") root.toolStarted(c.name, c.input, c.id)
+                        if (ev.error === "authentication_failed") root.authLost()
                         const u = ev?.message?.usage
                         if (u) root._contextTokens = (u.input_tokens ?? 0)
                             + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0)
@@ -464,6 +612,55 @@ Item {
                             }
                             break
                         }
+                        if (root._rewinds[r.request_id] !== undefined) {
+                            const w = root._rewinds
+                            const dry = w[r.request_id]
+                            delete w[r.request_id]
+                            root._rewinds = w
+                            root.filesRewound(r.request_id, dry, r.response ?? {},
+                                r.subtype === "success" ? "" : (r.error ?? "rewind refused"))
+                            break
+                        }
+                        if (root._sides[r.request_id] !== undefined) {
+                            const q = root._sides
+                            delete q[r.request_id]
+                            root._sides = q
+                            root.sideAnswered(r.request_id, r.response?.response ?? "",
+                                r.subtype === "success" ? "" : (r.error ?? "side question refused"))
+                            break
+                        }
+                        if (r.request_id === root._loginId) {
+                            root._loginId = ""
+                            if (r.subtype !== "success") {
+                                root._loginFailed(r.error ?? "sign-in refused")
+                                break
+                            }
+                            root._loginUrl = r.response?.manualUrl ?? ""
+                            root._loginStage = "browser"
+                            Quickshell.execDetached(["xdg-open",
+                                r.response?.automaticUrl ?? root._loginUrl])
+                            root._waitId = "wait_" + Date.now()
+                            root._push({ type: "control_request", request_id: root._waitId,
+                                request: { subtype: "claude_oauth_wait_for_completion" } })
+                            break
+                        }
+                        if (r.request_id === root._waitId) {
+                            root._waitId = ""
+                            if (r.subtype !== "success") {
+                                root._loginFailed(r.error ?? "sign-in failed")
+                                break
+                            }
+                            root._loginStage = ""
+                            root._requestInit()         // the account is someone else now
+                            root.loginDone()
+                            break
+                        }
+                        if (r.request_id === root._codeId) {
+                            root._codeId = ""
+                            if (r.subtype !== "success")
+                                root._loginError = r.error ?? "that code was not accepted"
+                            break
+                        }
                         const t = root._ctl[r.request_id]
                         if (r.request_id === root._usageId) {
                             root._usageId = ""
@@ -482,6 +679,10 @@ Item {
                         root.sessionError(r.error ?? "control request refused")
                         break
                     }
+
+                    case "prompt_suggestion":
+                        root.suggested(ev.suggestion ?? "")
+                        break
 
                     case "result": {
                         // A resume of a transcript the CLI no longer has dies at

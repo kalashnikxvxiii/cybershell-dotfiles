@@ -4,6 +4,7 @@
 // over a layout that is already final: the part not yet revealed is laid out
 // in a transparent colour, so a centred, wrapped line never shifts as it grows
 import QtQuick
+import "../../common/effects"
 import Quickshell
 import "../../common/Colors.js" as CP
 
@@ -104,11 +105,7 @@ Column {
         font.letterSpacing: 3
         color: CP.magenta
 
-        SequentialAnimation on opacity {
-            running: root.visible
-            loops: Animation.Infinite
-            NumberAnimation { from: 0.55; to: 0.18; duration: 1700; easing.type: Easing.InOutSine }
-            NumberAnimation { from: 0.18; to: 0.55; duration: 1700; easing.type: Easing.InOutSine }
-        }
+        opacity: awaitPulse.k
+        Pulse { id: awaitPulse; running: root.visible; from: 0.55; to: 0.18; halfMs: 1700; sine: true }
     }
 }
