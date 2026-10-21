@@ -13,6 +13,8 @@ import "modules/manga"
 import "modules/sonar"
 import "modules/snip"
 import "modules/toasts"
+import "modules/launcher"
+import "modules/media"
 
 ShellRoot {
     // The shell's own feedback channel. Scripts reach it with
@@ -34,6 +36,20 @@ ShellRoot {
         function error(title: string, message: string, icon: string): void {
             Toaster.error(title, message, icon);
         }
+    }
+
+    // Menu (SUPER+SPACE) and standalone radioport, on the focused monitor
+    IpcHandler {
+        target: "launcher"
+        function toggle(): void { LauncherState.toggleMenu() }
+        function open(): void { LauncherState.openMenu() }
+        function close(): void { LauncherState.closeMenu() }
+    }
+    IpcHandler {
+        target: "mediapanel"
+        function toggle(): void { LauncherState.toggleMedia() }
+        function open(): void { LauncherState.openMedia() }
+        function close(): void { LauncherState.closeMedia() }
     }
 
     // Lyrics server: only alive while Spotify is running
@@ -137,6 +153,14 @@ ShellRoot {
             }
 
             ToastOverlay {
+                screen: modelData
+            }
+
+            LauncherPanel {
+                screen: modelData
+            }
+
+            MediaPanel {
                 screen: modelData
             }
         }

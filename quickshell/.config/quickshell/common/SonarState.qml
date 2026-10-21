@@ -29,6 +29,9 @@ Singleton {
     // Key of the entry the panel is showing details for: an SSID or a
     // bluetooth address.
     property string selectedKey: ""
+    // Set by the launcher while its Network ("net") or Bluetooth ("bt")
+    // submenu is on screen, so the scan follows that view too.
+    property string menuView: ""
 
     function openView(v, screen) {
         root.selectedKey = ""
@@ -102,7 +105,7 @@ Singleton {
     property int btRev: 0
 
     // ── Network ──────────────────────────────────────────────────────────
-    readonly property bool scanning: root.open && root.view === "net"
+    readonly property bool scanning: (root.open && root.view === "net") || root.menuView === "net"
 
     property var wifiDevice: null
     property var wiredDevice: null
@@ -158,7 +161,7 @@ Singleton {
 
     // ── Bluetooth ────────────────────────────────────────────────────────
     readonly property var adapter: Bluetooth.defaultAdapter
-    readonly property bool discovering: root.open && root.view === "bt"
+    readonly property bool discovering: (root.open && root.view === "bt") || root.menuView === "bt"
 
     onDiscoveringChanged: root._syncDiscovery()
     onAdapterChanged: root._syncDiscovery()
@@ -188,7 +191,7 @@ Singleton {
     readonly property Timer _scanKeeper: Timer {
         interval: 1000
         repeat: true
-        running: root.open
+        running: root.open || root.menuView !== ""
         triggeredOnStart: true
         onTriggered: {
             // Only ever re-asserts the ON direction. Stopping is done once,
