@@ -206,8 +206,12 @@ hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_
 -- XTEST, dove Discord li intercetta anche senza avere il focus.
 -- non_consuming replica il comportamento originale — XInput2 in raw mode non consumava
 -- l'evento — così F7/F8 restano disponibili anche alle altre applicazioni.
-hl.bind("F7", hl.dsp.exec_cmd("~/.local/bin/discord-key F7"), { non_consuming = true })
-hl.bind("F8", hl.dsp.exec_cmd("~/.local/bin/discord-key F8"), { non_consuming = true })
+-- Da Discord 1.0.164 usa il portale GlobalShortcuts: i nomi sono in `hyprctl globalshortcuts`.
+-- Il vecchio metodo XTEST (discord-key) non serve più; resta come fallback commentato.
+hl.bind("F7", hl.dsp.global("discord:discord-toggle-mute"),   { non_consuming = true })
+hl.bind("F8", hl.dsp.global("discord:discord-toggle-deafen"), { non_consuming = true })
+-- hl.bind("F7", hl.dsp.exec_cmd("~/.local/bin/discord-key F7"), { non_consuming = true })
+-- hl.bind("F8", hl.dsp.exec_cmd("~/.local/bin/discord-key F8"), { non_consuming = true })
 
 -- Toggle screen_shader (scanline + chromatic) on/off — sincronizza damage_tracking:
 -- shader on → damage_tracking 0 (no track, full-frame, richiesto da uniform `time`)
