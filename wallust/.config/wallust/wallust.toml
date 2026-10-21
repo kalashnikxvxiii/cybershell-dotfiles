@@ -55,7 +55,6 @@ wofi              = { template = 'wofi_style',            target = '~/.config/wo
 swaync            = { template = 'swaync_style',          target = '~/.config/swaync/style.css' }
 hyprtoolkit       = { template = 'hyprtoolkit',           target = '~/.config/hypr/hyprtoolkit.conf' }
 cava_colors       = { template = 'cava_bar_colors',       target = '~/.cache/wallust/cava_colors.sh' }
-nvim              = { template = 'nvim_palette',          target = '~/.config/nvim-Lazyman/lua/wallust_palette.lua' }
 kde               = { template = 'kde_colors',            target = '~/.local/share/color-schemes/Cyberpunk-Wallust.colors' }
 qt6ct             = { template = 'qt6ct_palette',         target = '~/.config/qt6ct/colors/cyberpunk.conf' }
 konsole           = { template = 'konsole_colors',        target = '~/.local/share/konsole/Cyberpunk-Wallust.colorscheme' }
