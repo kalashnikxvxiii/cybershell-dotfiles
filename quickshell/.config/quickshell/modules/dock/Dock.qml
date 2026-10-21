@@ -249,14 +249,21 @@ Item {
         * (1 + 0.22 * Math.abs(root.lag))
 
     // ── Focus readouts (name plate in Panels reads these) ─────────────────
+    //
+    // The pointer names what it is on; with nothing under it, the open panel
+    // keeps the plate. revealOf() would let a pinned slot (weight 1) outbid
+    // every icon the cursor passes over
     readonly property int focusedIndex: {
         if (!root.expanded || root.cursorPresence < 0.5) return -1
         let best = -1, bestR = 0.5
         for (let i = 0; i < root.count; i++) {
-            const r = root.revealOf(i)
+            const r = root.cursorRevealOf(i)
             if (r > bestR) { bestR = r; best = i }
         }
-        return best
+        if (best >= 0) return best
+        for (let i = 0; i < root.count; i++)
+            if (root.pinW(i) > 0.5) return i
+        return -1
     }
     readonly property string focusedLabel:
         focusedIndex < 0 ? "" : DockConfig.entries[focusedIndex].label
