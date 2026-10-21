@@ -26,6 +26,9 @@ Singleton {
     }
 
     readonly property MprisPlayer active: {
+        // A player picked from the radioport list, by bus name
+        const picked = list.find(p => p.dbusName === persist.choice)
+        if (picked) return picked
         if (!canSwitch)
             return spotifyPlayer ?? browserPlayer ?? list [0] ?? null
         if (persist.choice === "browser") return browserPlayer
@@ -40,5 +43,9 @@ Singleton {
 
     function togglePlayer() {
         persist.choice = isSpotifyActive ? "browser" : "spotify"
+    }
+
+    function select(p) {
+        if (p) persist.choice = p === spotifyPlayer ? "spotify" : p.dbusName
     }
 }

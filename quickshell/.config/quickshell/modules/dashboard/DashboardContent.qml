@@ -86,7 +86,7 @@ Item {
 
                 // Each Pane = Loader with Caelestia-style lazy-loading
                 Pane { id: pane0; index: 0; naturalWidth: 830; naturalHeight: 410; sourceComponent: DashMainTab   { dashState: root.dashState } }
-                Pane {            index: 1; naturalWidth: 400; naturalHeight: 240; sourceComponent: DashMediaTab  {  } }
+                Pane {            index: 1; naturalWidth: 484; naturalHeight: 560; sourceComponent: DashMediaTab  {  } }
                 Pane {            index: 2; naturalWidth: 830; naturalHeight: 520; sourceComponent: DashPerfTab   { tabActive: view.currentIndex === 2 && root.drawerState.dashboardOpen } }
             }
         }
