@@ -55,3 +55,7 @@ alias lg 'lazygit'
 alias hud 'btm'
 
 alias cheat 'tools-help'
+
+# Editor predefinito
+set -gx EDITOR micro
+set -gx VISUAL micro
