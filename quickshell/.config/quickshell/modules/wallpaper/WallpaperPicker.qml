@@ -773,7 +773,7 @@ Scope {
             downloadProc.command = ["bash", "-c",
                 "REAL_HOME=\"$HOME\"; " +
                 "printf 'PROGRESS:10\\n'; " +
-                "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login STEAM_USER " +
+                "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login \"$(cat \"$REAL_HOME/.config/steamcmd-isolated/steam-user\")\" " +
                 "+workshop_download_item 431960 " + url + " +quit > /tmp/steamcmd_out.txt 2>&1; " +
                 "if grep -q 'Invalid Password\\|Cached credentials not found\\|Steam Guard\\|Two-factor' /tmp/steamcmd_out.txt; then " +
                 "  printf 'ERROR:STEAM_AUTH\\n'; exit 1; fi; " +
@@ -891,7 +891,7 @@ Scope {
             "TOTAL=" + (sizeBytes > 0 ? sizeBytes : 0) + "; " +
             "STAGE=\"$REAL_HOME/.config/steamcmd-isolated/.steam/SteamApps/workshop/" +
             "downloads/431960/" + wpeId + "\"; " +
-            "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login STEAM_USER " +
+            "HOME=$REAL_HOME/.config/steamcmd-isolated steamcmd +login \"$(cat \"$REAL_HOME/.config/steamcmd-isolated/steam-user\")\" " +
             "+workshop_download_item 431960 " + wpeId + " +quit > /tmp/steamcmd_out.txt 2>&1 & " +
             "SC=$!; " +
             // steamcmd reports no percentage of its own, so the staging
@@ -2883,7 +2883,7 @@ Scope {
                 onLoginRequested: (password) => {
                     steamAuthDialog.step = "working"
                     steamAuthProc.command = ["bash", "-c",
-                        "HOME=$HOME/.config/steamcmd-isolated steamcmd +login STEAM_USER " + password + " +quit 2>&1 | tr -d '\\033' | sed 's/\\[0m//g'"]
+                        "HOME=$HOME/.config/steamcmd-isolated steamcmd +login \"$(cat \"$HOME/.config/steamcmd-isolated/steam-user\")\" " + password + " +quit 2>&1 | tr -d '\\033' | sed 's/\\[0m//g'"]
                     steamAuthProc.running = true
                 }
 
