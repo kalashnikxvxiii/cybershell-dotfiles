@@ -72,6 +72,20 @@ hl.layer_rule({
     animation = "popin 80%",
 })
 
+-- Quickshell menu (SUPER+SPACE): same pop-in as the wallpaper picker
+hl.layer_rule({
+    name      = "qs-launcher",
+    match     = { namespace = "qs-launcher" },
+    animation = "fade",
+})
+
+-- Standalone radioport (menu → Media): same pop-in
+hl.layer_rule({
+    name      = "qs-mediapanel",
+    match     = { namespace = "qs-mediapanel" },
+    animation = "fade",
+})
+
 -- Hyprshot: diable slurp overlay animation + hyprpicker
 -- Without this,the overlay selection's fade goes inside the
 -- screenshot as white band semi-transparent (issue Gustash/Hyprshot #147)
