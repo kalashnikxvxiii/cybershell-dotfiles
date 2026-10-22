@@ -72,14 +72,14 @@ hl.layer_rule({
     animation = "popin 80%",
 })
 
--- Quickshell menu (SUPER+SPACE): same pop-in as the wallpaper picker
+-- Quickshell menu (SUPER+SPACE)
 hl.layer_rule({
     name      = "qs-launcher",
     match     = { namespace = "qs-launcher" },
     animation = "fade",
 })
 
--- Standalone radioport (menu → Media): same pop-in
+-- Standalone radioport (menu → Media)
 hl.layer_rule({
     name      = "qs-mediapanel",
     match     = { namespace = "qs-mediapanel" },
