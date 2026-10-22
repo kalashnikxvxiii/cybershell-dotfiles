@@ -17,9 +17,9 @@ Item {
     readonly property bool current: ListView.isCurrentItem
     readonly property int distance: Math.abs(index - view.currentIndex)
 
-    // Quadratic shift: 0 on the selected row, growing with the distance from it
+    // The rows sit flush left; only the selected one sticks out to the right
     readonly property real reserve: 48
-    readonly property real shift: Math.min(distance * distance * 2.3, 44)
+    readonly property real shift: current ? 24 : 0
 
     readonly property string subtitle: (launcher.query !== "" && modelData.path) ? modelData.path : (modelData.comment || "")
 
