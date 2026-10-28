@@ -76,6 +76,7 @@ hl.layer_rule({
 hl.layer_rule({
     name      = "qs-launcher",
     match     = { namespace = "qs-launcher" },
+    blur      = true,
     animation = "fade",
 })
 
@@ -83,6 +84,7 @@ hl.layer_rule({
 hl.layer_rule({
     name      = "qs-mediapanel",
     match     = { namespace = "qs-mediapanel" },
+    blur      = true,
     animation = "fade",
 })
 
