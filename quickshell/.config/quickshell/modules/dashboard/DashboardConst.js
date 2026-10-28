@@ -1,6 +1,6 @@
 .pragma library
 
-var tabLabels = ["CYBERDECK", "MEDIA", "CYBERWARE"]
+var tabLabels = ["CYBERDECK", "RADIOPORT", "CYBERWARE"]
 
 // Default apps — only used if applauncher-order.json doesn't exist yet (first launch).
 var defaultApps = [

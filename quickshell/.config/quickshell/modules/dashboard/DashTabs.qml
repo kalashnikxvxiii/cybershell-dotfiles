@@ -4,7 +4,7 @@ import "../../common/Colors.js" as CP
 import "./DashboardConst.js" as DC
 import "../../common"
 
-// Tab bar with 3 tabs: CYBERDECK, MEDIA, CYBERWARE
+// Tab bar with 3 tabs: CYBERDECK, RADIOPORT, CYBERWARE
 // Adapted from Caelestia Tabs.qml: animated indicator + scroll wheel
 
 Item {
