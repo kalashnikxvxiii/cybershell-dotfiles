@@ -202,7 +202,7 @@ Item {
         anchors.rightMargin: -1
         anchors.top: parent.top
         anchors.topMargin: 38
-        height: Math.max(0, parent.height - 12 - 320)
+        height: Math.max(0, parent.height - 38 - 32 - 4)
         width: root.dashState.currentTab === 1 ? (lyricsOpen ? drawerW : peekPx) : 0
         z: -1
         visible: root.dashState.currentTab === 1
@@ -220,74 +220,87 @@ Item {
 
         Behavior on width { Anim { duration: 240 } }
 
-        Item{
-            id: lyricsContent
-            anchors.fill: parent
-            //clip: true
+        // Clip at the panel edge: the closed drawer must not show through the translucent panel.
+        // Extra room: 10px left for the hover slide, 20px bottom for the shadow
+        Item {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: -20
+            width: parent.width + 10
+            clip: true
 
-            transform: Translate {
-                x: openHandle.containsMouse && !lyricsDrawer.lyricsOpen ? -10 : 0
-                Behavior on x { NumberAnimation { duration: 350; easing.type: Easing.OutBounce } }
-            }
-
-            // Content anchored left -> slide emerges from the right edge (of the panel border)
-            Item {
-                anchors.left: parent.left
+            Item{
+                id: lyricsContent
+                anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: lyricsDrawer.drawerW
+                width: lyricsDrawer.width
+                height: lyricsDrawer.height
 
-                CutShape {
+                transform: Translate {
+                    x: openHandle.containsMouse && !lyricsDrawer.lyricsOpen ? -10 : 0
+                    Behavior on x { NumberAnimation { duration: 350; easing.type: Easing.OutBounce } }
+                }
+
+                // Content anchored left -> slide emerges from the right edge (of the panel border)
+                Item {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: lyricsDrawer.drawerW
+
+                    CutShape {
+                        anchors.fill: parent
+                        fillColor: CP.alpha(CP.white, 0.12)
+                        cutTopLeft: 20
+                        cutBottomLeft: 20
+                    }
+
+                    CutShape {
+                        anchors.fill: parent
+                        fillColor: CP.moduleBg
+                        strokeColor: CP.yellow
+                        strokeWidth: 2
+                        inset: 0.5
+                        cutTopLeft: 20
+                        cutBottomLeft: 20
+                        showRight: false
+                    }
+
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowColor: CP.alpha(CP.cyan, 0.05)
+                        shadowBlur: 0.7
+                        shadowOpacity: 0.3
+                        shadowHorizontalOffset: 10
+                        shadowVerticalOffset: 15
+                    }
+                }
+                // Lyrics content (outside layer/MultiEffect so text doesn't get the glow treatment)
+                DashLyricsView {
+                    id: lyricsView
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.top: parent.top
+                    anchors.topMargin: 16
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 16
+                    width: lyricsDrawer.drawerW - 32
+                    active: lyricsDrawer.isActive && lyricsDrawer.lyricsOpen
+                    player: Players.active
+                    fontSize: Math.min((lyricsDrawer.drawerW - 32) * 0.12, height * 0.12)
+                    topFraction: 0.04
+                    bottomMarginPx: 12
+                }
+
+                // Scanlines
+                Item {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.white, 0.12)
-                    cutTopLeft: 20
-                    cutBottomLeft: 20
+                    clip: true
+                    opacity: 0.08
+                    ScanlineOverlay { opacity: 0.08 }
                 }
-
-                CutShape {
-                    anchors.fill: parent
-                    fillColor: CP.moduleBg
-                    strokeColor: CP.yellow
-                    strokeWidth: 2
-                    inset: 0.5
-                    cutTopLeft: 20
-                    cutBottomLeft: 20
-                    showRight: false
-                }
-
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    shadowEnabled: true
-                    shadowColor: CP.alpha(CP.cyan, 0.05)
-                    shadowBlur: 0.7
-                    shadowOpacity: 0.3
-                    shadowHorizontalOffset: 10
-                    shadowVerticalOffset: 15
-                }
-            }
-            // Lyrics content (outside layer/MultiEffect so text doesn't get the glow treatment)
-            DashLyricsView {
-                id: lyricsView
-                anchors.left: parent.left
-                anchors.leftMargin: 8
-                anchors.top: parent.top
-                anchors.topMargin: 16
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 16
-                width: lyricsDrawer.drawerW - 32
-                active: lyricsDrawer.isActive && lyricsDrawer.lyricsOpen
-                player: Players.active
-                fontSize: Math.min((lyricsDrawer.drawerW - 32) * 0.12, height * 0.12)
-                topFraction: 0.04
-                bottomMarginPx: 12
-            }
-
-            // Scanlines
-            Item {
-                anchors.fill: parent
-                clip: true
-                opacity: 0.08
-                ScanlineOverlay { opacity: 0.08 }
             }
         }
 
