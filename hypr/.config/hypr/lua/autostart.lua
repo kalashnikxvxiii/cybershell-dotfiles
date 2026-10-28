@@ -13,13 +13,18 @@
 -- enable_wrapping) are NOT registered → "unknown config key". No timer
 -- differed here: the behaviour "remnove empty workspace" is obtained via
 -- `hl.workspace_rule({persistent = false})` for all the slots (in rules.lua).
+-- App tray avviate prima di Quickshell non si registrano: il watcher lo crea lui e le app non ritentano.
+local function tray_exec(cmd)
+    hl.exec_cmd("gdbus wait --session --timeout 60 org.kde.StatusNotifierWatcher && " .. cmd)
+end
+
 hl.on("hyprland.start", function()
     hl.exec_cmd("hyprpm reload -n")                                                                    -- start plugins
     hl.exec_cmd("xrandr --output DP-1 --primary")                                                      -- XWayland primary monitor
-    hl.exec_cmd("qpwgraph")                                                                            -- audio
-    hl.exec_cmd("easyeffects")                                                                         -- easyeffects
-    hl.exec_cmd("python ~/.local/share/RazerBatteryTray/src/razer_battery_tray.py 'Razer Basilisk V3 Pro 35K Phantom Green Edition (Wireless)'")  -- razer battery tray
-    hl.exec_cmd("nm-applet --indicator")                                                               -- network manager tray
+    tray_exec("qpwgraph")                                                                            -- audio
+    tray_exec("easyeffects")                                                                         -- easyeffects
+    tray_exec("python ~/.local/share/RazerBatteryTray/src/razer_battery_tray.py 'Razer Basilisk V3 Pro 35K Phantom Green Edition (Wireless)'")  -- razer battery tray
+    tray_exec("nm-applet --indicator")                                                               -- network manager tray
     hl.exec_cmd("gdbus wait --session --timeout 60 org.kde.StatusNotifierWatcher && { pgrep -f 'arch-update-tra[y]' >/dev/null || exec cachy-update --tray; }")  -- cachy-update tray (attende il watcher di Quickshell: l'applet Rust non ritenta)
     hl.exec_cmd("awww-daemon")                                                                         -- wallpaper daemon (awww)
     hl.exec_cmd("quickshell >$XDG_RUNTIME_DIR/quickshell.log 2>&1")                                    -- Quickshell
@@ -31,7 +36,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal
     hl.exec_cmd("systemctl --user start plasma-polkit-agent.service")                                  -- agent polkit: in sessione NON-uwsm graphical-session.target resta inattivo e nessuno tira su la unit -> ogni pkexec da GUI (OBS virtual cam, udisks) si appende per sempre senza prompt
-    hl.exec_cmd("xwaylandvideobridge")                                                                 -- Discord screen share
+    tray_exec("xwaylandvideobridge")                                                                 -- Discord screen share
     -- hl.exec_cmd("cava")                                                                             -- cava — audio visualizer
     hl.exec_cmd("~/.local/bin/discord-guard")                                                          -- Discord (wrapper: ripara gli asar rotti dal repatch Vencord)
     hl.exec_cmd("pgrep -f 'spicetify watch' >/dev/null || spicetify watch -l -s")                      -- wallust spicetify
