@@ -67,7 +67,6 @@ hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("qs ipc call launcher toggle"))
 -- hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("pkill -KILL -x " .. menu .. "; rm -f $XDG_RUNTIME_DIR/.hyprlauncher.sock; " .. menu))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("zen-browser"))
 hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd("kitty --class floating -e less -R ~/.config/hypr/hyprland-keys.txt"))
--- hl.bind(mainMod .. " + F1",    hl.dsp.exec_cmd("kitty --class floating -e less -R ~/.config/hypr/hyprland-keys.txt"))
 
 -- +++++++++++++++++++ Window management +++++++++++++++++++
 
@@ -185,7 +184,7 @@ hl.bind(mainMod .. " + O", function() hl.plugin.hyprexpo.expo("toggle") end)
 -- +++++++++++++++++++ Screenshot / Snip +++++++++++++++++++
 local snip = "~/.config/quickshell/scripts/snip.sh "
 hl.bind(                      "Print", hl.dsp.exec_cmd(snip .. "screenshot"))
-hl.bind(              "SHIFT + Print", hl.dsp.exec_cmd(snip .. "annotate"))
+hl.bind(       "CTRL + SHIFT + Print", hl.dsp.exec_cmd(snip .. "annotate"))
 hl.bind(mainMod ..         " + Print", hl.dsp.exec_cmd(snip .. "ocr"))
 hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd(snip .. "search"))
 hl.bind(mainMod ..   " + ALT + Print", hl.dsp.exec_cmd(snip .. "record"))
@@ -208,8 +207,6 @@ hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_
 -- Il vecchio metodo XTEST (discord-key) non serve più; resta come fallback commentato.
 hl.bind("F7", hl.dsp.global("discord:discord-toggle-mute"),   { non_consuming = true })
 hl.bind("F8", hl.dsp.global("discord:discord-toggle-deafen"), { non_consuming = true })
--- hl.bind("F7", hl.dsp.exec_cmd("~/.local/bin/discord-key F7"), { non_consuming = true })
--- hl.bind("F8", hl.dsp.exec_cmd("~/.local/bin/discord-key F8"), { non_consuming = true })
 
 -- Toggle screen_shader (scanline + chromatic) on/off — sincronizza damage_tracking:
 -- shader on → damage_tracking 0 (no track, full-frame, richiesto da uniform `time`)
