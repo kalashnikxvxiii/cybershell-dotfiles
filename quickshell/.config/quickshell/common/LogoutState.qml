@@ -57,32 +57,11 @@ QtObject {
         root.pendingAction = -1
     }
 
-    function _shellEscape(arg) {
-        return "'" + String(arg).replace(/'/g, "'\\''") + "'"
-    }
-
-    function _soundForAction(id) {
-        if (id === "lock")                          return "window-minimize"
-        return null
-    }
-
     function _doInvoke(idx) {
         var act = actions[idx]
         root.visible       = false
         root.pendingAction = -1
-
-        var sound = _soundForAction(act.id)
-        if (!sound) {
-            Quickshell.execDetached(act.command)
-            return
-        }
-
-        var escaped = act.command.map(_shellEscape).join(" ")
-        var wait = (act.id === "lock") ? "" : "sleep 2.5 && "
-        Quickshell.execDetached(["sh", "-c",
-        "canberra-gtk-play -i " + sound +
-        " --property=canberra.xdg-theme.name=cyberpunk-2077 & " +
-        wait + "exec " + escaped])
+        Quickshell.execDetached(act.command)
     }
 
     readonly property var actions: [
