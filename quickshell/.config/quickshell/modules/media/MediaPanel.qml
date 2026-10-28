@@ -31,11 +31,23 @@ Scope {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
+        // Frosted glass like LogoutOverlay (blur from the qs-mediapanel layer rule)
         Rectangle {
             anchors.fill: parent
-            color: "#cc000000"
+            color: Qt.rgba(0, 6/255, 14/255, 0.35)
             opacity: root.shown ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: 150 } }
+
+            Image {
+                anchors.fill: parent
+                source: "file:///home/kalashnikxv/.config/wlogout/grain.png"
+                fillMode: Image.Tile
+                opacity: 0.07
+            }
+
+            ScanlineOverlay {
+                opacity: 0
+            }
 
             MouseArea {
                 anchors.fill: parent
