@@ -35,6 +35,4 @@ hl.on("hyprland.start", function()
     -- hl.exec_cmd("cava")                                                                             -- cava — audio visualizer
     hl.exec_cmd("~/.local/bin/discord-guard")                                                          -- Discord (wrapper: ripara gli asar rotti dal repatch Vencord)
     hl.exec_cmd("pgrep -f 'spicetify watch' >/dev/null || spicetify watch -l -s")                      -- wallust spicetify
-    hl.exec_cmd("canberra-gtk-play -i desktop-login --property=canberra.xdg-theme.name=cyberpunk-2077")
-    hl.exec_cmd("python3 ~/.local/bin/hypr-sound-daemon.py")                                           -- feedback sonoro azioni finestre
 end)

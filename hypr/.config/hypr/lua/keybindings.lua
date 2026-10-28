@@ -32,10 +32,6 @@ local function safe_swap(direction)
         local w = hl.get_active_window()
         if not w or w.floating then return end
         hl.dispatch(hl.dsp.window.swap({ direction = direction }))
-        hl.dispatch(hl.dsp.exec_cmd(
-            "canberra-gtk-play -i completion-rotation -V 0.4 " ..
-            "--property=canberra.xdg-theme.name=cyberpunk-2077"
-        ))
     end
 end
 
@@ -251,10 +247,7 @@ hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
 
 -- +++++++++++++++++++ System +++++++++++++++++++
-hl.bind(mainMod .. " + L",                hl.dsp.exec_cmd(
-    "canberra-gtk-play -i window-minimize -V 0.4 " ..
-    "--property=canberra.xdg-theme.name=cyberpunk-2077 & hyprlock"
-))
+hl.bind(mainMod .. " + L",                hl.dsp.exec_cmd("hyprlock"))
 -- Toggle bar only on screen where the mouse is
 hl.bind(mainMod .. " + CTRL + B", hl.dsp.exec_cmd("bash ~/.config/quickshell/scripts/bar-toggle.sh"))
 -- Toggle bar on all the screens
