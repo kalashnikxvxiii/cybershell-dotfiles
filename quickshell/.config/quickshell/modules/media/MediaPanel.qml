@@ -5,6 +5,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "../../common/Colors.js" as CP
 import "../../common"
 import "../../common/effects"
 import "../dashboard"
@@ -72,6 +73,30 @@ Scope {
                     anchors.fill: parent
                     z: -1
                 }   // swallow clicks inside the card
+            }
+        }
+
+        // Back to the menu; outside the card because DashMediaTab is shared with the dashboard
+        Text {
+            anchors.right: fx.left
+            anchors.top: fx.top
+            anchors.rightMargin: 8
+            visible: root.shown
+            text: ""
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 18
+            color: backArea.containsMouse ? CP.neon : CP.cyan
+
+            MouseArea {
+                id: backArea
+                anchors.fill: parent
+                anchors.margins: -6
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    LauncherState.closeMedia();
+                    LauncherState.openMenu();
+                }
             }
         }
     }
