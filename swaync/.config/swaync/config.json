@@ -31,11 +31,6 @@
   "hide-on-action": true,
   "text-empty": "[ NO INCOMING DATA ]",
   "script-fail-notify": true,
-  "scripts": {
-    "cyberpunk-notify-sound": {
-      "exec": "canberra-gtk-play -i message-new-instant --property=canberra.xdg-theme.name=cyberpunk-2077"
-    }
-  },
   "notification-visibility": {},
   "widgets": [
     "title",
