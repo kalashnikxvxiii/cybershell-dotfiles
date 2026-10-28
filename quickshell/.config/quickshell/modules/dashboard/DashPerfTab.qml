@@ -113,6 +113,11 @@ Item {
             sorted.sort(function(a, b) { return parseFloat(b.gpu) - parseFloat(a.gpu) })
             return sorted
         }
+        if (root.sortMode === 4) {
+            let sorted = list.slice()
+            sorted.sort(function(a, b) { return parseFloat(b.net) - parseFloat(a.net) })
+            return sorted
+        }
         return list
     }
 
@@ -573,6 +578,26 @@ Item {
                                 onClicked: { root.sortMode = 3; perf.refreshProcesses() }
                             }
                         }
+
+                        Item {
+                            Layout.preferredWidth: 70
+                            implicitHeight: netHeaderLabel.implicitHeight
+                            Text {
+                                id: netHeaderLabel
+                                anchors.right: parent.right
+                                text: (root.sortMode === 4 ? "▼ " : "") + "NET"
+                                font.family: "Oxanium"
+                                font.pixelSize: 8
+                                font.letterSpacing: 1.5
+                                color: root.sortMode === 4 ? Colours.accentSecondary : Colours.textMuted
+                                horizontalAlignment: Text.AlignRight
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.sortMode = 4
+                            }
+                        }
                         
                         Item { Layout.fillWidth: true }
                     }
@@ -679,6 +704,18 @@ Item {
                                                 : Colours.textSecondary
                                             horizontalAlignment: Text.AlignRight
                                             Layout.preferredWidth: 45
+                                        }
+
+                                        Text {
+                                            readonly property real rate: parseFloat(modelData.net)
+                                            text: rate > 0 ? root.formatBytes(rate) : "0"
+                                            font.family: "Chakra Petch"
+                                            font.pixelSize: 11
+                                            color: rate > 1048576 ? Colours.accentWarn
+                                                : rate > 0 ? Colours.accentSecondary
+                                                : Colours.textSecondary
+                                            horizontalAlignment: Text.AlignRight
+                                            Layout.preferredWidth: 70
                                         }
 
                                         Item {

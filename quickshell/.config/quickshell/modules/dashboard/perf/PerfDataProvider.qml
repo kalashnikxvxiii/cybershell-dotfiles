@@ -272,7 +272,7 @@ Item {
     property string sysLoad:        ""
 
     // Processes
-    property int    sortMode:       0       // 0=CPU, 1=MEM, 2=NAME
+    property int    sortMode:       0       // 0=CPU, 1=MEM, 2=NAME, 3=GPU, 4=NET
     property var    processList:    []
     property var    processTree:    []
 
@@ -534,11 +534,22 @@ Item {
         command: ["bash", "-c",
                 "n=$(nproc);" +
                 "gmap=$(nvidia-smi pmon -c 1 -s u 2>/dev/null | awk 'NR>2 && $2+0>0{gsub(/-/,\"0\",$4); printf \"%s=%s \", $2, $4}');" +
-                "LC_ALL=C top -bn2 -d0.5 -w512 -o %" + (root.sortMode === 1 ? "MEM" : "CPU") +
-                " | awk -v np=$n -v gm=\"$gmap\" 'BEGIN{s=0; n=split(gm,pairs,\" \"); for(i=1;i<=n;i++){split(pairs[i],kv,\"=\"); " +
-                "gpu[kv[1]]=kv[2]}} /^top -/{s++} s==2 && $1+0>0{cmd=$12; gsub(/.*\\//,\"\",cmd);" +
-                " if(cmd~/^[a-zA-Z]/ && ($9+0>0.1||$10+0>0.1)){g=($1 in gpu)?gpu[$1]:\"0\";" +
-                " printf \"%s|%.1f|%.1f|%s;\",cmd,$9/np,$10+0,g}}'"]
+                // Per-process TCP throughput: diff of ss byte counters taken around the top sample
+                "s0=$(ss -tinpH state established 2>/dev/null); t0=$(date +%s%N);" +
+                "tp=$(LC_ALL=C top -bn2 -d0.5 -w512 -o %" + (root.sortMode === 1 ? "MEM" : "CPU") + ");" +
+                "s1=$(ss -tinpH state established 2>/dev/null); t1=$(date +%s%N);" +
+                "nmap=$(printf '%s\\n#\\n%s\\n' \"$s0\" \"$s1\" | awk -v dt=$(( (t1-t0)/1000000 )) '$1==\"#\"{s=1; next}" +
+                " /^[0-9]/{k=\"\"; if(index($3,\"127.\")==1||index($3,\"[::1]\")==1||index($3,\"[::ffff:127.\")==1) next;" +
+                " if(match($0,/pid=[0-9]+/)){k=$3\" \"$4; p[k]=substr($0,RSTART+4,RLENGTH-4)} next}" +
+                " k!=\"\"{v=0; if(match($0,/bytes_sent:[0-9]+/)) v+=substr($0,RSTART+11,RLENGTH-11);" +
+                " if(match($0,/bytes_received:[0-9]+/)) v+=substr($0,RSTART+15,RLENGTH-15);" +
+                " if(!s) a[k]=v; else if((k in a) && v>a[k]) r[p[k]]+=v-a[k]; k=\"\"}" +
+                " END{for(i in r) printf \"%s=%d \", i, r[i]*1000/dt}');" +
+                "printf '%s\\n' \"$tp\" | awk -v np=$n -v gm=\"$gmap\" -v nm=\"$nmap\" 'BEGIN{s=0; n=split(gm,pairs,\" \"); for(i=1;i<=n;i++){split(pairs[i],kv,\"=\"); " +
+                "gpu[kv[1]]=kv[2]} n=split(nm,pairs,\" \"); for(i=1;i<=n;i++){split(pairs[i],kv,\"=\"); net[kv[1]]=kv[2]}}" +
+                " /^top -/{s++} s==2 && $1+0>0{cmd=$12; gsub(/.*\\//,\"\",cmd);" +
+                " if(cmd~/^[a-zA-Z]/ && ($9+0>0.1||$10+0>0.1||($1 in net))){g=($1 in gpu)?gpu[$1]:\"0\"; b=($1 in net)?net[$1]:\"0\";" +
+                " printf \"%s|%.1f|%.1f|%s|%s;\",cmd,$9/np,$10+0,g,b}}'"]
         running: false
         stdout: SplitParser { onRead: data => {
             let raw = data.trim()
@@ -548,7 +559,7 @@ Item {
             let list = []
             for (let i = 0; i < entries.length; i++) {
                 const p = entries[i].split("|")
-                if (p.length >= 3) list.push({name: p[0], cpu: p[1], mem: p[2], gpu: p[3] || "0"})
+                if (p.length >= 3) list.push({name: p[0], cpu: p[1], mem: p[2], gpu: p[3] || "0", net: p[4] || "0"})
             }
             root.processList = list
         }}
