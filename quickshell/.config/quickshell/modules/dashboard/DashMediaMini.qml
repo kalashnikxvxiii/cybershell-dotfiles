@@ -251,7 +251,12 @@ Item {
                         running: audioWave.visible
                         triggeredOnStart: true
                         onTicked: {
-                            const v = Audio.cava.values
+                            // The provider is released at pause and keeps its last frame:
+                            // decay what is on screen back to the resting circle instead
+                            const v = (root.activePlayer?.isPlaying ?? false)
+                                ? Audio.cava.values
+                                : (audioWave.cavaValues.length ? audioWave.cavaValues : Audio.cava.values)
+                                    .map(x => x < 0.01 ? 0 : x * 0.75)
                             let sig = 0
                             for (let i = 0; i < v.length; i++) sig += v[i] * (i + 1)
                             if (sig === audioWave._sig) return
