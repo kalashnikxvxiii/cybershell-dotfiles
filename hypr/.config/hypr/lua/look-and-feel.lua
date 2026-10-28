@@ -43,10 +43,10 @@ hl.config({
 
         blur = {
             enabled  = true,
-            size     = 9,
+            size     = 6,
             passes   = 3,
-            vibrancy = 1,
-            noise    = 0.03,
+            vibrancy = 4,
+            noise    = 0.01,
             xray     = true,
             special  = true,
             popups   = true,
