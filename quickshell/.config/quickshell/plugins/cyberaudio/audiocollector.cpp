@@ -1,7 +1,9 @@
 #include "audiocollector.hpp"
 #include <QDebug>
 #include <algorithm>
+#include <cerrno>
 #include <cstddef>
+#include <cstring>
 #include <mutex>
 
 #include <pipewire/pipewire.h>
@@ -80,6 +82,12 @@ public:
             this
         );
 
+        if (!m_stream) {
+            qWarning() << "cyberaudio: pw_stream_new_simple failed:" << strerror(errno);
+            pw_main_loop_destroy(m_loop);
+            return;
+        }
+
         uint8_t buffer[1024];
         spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
         spa_audio_info_raw rawInfo = {};
@@ -111,6 +119,13 @@ public:
             },
             this
         );
+        if (!timerSource) {
+            // shortcut: no retry, worker just doesn't start; fds exhausted is the usual cause
+            qWarning() << "cyberaudio: pw_loop_add_timer failed:" << strerror(errno);
+            pw_stream_destroy(m_stream);
+            pw_main_loop_destroy(m_loop);
+            return;
+        }
         timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; // 10ms
         pw_loop_update_timer(pw_main_loop_get_loop(m_loop), timerSource, &ts, nullptr, false);
         m_timer = timerSource;
@@ -125,6 +140,13 @@ public:
             },
             this
         );
+        if (!m_wakeSrc) {
+            qWarning() << "cyberaudio: pw_loop_add_event failed:" << strerror(errno);
+            pw_stream_destroy(m_stream);
+            pw_loop_destroy_source(pw_main_loop_get_loop(m_loop), m_timer);
+            pw_main_loop_destroy(m_loop);
+            return;
+        }
         m_collector->setWake([this]() {
             pw_loop_signal_event(pw_main_loop_get_loop(m_loop), m_wakeSrc);
         });
@@ -138,7 +160,10 @@ public:
         // never destroyed under it.
         m_collector->setWake(nullptr);
 
+        // spa asserts if a loop is destroyed with live sources
         pw_stream_destroy(m_stream);
+        pw_loop_destroy_source(pw_main_loop_get_loop(m_loop), m_timer);
+        pw_loop_destroy_source(pw_main_loop_get_loop(m_loop), m_wakeSrc);
         pw_main_loop_destroy(m_loop);
     }
 
