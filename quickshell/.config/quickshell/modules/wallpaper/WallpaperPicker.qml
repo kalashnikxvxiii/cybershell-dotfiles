@@ -1402,6 +1402,7 @@ Scope {
                     searchPreviewCard,
                     deleteDialog,
                     playlistPanel,
+                    wpeSettings,
                 ]
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i]
@@ -2891,6 +2892,36 @@ Scope {
                     root._pendingDownloadUrl = ""
                     root._pendingDownloadTitle = ""
                     root._pendingTrialWpeId = ""
+                }
+            }
+
+            // ── WPE settings (bottom-right corner) ──
+            WpeSettings {
+                id: wpeSettings
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: 24
+                anchors.bottomMargin: 24
+                // Stays right of the search results column and below the carousel
+                maxWidth: parent.width - 24 - (searchResultsPanel.x + searchResultsPanel.width) - 16
+                maxHeight: parent.height - 24 - (carousel.y + carousel.height) - 16
+                live: root.isActiveScreen
+                wpePath: {
+                    if (carousel.searchFocused) return ""
+                    if (carousel.currentIndex < 0 || carousel.currentIndex >= wallpaperModel.count) return ""
+                    var e = wallpaperModel.get(carousel.currentIndex)
+                    return e.source === "wpe" ? e.path : ""
+                }
+                onFocusReturn: mainLayout.forceActiveFocus()
+                onApplyRequested: path => {
+                    var sn = root.screen.name
+                    // Respawn whatever shows this wallpaper so the new arguments take effect
+                    if (root.wpePreviewActive && root._carouselPreviewIdx === carousel.currentIndex)
+                        Quickshell.execDetached(["bash", "-c",
+                            root.scriptsDir + "/wallpaper-picker.sh preview-wpe " + sn + " '" + path + "'"])
+                    else if (root.originalWallpaper === path)
+                        Quickshell.execDetached(["bash", "-c",
+                            root.themerDir + "/wallpaper-themer.sh set " + sn + " '" + path + "'"])
                 }
             }
 

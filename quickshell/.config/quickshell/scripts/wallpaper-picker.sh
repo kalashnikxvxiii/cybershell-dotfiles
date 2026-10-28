@@ -384,6 +384,9 @@ cmd_preview_wpe() {
 
     local wpe_id
     wpe_id=$(basename "$entry")
+    local extra=()
+    local settings="$HOME/.config/quickshell/wpe-settings/$wpe_id.args"
+    [ -f "$settings" ] && mapfile -t extra < "$settings"
 
     # Set preview of the new WPE immediately to avoid flash of old wallpaper
     local preview=""
@@ -415,7 +418,7 @@ cmd_preview_wpe() {
         --volume 100 \
         --noautomute \
         --no-fullscreen-pause \
-        --mpvparam=hwdec=auto > "$HOME/.cache/wallpaper-themer/wpe_preview_${screen}.log" 2>&1 &
+        "${extra[@]}" > "$HOME/.cache/wallpaper-themer/wpe_preview_${screen}.log" 2>&1 &
     local new_pid=$!
 
     # Save as preview pid, NOT as wallpaper-themer state
