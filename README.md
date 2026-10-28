@@ -10,7 +10,7 @@ Cyberpunk 2077-themed Wayland desktop environment on CachyOS (Arch-based).
 - **Theming**: wallust (dynamic palette from wallpaper)
 - **Qt/GTK**: qt6ct (Fusion + wallust palette), Kvantum KvFlat, adw-gtk3-dark
 - **Notifications**: SwayNC
-- **Launcher**: Wofi
+- **Launcher**: QuickShell menu (SUPER+SPACE); Wofi for the clipboard, recorder and minimize pickers
 
 ## Install
 
@@ -39,6 +39,7 @@ This rice builds on ideas and code from:
 
 - **[Caelestia](https://github.com/caelestia-dots/shell)** (GPL-3.0) — `DashClock`, `DashCalendar`, `DashTabs`, `DashMediaTab`, `DashWeatherMini`, `DashWeatherTab`, `DashboardContent` and the `Colours` singleton are adapted from its code; the `BarConfig` layout and the `Players` MPRIS service follow its patterns
 - **[nierlock](https://github.com/xendak/nierlock)** — `GlitchEffect` is inspired by it; `shaders/glitch.frag.qsb` and `shaders/success.frag.qsb` come from it unchanged
+- **[Cyberpunk-quickshell](https://github.com/AndreaNec/Cyberpunk-quickshell)** by AndreaNec — the SUPER+SPACE menu (`LauncherPanel`, `LauncherEntry`, `LauncherMenus`, `GlitchReveal`), the workspace tile outline (`RamShape`) and the RADIOPORT layout (`DashMediaTab`, `MediaPanel`) are ported from it
 - **[ilyamiro](https://github.com/ilyamiro)** — Wallpaper picker concept and implementation reference
 - **[cava](https://github.com/karlstav/cava)** (MIT) — the shaders in `cava/.config/cava/shaders/` are cava's own examples
 
