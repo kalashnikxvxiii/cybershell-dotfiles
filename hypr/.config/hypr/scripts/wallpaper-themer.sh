@@ -9,6 +9,7 @@ DAEMON_PID_FILE="$STATE_DIR/daemon.pid"
 AUDIO_VOLUME_FILE="$STATE_DIR/audio_volume"
 AUDIO_LAST_VOL_FILE="$STATE_DIR/audio_last_volume"
 FULLSCREEN_WHITELIST=("discord" "kitty" "foot" "alacritty")
+WPE_SETTINGS_DIR="$HOME/.config/quickshell/wpe-settings"
 
 mkdir -p "$STATE_DIR"
 
@@ -134,14 +135,16 @@ start_wpe_on_screen() {
         --volume 100
         --noautomute
         --no-fullscreen-pause
-        --mpvparam=hwdec=auto
-        --mpvparam=demuxer-max-bytes=150MiB
-        --mpvparam=demuxer-max-back-bytes=50MiB
     )
     local app
     for app in "${FULLSCREEN_WHITELIST[@]}"; do
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
+
+    # Per-wallpaper flags and --set-property overrides from the picker, one argument per line
+    local extra=()
+    [ -f "$WPE_SETTINGS_DIR/$wpe_id.args" ] && mapfile -t extra < "$WPE_SETTINGS_DIR/$wpe_id.args"
+    wpe_args+=("${extra[@]}")
 
     pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 && \
         { echo "$(date '+%d/%m %T') DOUBLE on $screen from ${FUNCNAME[0]}" \
@@ -172,14 +175,16 @@ start_wpe_direct() {
         --volume 100
         --noautomute
         --no-fullscreen-pause
-        --mpvparam=hwdec=auto
-        --mpvparam=demuxer-max-bytes=150MiB
-        --mpvparam=demuxer-max-back-bytes=50MiB
     )
     local app
     for app in "${FULLSCREEN_WHITELIST[@]}"; do
         wpe_args+=(--fullscreen-pause-ignore-appid "$app")
     done
+
+    # Per-wallpaper flags and --set-property overrides from the picker, one argument per line
+    local extra=()
+    [ -f "$WPE_SETTINGS_DIR/$wpe_id.args" ] && mapfile -t extra < "$WPE_SETTINGS_DIR/$wpe_id.args"
+    wpe_args+=("${extra[@]}")
 
     pgrep -f "linux-wallpaperengine.*--screen-root ${screen}" >/dev/null 2>&1 && \
         { echo "$(date '+%d/%m %T') DOUBLE on $screen from ${FUNCNAME[0]}" \
