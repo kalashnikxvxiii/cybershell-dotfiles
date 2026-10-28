@@ -40,7 +40,7 @@ Singleton {
     // magenta = text/memory, red = recording/danger.
     readonly property var tabs: [
         { action: SnipAction.Action.Screenshot, label: "SCREENSHOT", accent: Colours.accentPrimary },
-        { action: SnipAction.Action.Search,     label: "REVERSE",    accent: Colours.accentSecondary },
+        { action: SnipAction.Action.Search,     label: "SEARCH",    accent: Colours.accentSecondary },
         { action: SnipAction.Action.Ocr,        label: "OCR",        accent: Colours.accentMem },
         { action: SnipAction.Action.Record,     label: "RECORD",     accent: Colours.accentDanger }
     ]
