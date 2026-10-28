@@ -221,12 +221,11 @@ Item {
         Behavior on width { Anim { duration: 240 } }
 
         // Clip at the panel edge: the closed drawer must not show through the translucent panel.
-        // Extra room: 10px left for the hover slide, 20px bottom for the shadow
+        // Extra room: 10px left for the hover slide
         Item {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: -20
             width: parent.width + 10
             clip: true
 
@@ -266,18 +265,8 @@ Item {
                         cutBottomLeft: 20
                         showRight: false
                     }
-
-                    layer.enabled: true
-                    layer.effect: MultiEffect {
-                        shadowEnabled: true
-                        shadowColor: CP.alpha(CP.cyan, 0.05)
-                        shadowBlur: 0.7
-                        shadowOpacity: 0.3
-                        shadowHorizontalOffset: 10
-                        shadowVerticalOffset: 15
-                    }
                 }
-                // Lyrics content (outside layer/MultiEffect so text doesn't get the glow treatment)
+                // Lyrics content
                 DashLyricsView {
                     id: lyricsView
                     anchors.left: parent.left
