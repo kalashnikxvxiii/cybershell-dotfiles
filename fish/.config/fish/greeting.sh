@@ -128,19 +128,25 @@ MEM_PCT=$(( used * 100 / tot ))
 CPU_PCT=$(awk '/cpu /{u=$2+$4; t=u+$5; print int(u*100/t)}' /proc/stat)
 DISK_PCT=$(df --output=pcent / | tail -1 | tr -dc '0-9')
 printf "\n"
-printf "  ${Y}CPU${X}  "; bar "$CPU_PCT"  "$Y"; printf "    "
-printf "${M}MEM${X}  "; bar "$MEM_PCT"  "$M"; printf "    "
+SEP="    "; (( SMALL )) && SEP=$'\n  '
+printf "  ${Y}CPU${X}  "; bar "$CPU_PCT"  "$Y"; printf '%s' "$SEP"
+printf "${M}MEM${X}  "; bar "$MEM_PCT"  "$M"; printf '%s' "$SEP"
 printf "${C}DSK${X}  "; bar "$DISK_PCT" "$C"; printf "\n\n"
 
 # ── 5. Random ASCII art + fastfetch side-by-side ──────────────────────────────
+# Only arts that leave >= 40 cols for the info column (fastfetch truncates, no wrap)
+fits=()
 shopt -s nullglob
-txts=( "$ASCII_DIR"/*.txt )
+for f in "$ASCII_DIR"/*.txt; do
+    (( $(awk '{l=length($0); if(l>m)m=l} END{print m+0}' "$f") <= COLS - 40 )) && fits+=( "$f" )
+done
+(( ${#fits[@]} == 0 )) && fits=( "$ASCII_DIR"/*.txt )
 shopt -u nullglob
-if (( ${#txts[@]} > 0 )) && (( ! SMALL )); then
-    ART="${txts[RANDOM % ${#txts[@]}]}"
+if (( ${#fits[@]} > 0 )); then
+    ART="${fits[RANDOM % ${#fits[@]}]}"
     aw=$(awk '{l=length($0); if(l>m)m=l} END{print m+0}' "$ART")
     pad=$(( COLS/2 - aw - 2 )); (( pad < 0 )) && pad=0
-    fastfetch --logo-type file --logo "$ART" --logo-padding-right "$pad" 2>/dev/null \
+    fastfetch --logo-type file --logo "$ART" --logo-padding-right "$pad" --disable-linewrap true 2>/dev/null \
         || fastfetch
 else
     fastfetch
