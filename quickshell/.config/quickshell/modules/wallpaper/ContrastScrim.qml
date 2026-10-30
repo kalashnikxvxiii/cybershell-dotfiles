@@ -37,6 +37,8 @@ Scope {
     property real lumFloor: 0.28
     property real lumGain:  0.6
     property real maxDim:   0.25
+    // Turned on by hand, so its must always show: this is the dim on a dark wallpaper
+    property real minDim: 0.15
 
     // Mirrors decoration:rounding in hypr/lua/look-and-feel.lua. With
     // rounding_power = 1 Hyprland's superellipse degenerates to a straight
@@ -49,9 +51,30 @@ Scope {
     property var windowRects: []
     readonly property bool needed: windowRects.length > 0
 
+    // What is actually drawn: outlives windowRects by the length of the fade,
+    // because emptying the model destroys the delegates on the spot
+    property var shownRects: []
+
+    onWindowRectsChanged: {
+        if (windowRects.length > 0) {
+            fadeOutHold.stop()
+            shownRects = windowRects
+        } else {
+            fadeOutHold.restart()
+        }
+    }
+
+    Timer {
+        id: fadeOutHold
+        interval: 300
+        onTriggered: root.shownRects = []
+    }
+
     property string wallpaperPath: ""
 
     function _rects() {
+        if (!WallpaperState.scrimEnabled)
+            return []
         const mon = Hyprland.monitorFor(root.screenObj)
         const ws = mon ? mon.activeWorkspace : null
         if (!ws || !ws.toplevels)
@@ -102,11 +125,17 @@ Scope {
             root.windowRects = next
     }
 
+    Connections {
+        target: WallpaperState
+        function onScrimEnabledChanged() { root._sync() }
+    }
+
     // Hyprland emits no event for a resize, so polling is the only way to catch
     // one; slow down to a heartbeat while nothing is being tracked.
     Timer {
         interval: root.needed ? 500 : 1500
-        running: true
+        running: WallpaperState.scrimEnabled
+        triggeredOnStart: true
         repeat: true
         onTriggered: {
             Hyprland.refreshToplevels()
@@ -184,7 +213,7 @@ Scope {
             mask: Region {}  // never take input: this is decoration, not a surface to click
 
             Repeater {
-                model: root.windowRects
+                model: root.shownRects
 
                 delegate: Item {
                     id: dim
@@ -196,8 +225,9 @@ Scope {
                     width: dim.modelData.w
                     height: dim.modelData.h
 
-                    opacity: Math.max(0, Math.min(root.maxDim,
-                                                  (region.luminance - root.lumFloor) * root.lumGain))
+                    opacity: root.needed ? Math.max(root.minDim, Math.min(root.maxDim,
+                                (region.luminance - root.lumFloor) * root.lumGain))
+                            : 0
                     // Slow on purpose: this must not pop when switching workspace.
                     Behavior on opacity { Anim { duration: 300 } }
 

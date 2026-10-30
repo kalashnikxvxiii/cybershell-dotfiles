@@ -59,6 +59,11 @@ ShellRoot {
         function open(): void { LauncherState.openMedia() }
         function close(): void { LauncherState.closeMedia() }
     }
+    // Dim behind Zen (SUPER+ALT+B)
+    IpcHandler {
+        target: "contrast-scrim"
+        function toggle(): void { WallpaperState.scrimEnabled = !WallpaperState.scrimEnabled }
+    }
 
     // Lyrics server: only alive while Spotify is running
     Process {

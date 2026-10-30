@@ -66,6 +66,13 @@ hl.layer_rule({
     animation = "none",
 })
 
+-- Dim behind Zen: recreated whenever it has to be on top, must not slide in
+hl.layer_rule({
+    name      = "contrast-scrim",
+    match     = { namespace = "contrast-scrim" },
+    animation = "fade",
+})
+
 hl.layer_rule({
     name      = "wallpaper-picker",
     match     = { namespace = "wallpaper-picker" },

@@ -9,7 +9,7 @@ import "WallpaperConstants.js" as WC
 QtObject {
     id: root
 
-    // ── Picker visibility ───────────────────────────────────
+    // -- Picker visibility ----------------------------
     property string activeScreen:   ""
     property bool   pickerOpen:     false
 
@@ -26,7 +26,11 @@ QtObject {
         pickerOpen = false
     }
 
-    // ── Filter state ───────────────────────────────────────
+    // -- Contrast Scrim ----------------------------------
+    // Runtime only: off until the user asks for it
+    property bool scrimEnabled: false
+
+    // -- Filter state -------------------------------------
     // macro: "all" | "awww" | "wpe"
     property string macroFilter: "all"
     // sub: "" (none) | "image"| "gif" | "scene" | "video"
