@@ -35,6 +35,9 @@ local function safe_swap(direction)
     end
 end
 
+-- +++++++++++++++Hyprland++++++++++++++++++++++++
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.reload_config()) -- reload config
+
 -- +++++++++++++++++++ Quickshell +++++++++++++++++++
 hl.bind(mainMod .. " + CTRL + Q", hl.dsp.exec_cmd("pkill quickshell && quickshell >$XDG_RUNTIME_DIR/quickshell.log 2>&1"))
 -- Wallpaper
@@ -47,12 +50,8 @@ hl.bind(mainMod .. " + M",                hl.dsp.exec_cmd("~/.config/hypr/script
 hl.bind(mainMod .. " + SHIFT + M",        hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-up"))
 hl.bind(mainMod .. " + CTRL + M",         hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh audio-down"))
 hl.bind(mainMod .. " + SHIFT + P",        hl.dsp.exec_cmd("~/.config/quickshell/scripts/wallpaper-picker.sh toggle"))
--- Manga Reader
-hl.bind(mainMod .. " + ALT + M", hl.dsp.exec_cmd("~/.config/quickshell/scripts/manga-toggle.sh"))
-
--- Sonar panel (network / bluetooth)
-hl.bind(mainMod .. " + ALT + N", hl.dsp.exec_cmd("~/.config/quickshell/scripts/sonar-toggle.sh net"))
-hl.bind(mainMod .. " + ALT + B", hl.dsp.exec_cmd("~/.config/quickshell/scripts/sonar-toggle.sh bt"))
+-- Dim behind Zen (ContrastScrim)
+hl.bind(mainMod .. " + ALT + B", hl.dsp.exec_cmd("qs ipc call contrast-scrim toggle"))
 
 -- +++++++++++++++++++ Applications +++++++++++++++++++
 hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd("kitten quick-access-terminal"))
@@ -121,9 +120,9 @@ hl.bind(mainMod .. " + ALT + down",  hl.dsp.window.move({ x =   0, y =  20, rela
 hl.bind(mainMod .. " + SHIFT + comma",  move_to_other_monitor)
 hl.bind(mainMod .. " + SHIFT + period", move_to_other_monitor)
 
--- Minimize
-hl.bind(mainMod ..         " + H", hl.dsp.exec_cmd("~/.config/hypr/scripts/minimize.sh minimize"))
-hl.bind(mainMod .. " + SHIFT + H", hl.dsp.exec_cmd("~/.config/hypr/scripts/minimize.sh restore"))
+-- Windows Groups
+hl.bind(mainMod .. " + G", hl.dsp.group.toggle())       -- create or dissolve a group
+hl.bind(mainMod .. " + CTRL + TAB", hl.dsp.group.next()) -- switch to the next window
 
 -- +++++++++++++++++++ Utilities +++++++++++++++++++
 -- Clipboard
@@ -253,9 +252,5 @@ hl.bind(mainMod .. " + CTRL + SHIFT + B", hl.dsp.exec_cmd("bash ~/.config/quicks
 hl.bind(mainMod .. " + SHIFT + E",        hl.dsp.exec_cmd("~/.config/quickshell/scripts/logout-toggle.sh"))
 -- Fallback wlogout
 hl.bind(mainMod .. " + CTRL + SHIFT + E",        hl.dsp.exec_cmd("wlogout -b 3 -c 20 -r 20 -m 200"))
--- Quick logout (no menu): hl.dsp.exit() ends the compositor, sddm-helper exits
--- with code 0 and SDDM restarts the greeter. Not `uwsm stop`: this session is
--- not uwsm-managed, and there it fails with "Compositor is not running".
--- (`loginctl terminate-user` would force-kill sddm-helper, leaving SDDM blocked
--- on a black TTY.)
+
 hl.bind(mainMod .. " + CTRL + SHIFT + ESCAPE",   hl.dsp.exit())

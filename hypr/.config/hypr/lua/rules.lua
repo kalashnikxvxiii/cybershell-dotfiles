@@ -80,6 +80,22 @@ hl.layer_rule({
     animation = "fade",
 })
 
+-- Quick action wheel (SUPER+ALT+W / L / Escape)
+hl.layer_rule({
+    name      = "qs-wheel",
+    match     = { namespace = "qs-wheel" },
+    blur      = true,
+    animation = "fade",
+})
+
+-- Keymap (SUPER + /)
+hl.layer_rule({
+    name      = "qs-cheatsheet",
+    match     = { namespace = "qs-cheatsheet" },
+    blur      = true,
+    animation = "fade",
+})
+
 -- Standalone radioport (menu → Media)
 hl.layer_rule({
     name      = "qs-mediapanel",

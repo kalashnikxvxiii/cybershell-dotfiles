@@ -248,6 +248,6 @@ M.subs = {
 -- Finestre già aperte (reload / caricamento a sessione avviata)
 for _, w in ipairs(hl.get_windows()) do pcall(check, w) end
 
-hl.bind("SUPER + ALT + G", function() M.toggle_active() end)
+hl.bind("SUPER + ALT + G", function() M.toggle_active() end, { description = "WINDOWS|Game flag|Toggle this app as a game" })
 
 return M
