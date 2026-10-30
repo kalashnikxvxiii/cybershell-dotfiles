@@ -48,22 +48,15 @@ Singleton {
         run("hl.dispatch(hl.dsp.window.close(\"address:" + a + "\"))")
     }
 
-    // Moves specific windows to a workspace without dragging the view along.
-    //
-    // `follow = false` is what makes it silent -- the classic
-    // movetoworkspacesilent. `silent`/`quiet` are accepted by the Lua table
-    // and then ignored, so the focus follows the window: verified.
-    // The whole batch goes in one dispatch, so a reorder is a single IPC
-    // round trip rather than one per window.
-    function moveWindows(addrs, target) {
-        if (!addrs || addrs.length === 0) return
+    // Renumbers workspaces. The windows stay where they are and the view stays
+    // on the same workspace. The whole batch goes in one dispatch, so a reorder
+    // can never be left halfway.
+    function changeWorkspaceIds(steps) {
+        if (!steps || steps.length === 0) return
         var lua = ""
-        for (var i = 0; i < addrs.length; i++) {
-            var a = String(addrs[i])
-            if (a.indexOf("0x") !== 0) a = "0x" + a
-            lua += "hl.dispatch(hl.dsp.window.move({ workspace = \"" + target
-                 + "\", window = \"address:" + a + "\", follow = false })) "
-        }
+        for (var i = 0; i < steps.length; i++)
+            lua += "hl.dispatch(hl.dsp.workspace.change_id({ workspace = \""
+                + steps[i].from + "\", id = " + steps[i].to + " })) "
         run(lua)
     }
 

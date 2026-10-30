@@ -28,9 +28,7 @@ Item {
         var result = []
         for (var i = 0; i < all.length; i++) {
             var ws = all[i]
-            // Special workspaces carry negative ids. One of them is used as
-            // the parking bay while a reorder is committed, and it must never
-            // surface as a tile.
+            // Special workspaces carry negative ids and must never surface as tiles.
             if (ws.id < 0)
                 continue
             if (root.monitor && ws.monitor && ws.monitor.name !== root.monitor.name)
@@ -206,11 +204,11 @@ Item {
                 if (after[i] !== before[i]) { moved = true; break }
 
         if (moved) {
-            // The tiles are labelled by workspace number, and the numbers do
-            // not move -- the windows do. Painting the promised contents now
-            // is what lets the drop be silent: the tile that ends up in this
-            // slot shows exactly what the dragged one was showing a moment
-            // ago, so nothing on screen needs to move.
+            // The tiles are labelled by workspace number, and the numbers get
+            // reassigned on commit. Painting the promised contents now is what
+            // lets the drop be silent: the tile that ends up in this slot shows
+            // exactly what the dragged one was showing a moment ago, so nothing
+            // on screen needs to move.
             var promise = ({})
             for (var k = 0; k < after.length; k++) {
                 var src = root._wsById(after[k])
@@ -238,34 +236,25 @@ Item {
 
     // Realises the new order for real. `before` is the ids in the order they
     // were displayed, which -- the row being sorted by number -- is also the
-    // list of destinations: the tile at slot k belongs to workspace before[k],
-    // so the windows of after[k] have to end up there.
+    // list of destinations: the tile at slot k takes the number before[k].
     //
-    // The permutation is decomposed into cycles and each cycle is rotated
-    // through a special workspace. Parking everything at once would empty
-    // every workspace involved, and Hyprland destroys empty workspaces, so the
-    // tiles would blink out of the bar and back. This way at most one
-    // workspace is empty at any moment.
+    // An id cannot be taken while in use, so each cycle of the permutation
+    // goes through a temporary id, outside the per-monitor ranges.
     function _commitOrder(before, after) {
-        var park = "special:qsreorder"
+        var tempId = 999
 
-        // Addresses are snapshotted up front: the dispatches below change the
-        // very lists they would otherwise be read from.
-        var addrs = {}
-        for (var i = 0; i < after.length; i++) {
-            var ws = root._wsById(after[i])
-            var list = []
-            if (ws) {
-                var tops = ws.toplevels.values
-                for (var t = 0; t < tops.length; t++)
-                    if (tops[t].address) list.push(tops[t].address)
+        for (var m = 0; m < after.length; m++) {
+            if (!root._wsById(after[m])) {
+                root._optimistic = null
+                root._syncModel()
+                return
             }
-            addrs[after[i]] = list
         }
 
         var destOf = ({})
         for (var k = 0; k < after.length; k++) destOf[after[k]] = before[k]
 
+        var steps = []
         var seen = ({})
         for (var j = 0; j < after.length; j++) {
             var startId = after[j]
@@ -277,26 +266,17 @@ Item {
                 cycle.push(cur)
                 cur = destOf[cur]
             }
-            if (cycle.length < 2) continue
 
             // Head out of the way, the rest shift into the hole it leaves,
             // head back in at the end of the chain.
-            HL.moveWindows(addrs[cycle[0]], park)
+            steps.push({ from: cycle[0], to: tempId })
             for (var c = cycle.length - 1; c >= 1; c--)
-                HL.moveWindows(addrs[cycle[c]], String(destOf[cycle[c]]))
-            HL.moveWindows(addrs[cycle[0]], String(destOf[cycle[0]]))
+                steps.push({ from: cycle[c], to: destOf[cycle[c]] })
+            steps.push({ from: tempId, to: destOf[cycle[0]] })
         }
 
-        // The view follows the windows that were dragged, not the number they
-        // used to live under.
-        for (var a = 0; a < after.length; a++) {
-            if (after[a] === root.activeWsId && before[a] !== after[a]) {
-                HL.focusWorkspace(before[a])
-                break
-            }
-        }
+        HL.changeWorkspaceIds(steps)
     }
-
 
     // Dwell before the preview opens, so brushing past a tile on the way
     // somewhere else does not pop it up. Deleted by accident during the
@@ -400,24 +380,6 @@ Item {
     Component.onCompleted: {
         overrideLoader.running = true
         root._syncModel()
-        root._recoverParked()
-    }
-
-    // A reorder interrupted between its dispatches would leave windows in the
-    // parking workspace, where nothing would ever show them again. Only the
-    // bar on the focused monitor acts, so two screens cannot both claim them.
-    function _recoverParked() {
-        if (!root.monitor || !root.monitor.focused) return
-        var all = Hyprland.workspaces.values
-        for (var i = 0; i < all.length; i++) {
-            if (all[i].name !== "special:qsreorder") continue
-            var tops = all[i].toplevels.values
-            var addrs = []
-            for (var t = 0; t < tops.length; t++)
-                if (tops[t].address) addrs.push(tops[t].address)
-            if (addrs.length > 0) HL.moveWindows(addrs, String(root.activeWsId))
-            return
-        }
     }
 
     function requestIcon(cls) {
