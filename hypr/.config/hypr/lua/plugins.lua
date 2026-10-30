@@ -91,7 +91,7 @@ hl.config({
             -- Trackpad gesture
             gesture_fingers     = 0,
             gesture_distance    = 300,
-            gesture_direction   = "positive",
+            gesture_direction   = "up",
         },
     },
 })
