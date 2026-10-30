@@ -330,3 +330,16 @@ hl.window_rule({
     match       = { class = "^(explorer\\.exe)$", title = "^$" },
     workspace   = "special:winetray silent",
 })
+
+-- -- Minimize ----------------------------
+-- Fired only by foreign-toplevel clients (e.g. a taskbar), not by app buttons.
+-- Minimized windows are parked in a special workspace; unminimize brings them
+-- to the active workspace.
+hl.on("window.minimize", function(w, minimized)
+    local target = minimized and "special:minimized" or hl.get_active_workspace().id
+    hl.dispatch(hl.dsp.window.move({
+        window    = "address:" .. w.address,
+        workspace = target,
+        follow    = false,
+    }))
+end)
