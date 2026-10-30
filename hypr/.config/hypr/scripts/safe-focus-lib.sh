@@ -47,8 +47,8 @@ safe_movefocus() {
         --arg dir "$dir" '
         [.[] | select(.workspace.id == $ws and .mapped == true and .hidden == false
                and .floating == false and .address != $addr)
-         | (.at[0] + .size[0]/2) as $tx
-         | (.at[1] + .size[1]/2) as $ty
+         | ((.at[0] + .size[0]/2) | floor) as $tx
+         | ((.at[1] + .size[1]/2) | floor) as $ty
          | if   $dir == "l" and $tx < $cx then {a: .address, p: ($cx-$tx), s: (($cy-$ty)*($cy-$ty))}
            elif $dir == "r" and $tx > $cx then {a: .address, p: ($tx-$cx), s: (($cy-$ty)*($cy-$ty))}
            elif $dir == "u" and $ty < $cy then {a: .address, p: ($cy-$ty), s: (($cx-$tx)*($cx-$tx))}
