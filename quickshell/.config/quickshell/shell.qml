@@ -15,8 +15,16 @@ import "modules/snip"
 import "modules/toasts"
 import "modules/launcher"
 import "modules/media"
+import "modules/wheel"
+import "modules/cheatsheet"
 
 ShellRoot {
+    // Quick action wheel, shown over the Hyprland menus
+    QuickWheel {}
+
+    // Keymap, SUPER + /
+    Cheatsheet {}
+    
     // The shell's own feedback channel. Scripts reach it with
     //   qs ipc call toaster success "WALLPAPER" "Applicato" "image"
     // Every parameter is required by `qs ipc call`, so callers that do not care
