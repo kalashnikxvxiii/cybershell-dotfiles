@@ -700,7 +700,7 @@ Item {
                         if (dragged) { dragged = false; return }
                         if (!wsBtn.modelData) return
                         if (mouse.button === Qt.LeftButton)
-                            HL.focusWorkspace("name:" + wsBtn.modelData.name)
+                            HL.focusWorkspace(wsBtn.modelData.id)
                         else if (mouse.button === Qt.MiddleButton) {
                             var tops = wsBtn.modelData.toplevels.values
                             // `wayland` is null until the foreign-toplevel handle
@@ -730,7 +730,7 @@ Item {
                         nextIdx = (nextIdx + wsList.length) % wsList.length
                         if (nextIdx === currentIdx) return
 
-                        HL.focusWorkspace("name:" + wsList[nextIdx].name)
+                        HL.focusWorkspace(wsList[nextIdx].id)
                     }
                 }
             }
