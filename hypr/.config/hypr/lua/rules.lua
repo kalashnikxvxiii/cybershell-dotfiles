@@ -245,6 +245,7 @@ hl.window_rule({
     opacity = "override 1.0 override 1.0 override 1.0",
     no_blur = true,
     opaque  = true,
+    no_glow = true,
 })
 
 -- Stremio + client alternativi (Harbor): always opaque, no blur, no dim when no-focused
@@ -257,7 +258,9 @@ hl.window_rule({
     opaque  = true,
     no_blur = true,
     no_dim   = true,
-}) 
+    no_wobble = true,
+    no_glow = true,
+})
 
 -- Minecraft + PrismLauncher: niente blur/trasparenza
 -- "Minecraft\\*.*" matcha tutte le versioni (es. "Minecraft* 26.2", "Minecraft* 1.21.5", …)
@@ -267,14 +270,30 @@ hl.window_rule({
     opacity = "override 1.0 override 1.0 override 1.0",
     no_blur = true,
     opaque  = true,
+    no_glow = true,
+    no_wobble = true,
 })
 
+-- Browser
 hl.window_rule({
     name    = "browser-opaque-blur",
     match   = { class = "^(zen)$" },
     opacity = "override 1.0 override 1.0 override 1.0",
     opaque  = true,
 })
+
+for class, rgb in pairs(HL_BORDER_APPS) do
+    hl.window_rule({
+        name         = "border-" .. class .. "-active",
+        match        = { class = "^(" .. class .. ")$", focus = true },
+        border_color = "rgba(" .. rgb .. "ff)",
+    })
+    hl.window_rule({
+        name         = "border-" .. class .. "-inactive",
+        match        = { class = "^(" .. class .. ")$", focus = false },
+        border_color = "rgba(" .. rgb .. "44)",
+    })
+end
 
 -- Image viewers
 hl.window_rule({
@@ -283,6 +302,7 @@ hl.window_rule({
     opacity = "override 1.0 override 1.0 override 1.0",
     no_blur = true,
     opaque  = true,
+    no_glow = true,
 })
 
 -- Video editor
@@ -319,7 +339,7 @@ hl.window_rule({
     workspace   = "12 silent",
 })
 
--- ── Wine ───────────────────────────────────
+-- -- Wine ----------------------------
 -- Rete di sicurezza per il systray di Wine. Normalmente non serve: xembedsniproxy
 -- (autostart.lua) intercetta le icone XEmbed e le pubblica come StatusNotifierItem,
 -- quindi finiscono in Quickshell. Ma se il proxy non sta girando, explorer.exe apre

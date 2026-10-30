@@ -209,6 +209,8 @@ hl.window_rule({
     no_blur = true,
     opaque  = true,
     no_dim  = true,
+    no_wobble = true,
+    no_glow = true,
 })
 
 -- Giochi che dichiarano content-type "game" anche dopo l'apertura

@@ -1,6 +1,6 @@
 ---@diagnostic disable: undefined-global
 
--- ── Base config (general/decoration/animations toggle) ─────────────────
+-- -- Base config (general/decoration/animations toggle) ----------------
 hl.config({
     general = {
         gaps_in     = 4,
@@ -22,13 +22,13 @@ hl.config({
         rounding       = 34,
         rounding_power = 1,
 
-        -- ── Dim ────────
+        -- -- Dim -------
         dim_inactive     = true,
-        dim_strength     = 0.20,    -- 0.0 no dim, 1.0 full black (range 0-1)
-        dim_special      = 0.5,     -- dim on special workspace (scratchpad)
-        dim_around       = 0.5,     -- dim on the rest of the screen when a floating has focus (dialog/popup)
+        dim_strength     = 0.1,     -- 0.0 no dim, 1.0 full black (range 0-1)
+        dim_special      = 0.1,     -- dim on special workspace (scratchpad)
+        dim_around       = 0.1,     -- dim on the rest of the screen when a floating has focus (dialog/popup)
 
-        -- ── Screen shader: scanline + chromatic aberration ─────────
+        -- -- Screen shader: scanline + chromatic aberration -------------------
         screen_shader = os.getenv("HOME") .. "/.config/hypr/shaders/cyberpunk.frag",
 
         active_opacity   = 0.90,
@@ -45,12 +45,91 @@ hl.config({
             enabled  = true,
             size     = 6,
             passes   = 3,
-            vibrancy = 4,
+            vibrancy = 1.0,
             noise    = 0.01,
             xray     = true,
             special  = true,
             popups   = true,
+            -- proportional = true,
+            -- kawase, frost, ripple, drops, water, fluid_jar,
+            -- prism, heat_shimmer, acrylic, aurora, haze
+            variant = "prism",
+
+            -- Shared by frost, prism, drops, heat_shimmer, aurora
+            glass = {
+                refraction = 20,      -- (0-20) how far the backdrop gets displaced, px
+                size       = 60,      -- (4-512) pattern size, px
+                roughness  = 1.0,     -- (0-1) strength of the relief shading
+            },
+
+            ripple = {                -- waves on click
+                strength = 30,        -- (0-32) wave displacement, px
+                radius   = 400,       -- (1-1000) maximum wave radius, px
+                width    = 32,        -- (1-200) wave thickness, px
+                duration = 0.45,      -- (0.05-5) wave duration, seconds
+            },
+
+            drops = {                 -- animated drops
+                speed = 10.0,          -- (0-10) animation speed, 0 = still
+            },
+
+            water = {                 -- water following the pointer
+                strength = 32,        -- (0-32) displacement and push force, px
+                radius   = 20,        -- (1-1000) pointer radius, px
+                speed    = 0.76,      -- (0-10) how fast waves spread
+                damping  = 0.95,      -- (0-1) how waves decay
+                duration = 12,        -- (0.5-60) maximum animation duration, seconds
+            },
+
+            fluid_jar = {             -- liquid inside the window
+                color       = "rgba(3399ffcc)", -- liquid color
+                speed       = 3.7,    -- (0-10) animation speed
+                fill_amount = 0.5,    -- (0-1) how full the window is
+                mass        = 1.4,    -- (0.1-10) liquid inertia
+                precision   = 2.0,    -- (0.5-8) simulation quality; 4 is expensive
+                turbulence  = 1.2,    -- (0-5) inner agitation
+                distortion  = 8.0,    -- (0-10) backdrop distortion
+            },
+
+            heat_shimmer = {          -- heat shimmer
+                speed = 1.0,          -- (0-10) animation speed, 0 = still
+            },
+
+            acrylic = {               -- lens with curved edge
+                refraction = 24,      -- (0-48) lens displacement, px
+                bulb       = 48,      -- (4-256) curved edge width, px
+                clarity    = 0.82,    -- (0-1) sharp backdrop let through; 0 = fully blurred
+                aberration = 0.025,   -- (0-0.25) chromatic separation
+                tint       = "rgba(eef5ff14)", -- tint; alpha sets its strength
+            },
+
+            aurora = {                -- colored curtains
+                speed     = 1.0,      -- (0-10) animation speed, 0 = still
+                intensity = 0.35,     -- (0-1) strength of the colors
+                color1    = "rgba(f0a0ff29)", -- first curtain; alpha sets its weight
+                color2    = "rgba(4dffff7a)", -- second curtain; alpha sets its weight
+            },
+
+            haze = {                  -- pearly haze
+                intensity   = 0.35,   -- (0-1) strength of the sheen
+                iridescence = 0.7,    -- (0-1) strength of the color shift
+            },
         },
+
+        wobble = {
+            enabled     = true,
+            stiffness   = 300,      -- default 200: stiffer, faster snap back
+            damping     = 18,       -- default 12: fewer oscillations
+            intensity   = 0.15,     -- default 0.2: smaller deformation
+        },
+
+        glow = {
+            enabled         = true,
+            range           = 10,
+            render_power    = 3,
+            color           = "rgba(25e1ed66)", -- netrunner cyan
+            color_inactive  = "rgba(00000000)", -- active window only
+        }
     },
 
     animations = {
@@ -143,6 +222,11 @@ hl.on("window.active", function(w)
         hl.dispatch(hl.dsp.window.set_prop({ window = target, prop = prop, value = val }))
     end
 
+    -- First token is a placeholder: set_prop skips it when the value has several tokens
+    local app_rgb = HL_BORDER_APPS[w.class or ""]
+    local settle = app_rgb and ("rgba(" .. app_rgb .. "ff)")
+        or "_ rgba(ea00d9ee) rgba(0abdc6ee) 45deg"
+
     -- Slide hyprfocus lasts ~250ms (speed 2.5). Wait its end
     -- before starting flicker — rise D if the slide appear cutted.
     local D = 200
@@ -156,7 +240,7 @@ hl.on("window.active", function(w)
     -- Reset 1 @ D+55
     hl.timer(function()
         setp("opacity", "0.92")
-        setp("active_border_color", "rgb(ea00d9ee) rgb(0abdc6ee) 45deg")
+        setp("active_border_color", settle)
     end, { timeout = D + 55, type = "oneshot" })
 
     -- Burst 2 @ D+110: cyan tick
@@ -168,7 +252,7 @@ hl.on("window.active", function(w)
     -- Settle @ D+165
     hl.timer(function()
         setp("opacity", "0.92")
-        setp("active_border_color", "rgb(ea00d9ee) rgb(0abdc6ee) 45deg")
+        setp("active_border_color", settle)
     end, { timeout = D + 165, type = "oneshot" })
 
     -- Burst 3 @ D+285: micro magenta
@@ -180,7 +264,7 @@ hl.on("window.active", function(w)
     -- Cleanup @ D+325
     hl.timer(function()
         setp("opacity", "0.90")
-        setp("active_border_color", "rgb(ea00d9ee) rgb(0abdc6ee) 45deg")
+        setp("active_border_color", settle)
     end, { timeout = D + 325, type = "oneshot" })
 end)
 
@@ -212,6 +296,7 @@ hl.config({
 
     render = {
         direct_scanout = false,  -- enable only for gaming (can cause flickering on multi-monitor)
+        -- use_shader_blur_blend = true,
     },
 
     xwayland = {
@@ -219,10 +304,54 @@ hl.config({
     },
 
     binds = {
+        drag_center_window = false,
         allow_workspace_cycles = true,  -- Super+Tab return to the last workspace
     },
 
     cursor = {
         default_monitor = "DP-1",
+    },
+})
+
+-- Group config ------------------------------
+hl.config({
+    group = {
+        col = {
+            border_active          = "rgba(fcec0cee)", -- corpo yellow
+            border_inactive        = "rgba(1a1a2e88)",
+            border_locked_active   = "rgba(c5003cee)", -- danger red
+            border_locked_inactive = "rgba(c5003c66)",
+        },
+
+        groupbar = {
+            -- Filled, square tabs; the fill replaces the thin indicator line
+            gradients        = true,
+            indicator_height = 0,
+            rounding         = 0,
+            gradient_rounding         = 9, -- half of height: pointed outer ends
+            gradient_rounding_power   = 1, -- 1 = straight diagonal, same as the window cut
+            gradient_round_only_edges = true,            
+            height           = 18,
+            gaps_in          = 2,
+            gaps_out         = 2,
+            blur             = true,
+
+            font_family          = "Oxanium",
+            font_size            = 11,
+            font_weight_active   = "bold",
+            font_weight_inactive = "medium",
+
+            col = {
+                active          = "rgba(fcec0cee)",
+                inactive        = "rgba(00060ecc)",
+                locked_active   = "rgba(c5003cee)",
+                locked_inactive = "rgba(c5003c66)",
+            },
+
+            text_color                 = "rgba(00060eff)",
+            text_color_inactive        = "rgba(00ffd2ff)",
+            text_color_locked_active   = "rgba(ffffffff)",
+            text_color_locked_inactive = "rgba(ffffffaa)",
+        },
     },
 })
