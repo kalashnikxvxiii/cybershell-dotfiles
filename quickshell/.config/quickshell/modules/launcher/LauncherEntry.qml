@@ -66,8 +66,7 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                cutBottomLeft: 6
-                cutBottomRight: 6
+                cutBottomRight: 16
                 strokeWidth: item.current ? 2 : 1
                 inset: strokeWidth / 2
                 strokeColor: item.current ? CP.cyan : CP.alpha(CP.cyan, 0.5)
