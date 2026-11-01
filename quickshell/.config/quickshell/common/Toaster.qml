@@ -46,6 +46,7 @@ Singleton {
         });
         t.finishedClose.connect(() => root._remove(t));
         toasts = [t].concat(toasts);
+        Sounds.play("notify", "notif.mp3");
         return t;
     }
 
