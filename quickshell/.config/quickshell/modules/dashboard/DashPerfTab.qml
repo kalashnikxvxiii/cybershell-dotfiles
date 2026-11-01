@@ -1,908 +1,674 @@
-import Quickshell.Io
+// DashPerfTab.qml -- the CYBERWARE tab, drawn as a ripperdoc's table: gauges on the sides, core
+// array, memory, network, processes. Click a core or GPU slot for its detail, a process to select
+// it (gauges and slots then follow it); K or FORCE KILL arms the kill, Y or a second click fires.
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Effects
-import "../../common/Colors.js" as CP
 import "../../common"
+import "../../common/effects"
 import "perf"
 
 Item {
     id: root
 
-    implicitWidth:  830
+    implicitWidth: 830
     implicitHeight: 600
 
-    // ── Backend ──────────────────────────────────────────────
+    property bool tabActive: true
+    // Read by DashboardContent: dragging in the graph must not swipe the tabs
+    property bool graphInteraction: false
+    property bool graphView: false
+    property string searchFilter: ""
+    property bool searchOpen: false
+    property string selectedPid: ""
+    property bool killArmed: false
+    // "", "cpu" or "gpu"
+    property string detail: ""
+    property real detailProgress: 0
+
+    // The selected one on top, and gone with its process
+    readonly property var selectedProc: perf.processList.find(p => p.pid === root.selectedPid) ?? null
+    readonly property bool procMode: selectedProc !== null
+    readonly property var filteredProcessList: {
+        const q = root.searchFilter.toLowerCase()
+        let list = perf.processList.filter(p => p.name.toLowerCase().indexOf(q) >= 0)
+        const num = key => (a, b) => parseFloat(b[key]) - parseFloat(a[key])
+        if (perf.sortMode === 1) list.sort(num("mem"))
+        else if (perf.sortMode === 2) list.sort((a, b) => a.name.localeCompare(b.name))
+        else if (perf.sortMode === 3) list.sort(num("gpu"))
+        else if (perf.sortMode === 4) list.sort(num("net"))
+        return list
+    }
+    readonly property var rows: root.selectedProc
+        ? [root.selectedProc].concat(root.filteredProcessList.filter(p => p.pid !== root.selectedPid))
+        : root.filteredProcessList
+
+    readonly property real shownCpu: procMode ? parseFloat(selectedProc.cpu) : perf.cpuPerc
+    readonly property real shownMem: procMode ? parseFloat(selectedProc.mem) : perf.memPerc
+    readonly property real shownGpu: procMode ? parseFloat(selectedProc.gpu) : perf.gpuPerc
+
+    onSelectedProcChanged: if (!selectedProc) killArmed = false
+    onTabActiveChanged: if (!tabActive) killArmed = false
+
     PerfDataProvider {
         id: perf
         active: root.tabActive
-        sparklineCanvas: metricsPanel.sparkline
         graphView: root.graphView
     }
 
-    // ── Aliases for direct UI access ──────────────────
-    // (saves typing "perf." everywhere for the most-used properties)
-    readonly property alias cpuPerc:        perf.cpuPerc
-    readonly property alias cpuTemp:        perf.cpuTemp
-    readonly property alias cpuHistory:     perf.cpuHistory
-    readonly property alias gpuName:        perf.gpuName
-    readonly property alias gpuPerc:        perf.gpuPerc
-    readonly property alias gpuTemp:        perf.gpuTemp
-    readonly property alias gpuVramUsedGb:  perf.gpuVramUsedGb
-    readonly property alias gpuVramTotalGb: perf.gpuVramTotalGb
-    readonly property alias gpuClockCur:    perf.gpuClockCur
-    readonly property alias gpuClockMax:    perf.gpuClockMax
-    readonly property alias gpuMemClockCur: perf.gpuMemClockCur
-    readonly property alias gpuMemClockMax: perf.gpuMemClockMax
-    readonly property alias gpuPowerDraw:   perf.gpuPowerDraw
-    readonly property alias gpuPowerLimit:   perf.gpuPowerLimit
-    readonly property alias gpuFanSpeed:    perf.gpuFanSpeed
-    readonly property alias gpuPState:      perf.gpuPState
-    readonly property alias gpuPcieGen:     perf.gpuPcieGen
-    readonly property alias gpuPcieWidth:   perf.gpuPcieWidth
-    readonly property alias gpuEncoderUtil: perf.gpuEncoderUtil
-    readonly property alias gpuDecoderUtil: perf.gpuDecoderUtil
-    readonly property alias gpuMemBwUtil:   perf.gpuMemBwUtil
-    readonly property alias memPerc:        perf.memPerc
-    readonly property alias memUsedGb:      perf.memUsedGb
-    readonly property alias memTotalGb:     perf.memTotalGb
-    readonly property alias swapUsedGb:     perf.swapUsedGb
-    readonly property alias swapTotalGb:    perf.swapTotalGb
-    readonly property alias diskPerc:       perf.diskPerc
-    readonly property alias diskUsedGb:     perf.diskUsedGb
-    readonly property alias diskTotalGb:    perf.diskTotalGb
-    readonly property alias netStatus:      perf.netStatus
-    readonly property alias netSsid:        perf.netSsid
-    readonly property alias netSignal:      perf.netSignal
-    readonly property alias netRxBps:       perf.netRxBps
-    readonly property alias netTxBps:       perf.netTxBps
-    readonly property alias netHistory:     perf.netHistory
-    readonly property alias sysHostName:    perf.sysHostName
-    readonly property alias sysUpTime:      perf.sysUpTime
-    readonly property alias sysLoad:        perf.sysLoad
-    readonly property alias cpuColor:       perf.cpuColor
-    readonly property alias gpuColor:       perf.gpuColor
-    readonly property alias memColor:       perf.memColor
-    readonly property alias tempColor:      perf.tempColor
-    readonly property alias gpuTempColor:   perf.gpuTempColor
-    readonly property real  _pulseValue:    perf.pulseValue
-
-    function formatBytes(b) { return perf.formatBytes(b) }
-
-    // -- UI state -------------------------------------
-    property string searchFilter:           ""
-    property bool   searchOpen:             false
-    property bool   graphView:              false
-    property bool   graphInteraction:       false
-    property int    selectedProcIndex:      -1
-    property bool   _killConfirmVisible:    false
-    property string _killProcName:          ""
-    property bool   _glitching:             false
-    property bool   tabActive:              true
-    
-    // Selected process for metrics
-    readonly property var selectedProc: selectedProcIndex >= 0 && selectedProcIndex < filteredProcessList.length
-                                        ? filteredProcessList[selectedProcIndex] : null
-
-    // Sort mode — delegated to the provider
-    property alias sortMode: perf.sortMode
-
-    // Filtered list
-    readonly property var filteredProcessList: {
-        let list = perf.processList
-        if (root.searchFilter.length > 0) {
-            let filtered = []
-            const q = root.searchFilter.toLowerCase()
-            for (let i = 0; i < list.length; i++) {
-                if (list[i].name.toLowerCase().indexOf(q) >= 0) filtered.push(list[i])
-            }
-            list = filtered
-        }
-        if (root.sortMode === 1) {
-            let sorted = list.slice()
-            sorted.sort(function(a, b) { return parseFloat(b.mem) - parseFloat(a.mem) })
-            return sorted
-        }
-        if (root.sortMode === 2) {
-            let sorted = list.slice()
-            sorted.sort(function(a, b) { return a.name.localeCompare(b.name) })
-            return sorted
-        }
-        if (root.sortMode === 3) {
-            let sorted = list.slice()
-            sorted.sort(function(a, b) { return parseFloat(b.gpu) - parseFloat(a.gpu) })
-            return sorted
-        }
-        if (root.sortMode === 4) {
-            let sorted = list.slice()
-            sorted.sort(function(a, b) { return parseFloat(b.net) - parseFloat(a.net) })
-            return sorted
-        }
-        return list
+    function select(pid) {
+        root.selectedPid = root.selectedPid === pid ? "" : pid
+        root.killArmed = false
+        flick.contentY = 0
+        focusItem.forceActiveFocus()
     }
 
-    // Kill
-    Connections {
-        target: perf
-        function onKillCompleted() {
-            root._killConfirmVisible = false
-            root.selectedProcIndex = -1
+    function kill() {
+        if (!root.killArmed) {
+            root.killArmed = root.selectedProc !== null
+            return
+        }
+        perf.killPid(root.selectedPid)
+        root.selectedPid = ""
+    }
+
+    function setSort(mode) {
+        perf.sortMode = mode
+        perf.refreshProcesses()
+    }
+
+    function openDetail(which) {
+        root.detail = which
+        detailAnim.from = 0
+        detailAnim.to = 1
+        detailAnim.restart()
+    }
+    function closeDetail() {
+        detailAnim.from = 1
+        detailAnim.to = 0
+        detailAnim.restart()
+    }
+    NumberAnimation {
+        id: detailAnim
+        target: root
+        property: "detailProgress"
+        duration: 260
+        easing.type: Easing.OutQuad
+        onFinished: if (root.detailProgress === 0) root.detail = ""
+    }
+
+    Item {
+        id: focusItem
+        focus: true
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_K && root.selectedProc && !root.killArmed)
+                root.kill()
+            else if (event.key === Qt.Key_Y && root.killArmed)
+                root.kill()
+            else if (event.key === Qt.Key_Escape) {
+                if (root.killArmed) root.killArmed = false
+                else root.selectedPid = ""
+            } else
+                return
+            event.accepted = true
         }
     }
 
-    // -- Kill handler --------------------------------------
-    function doKill() { perf.killProcess(root._killProcName) }
-
-    // Periodic header glitch (every 5-8s)
-    Timer {
-        id: glitchTrigger
-        interval: 6000
-        running: root.tabActive
-        repeat: true
-        onTriggered: {
-            headerGlitch.restart()
-            interval = 5000 + Math.floor(Math.random() * 3000)
+    // Header
+    Row {
+        x: 12
+        y: 4
+        spacing: 16
+        Figure { value: root.shownCpu; unit: "CPU"; tone: HudState.power }
+        Figure { value: root.shownMem; unit: "MEM"; tone: HudState.tech }
+    }
+    Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 11
+        width: 300
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+        text: root.procMode ? "▶ " + root.selectedProc.name.toUpperCase() : "SYSTEM DIAGNOSTICS"
+        color: root.procMode ? HudState.danger : HudState.tech
+        font { family: HudState.font; pixelSize: 11; letterSpacing: 2 }
+    }
+    Column {
+        anchors.right: parent.right
+        anchors.rightMargin: 12
+        y: 2
+        spacing: 0
+        Text {
+            anchors.right: parent.right
+            text: Math.round(perf.cpuTemp) + "°C   GPU " + Math.round(perf.gpuTemp) + "°C   "
+                + perf.memUsedGb.toFixed(1) + "/" + perf.memTotalGb.toFixed(1) + "G"
+            color: HudState.power
+            font { family: HudState.font; pixelSize: 12; bold: true }
+        }
+        Text {
+            anchors.right: parent.right
+            text: perf.sysHostName.toUpperCase() + "   UP " + perf.sysUpTime.toUpperCase() + "   LOAD " + perf.sysLoad
+            color: HudState.alpha(HudState.paper, 0.45)
+            font { family: HudState.font; pixelSize: 9; letterSpacing: 1 }
         }
     }
+    Rectangle {
+        x: 12
+        y: 34
+        width: parent.width - 24
+        height: 1
+        color: HudState.alpha(HudState.danger, 0.6)
+    }
 
-    // ============
-    // VISUAL LAYER
-    // ============
+    Ladder {
+        x: 10
+        y: 46
+        height: parent.height - 52
+        value: root.shownCpu / 100
+        tone: HudState.power
+        caption: "CPU"
+    }
+    Ladder {
+        x: parent.width - 10 - width
+        y: 46
+        height: parent.height - 52
+        value: root.shownMem / 100
+        tone: HudState.tech
+        caption: "MEM"
+        flip: true
+    }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 6
-        spacing: 6
+    Item {
+        id: body
+        x: 68
+        y: 42
+        width: parent.width - 136
+        height: parent.height - 46
 
-        // -- Header Bar -----------------------
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 28
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 3
+            // The detail views have no opaque fill of their own
+            visible: root.detailProgress < 1
 
-            CutShape {
-                anchors.fill: parent
-                fillColor: Colours.moduleBg
-                cutTopLeft: 12
-            }
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-                spacing: 10
-
-                // Indicator + title
-                Rectangle {
-                    width: 3; height: 14
-                    color: Colours.accentSecondary
-                    Layout.alignment: Qt.AlignVCenter
-                }
-                Item {
-                    Layout.alignment: Qt.AlignVCenter
-                    implicitWidth: headerLabel.implicitWidth
-                    implicitHeight: headerLabel.implicitHeight
-
-                    // red aberration
-                    Text {
-                        text: headerLabel.text
-                        font: headerLabel.font
-                        color: CP.aberrationRed(root._glitching ? 0.55 : 0)
-                        x: root._glitching ? -2 : 0
+            Section { label: "CORE ARRAY" }
+            Row {
+                spacing: 4
+                Repeater {
+                    model: perf.corePercs
+                    Slot {
+                        required property var modelData
+                        required property int index
+                        width: (body.width - 4 * (perf.corePercs.length - 1)) / perf.corePercs.length
+                        height: 34
+                        label: "C" + index
+                        val: Math.round(modelData) + "%"
+                        frac: modelData / 100
+                        tone: modelData > 80 ? HudState.danger : HudState.power
+                        onClicked: root.openDetail("cpu")
                     }
-
-                    // Cyan aberration
-                    Text {
-                        text: headerLabel.text
-                        font: headerLabel.font
-                        color: CP.aberrationCyan(root._glitching ? 0.55 : 0)
-                        x: root._glitching ? 2 : 0
-                    }
-
-                    // Main text
-                    Text {
-                        id: headerLabel
-                        text: "SYSTEM DIAGNOSTICS"
-                        font.family: "Oxanium"
-                        font.pixelSize: 11
-                        font.letterSpacing: 2
-                        color: Colours.accentSecondary
-                        transform: Translate { id: headerShift }
-                    }
-
-                    GlitchAnim {
-                        id: headerGlitch
-                        labelTarget: headerLabel
-                        shiftTarget: headerShift
-                        baseColor: Colours.accentSecondary
-                        aberrationTarget: root
-                    }
-
-                    HoverHandler {
-                        onHoveredChanged: if (hovered) headerGlitch.restart()
-                    }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                // Hostname
-                Text {
-                    text: root.sysHostName
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 10
-                    font.letterSpacing: 1
-                    color: Colours.textSecondary
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
-                // Separator
-                Rectangle { width: 1; height: 12; color: Colours.neonBorder(0.2); Layout.alignment: Qt.AlignVCenter }
-
-                // Uptime
-                Text {
-                    text: "UP " + root.sysUpTime
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 10
-                    font.letterSpacing: 1
-                    color: Colours.textSecondary
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
-                // Separator
-                Rectangle { width: 1; height: 12; color: Colours.neonBorder(0.2); Layout.alignment: Qt.AlignVCenter }
-
-                // Load average
-                Text {
-                    text: "LOAD " + root.sysLoad
-                    font.family: "Chakra Petch"
-                    font.pixelSize: 10
-                    font.letterSpacing: 1
-                    color: Colours.textSecondary
-                    Layout.alignment: Qt.AlignVCenter
                 }
             }
 
-            CutShape {
-                anchors.fill: parent
-                strokeColor: Colours.neonBorder(0.3)
-                strokeWidth: 1
-                inset: 0.5
-                cutTopRight: 12
+            Section {
+                visible: !root.graphView
+                Layout.topMargin: 4
+                label: "MEMORY // GPU // STORAGE"
             }
-        }
-
-        // -- MAIN BODY: metrics (left) + processes (right) ------------------
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 6
-
-            // ══ LEFT COLUMN — METRICS ══
-            PerfMetrics {
-                id: metricsPanel
-                Layout.preferredWidth: 380
-                Layout.maximumWidth: 380
-                Layout.fillHeight: true
-
-                cpuPerc: root.cpuPerc; cpuTemp: root.cpuTemp; cpuHistory: root.cpuHistory
-                gpuName: root.gpuName
-                gpuPerc: root.gpuPerc; gpuTemp: root.gpuTemp
-                gpuVramUsedGb: root.gpuVramUsedGb; gpuVramTotalGb: root.gpuVramTotalGb
-                gpuClockCur: root.gpuClockCur; gpuClockMax: root.gpuClockMax
-                gpuMemClockCur: root.gpuMemClockCur; gpuMemClockMax: root.gpuMemClockMax
-                gpuPowerDraw: root.gpuPowerDraw; gpuPowerLimit: root.gpuPowerLimit
-                gpuFanSpeed: root.gpuFanSpeed; gpuPState: root.gpuPState
-                gpuPcieGen: root.gpuPcieGen; gpuPcieWidth: root.gpuPcieWidth
-                gpuEncoderUtil: root.gpuEncoderUtil; gpuDecoderUtil: root.gpuDecoderUtil
-                gpuMemBwUtil: root.gpuMemBwUtil
-                memPerc: root.memPerc; memUsedGb: root.memUsedGb; memTotalGb: root.memTotalGb
-                swapUsedGb: root.swapUsedGb; swapTotalGb: root.swapTotalGb
-                diskPerc: root.diskPerc; diskUsedGb: root.diskUsedGb; diskTotalGb: root.diskTotalGb
-                netStatus: root.netStatus; netSsid: root.netSsid; netSignal: root.netSignal
-                netRxBps: root.netRxBps; netTxBps: root.netTxBps
-                netHistory: root.netHistory
-                cpuColor: root.cpuColor; gpuColor: root.gpuColor; memColor: root.memColor
-                tempColor: root.tempColor; gpuTempColor: root.gpuTempColor
-                pulseValue: root._pulseValue; glitching: root._glitching
-                selectedProc: root.selectedProc
-                corePercs: perf.corePercs; coreHistories: perf.coreHistories
+            Row {
+                visible: !root.graphView
+                spacing: 4
+                readonly property real slotWidth: (body.width - 16) / 5
+                Slot {
+                    width: parent.slotWidth
+                    height: 38
+                    label: "USED"
+                    val: perf.memUsedGb.toFixed(1) + "G"
+                    frac: perf.memPerc / 100
+                    tone: HudState.tech
+                }
+                Slot {
+                    width: parent.slotWidth
+                    height: 38
+                    label: "SWAP"
+                    val: perf.swapUsedGb.toFixed(1) + "G"
+                    frac: perf.swapTotalGb > 0 ? perf.swapUsedGb / perf.swapTotalGb : 0
+                    tone: HudState.tech
+                }
+                Slot {
+                    width: parent.slotWidth
+                    height: 38
+                    label: "VRAM"
+                    val: perf.gpuVramUsedGb.toFixed(1) + "G"
+                    frac: perf.gpuVramTotalGb > 0 ? perf.gpuVramUsedGb / perf.gpuVramTotalGb : 0
+                    tone: HudState.mem
+                    onClicked: root.openDetail("gpu")
+                }
+                Slot {
+                    width: parent.slotWidth
+                    height: 38
+                    label: "GPU"
+                    val: Math.round(root.shownGpu) + "%"
+                    frac: root.shownGpu / 100
+                    tone: HudState.ok
+                    onClicked: root.openDetail("gpu")
+                }
+                Slot {
+                    width: parent.slotWidth
+                    height: 38
+                    label: "DISK /"
+                    val: perf.diskUsedGb.toFixed(0) + "G"
+                    frac: perf.diskPerc / 100
+                    tone: perf.diskPerc > 90 ? HudState.danger : HudState.power
+                }
             }
 
-            // ══ RIGHT COLUMN — PROCESSES ══
+            NetworkCard {
+                visible: !root.graphView
+                Layout.topMargin: 3
+                Layout.fillWidth: true
+                Layout.preferredHeight: 136
+                provider: perf
+                netStatus: perf.netStatus
+                netSsid: perf.netSsid
+                netSignal: perf.netSignal
+                netRxBps: perf.netRxBps
+                netTxBps: perf.netTxBps
+                netHistory: perf.netHistory
+            }
+
+            // Title row: search, graph, kill
             Item {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+                Layout.topMargin: 3
+                Layout.preferredHeight: 22
 
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    maskEnabled: true
-                    maskSource: procMask
+                Section {
+                    anchors.verticalCenter: parent.verticalCenter
+                    label: "PROC_LIST"
                 }
+                Row {
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 6
 
-                CutShape {
-                    anchors.fill: parent
-                    fillColor: Colours.moduleBg
-                }
-
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 4
-
-                    // Processes headers
-                    RowLayout {
-                        spacing: 8
-
-                        Rectangle { width: 3; height: 10; color: Colours.accentSecondary }
-                        Text {
-                            text: "TOP PROCESSES"
-                            font.family: "Oxanium"
-                            font.pixelSize: 10
-                            font.letterSpacing: 2
-                            color: Colours.accentSecondary
-                        }
-
-                        // Search field - icon + input animated
-                        Item {
-                            Layout.preferredWidth: root.searchOpen ? 130 : 22
-                            Layout.preferredHeight: 20
-
-                            Behavior on Layout.preferredWidth {
-                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                            }
-
-                            // Search icon (always visible)
-                            Rectangle {
-                                id: searchIcon
-                                width: 22; height: 18
-                                color: searchIconMa.containsMouse
-                                    ? Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.15)
-                                    : "transparent"
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "⌕"
-                                    font.pixelSize: 24
-                                    color: root.searchOpen ? Colours.accentSecondary : Colours.textMuted
-                                }
-
-                                MouseArea {
-                                    id: searchIconMa
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        if (root.searchOpen) {
-                                            searchInput.text = ""
-                                            root.searchOpen = false
-                                        } else {
-                                            root.searchOpen = true
-                                            searchEntryAnim.restart()
-                                            searchInput.forceActiveFocus()
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Input field with chromatic aberration incoming
-                            Item {
-                                id: searchFieldWrapper
-                                anchors.left: searchIcon.right
-                                anchors.right: parent.right
-                                height: 20
-                                visible: root.searchOpen
-                                clip: true
-                                opacity: root.searchOpen ? 1 : 0
-
-                                Behavior on opacity {
-                                    NumberAnimation { duration: 150 }
-                                }
-
-                                // Layer cyan (convergence aberration)
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    x: 6
-                                    text: searchInput.text || "SEARCH..."
-                                    font.family: "Chakra Petch"
-                                    font.pixelSize: 10
-                                    color: CP.aberrationCyan(0.5)
-                                    visible: searchEntryAnim.running
-                                    transform: Translate { id: abCyanShift; x: 0 }
-                                }
-
-                                // Red layer (convergence aberration)
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    x: 6
-                                    text: searchInput.text || "SEARCH..."
-                                    font.family: "Chakra Petch"
-                                    font.pixelSize: 10
-                                    color: CP.aberrationRed(0.5)
-                                    visible: searchEntryAnim.running
-                                    transform: Translate { id: abRedShift; x: 0 }
-                                }
-
-                                // Input background
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.08)
-                                }
-
-                                TextInput {
-                                    id: searchInput
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 6
-                                    anchors.rightMargin: 6
-                                    verticalAlignment: TextInput.AlignVCenter
-                                    font.family: "Chakra Petch"
-                                    font.pixelSize: 10
-                                    color: Colours.accentSecondary
-                                    selectionColor: Colours.accentSecondary
-                                    selectedTextColor: Colours.moduleBg
-                                    clip: true
-                                    onTextChanged: root.searchFilter = text
-
-                                    Text {
-                                        anchors.fill: parent
-                                        verticalAlignment: Text.AlignVCenter
-                                        text: "SEARCH..."
-                                        font: parent.font
-                                        color: Colours.textMuted
-                                        visible: parent.text === ""
-                                    }
-                                }
-
-                                GlitchAnim {
-                                    id: searchEntryAnim
-                                    converge: true
-                                    leftShiftTarget: abCyanShift
-                                    rightShiftTarget: abRedShift
-                                    x1: 14; x2: 10; x3: 4; x4: 2
-                                }
-                            }
-                        }
-
-                        Item { Layout.fillWidth: true }
-
-                        // Toggle graph view
+                    Item {
+                        visible: root.searchOpen
+                        width: 130
+                        height: 20
                         Rectangle {
-                            width: 22; height: 20
-                            color: root.graphView
-                                ? Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.15)
-                                : "transparent"
-                            
-                            Text {
-                                anchors.centerIn: parent
-                                text: root.graphView ? "≡" : "◎"
-                                font.family: "Oxanium"
-                                font.pixelSize: 12
-                                color: root.graphView ? Colours.accentSecondary : Colours.textMuted
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.graphView = !root.graphView
-                            }
-                        }
-                    }
-
-                    // -- GRAPH VIEW ------------------------
-                    ProcessGraph {
-                        visible: root.graphView
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        processList: root.filteredProcessList
-                        onInteractionActive: active => root.graphInteraction = active
-                        processTree: perf.processTree
-                        graphActive: root.graphView && root.tabActive
-                    }
-
-                    // Column headers (clickable sort)
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 0
-                        visible: !root.graphView
-
-                        Item {
-                            Layout.preferredWidth: 140
-                            implicitHeight: procHeaderLabel.implicitHeight
-
-                            Text {
-                                id: procHeaderLabel
-                                text: "PROCESS" + (root.sortMode === 2 ? " ▼" : "")
-                                font.family: "Oxanium"
-                                font.pixelSize: 8
-                                font.letterSpacing: 1.5
-                                color: root.sortMode === 2 ? Colours.accentOk : Colours.textMuted
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.sortMode = 2
-                            }
-                        }
-
-                        Item {
-                            Layout.preferredWidth: 55
-                            implicitHeight: cpuHeaderLabel.implicitHeight
-                            Text {
-                                id: cpuHeaderLabel
-                                anchors.right: parent.right
-                                text: (root.sortMode === 0 ? "▼ " : "") + "CPU%"
-                                font.family: "Oxanium"
-                                font.pixelSize: 8
-                                font.letterSpacing: 1.5
-                                color: root.sortMode === 0 ? Colours.accentSecondary : Colours.textMuted
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: { root.sortMode = 0; perf.refreshProcesses() }
-                            }
-                        }
-                        
-                        Item {
-                            Layout.preferredWidth: 55
-                            implicitHeight: memHeaderLabel.implicitHeight
-                            Text {
-                                id: memHeaderLabel
-                                anchors.right: parent.right
-                                text: (root.sortMode === 1 ? "▼ " : "") + "MEM%"
-                                font.family: "Oxanium"
-                                font.pixelSize: 8
-                                font.letterSpacing: 1.5
-                                color: root.sortMode === 1 ? Colours.accentMem : Colours.textMuted
-                                horizontalAlignment: Text.AlignRight
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: { root.sortMode = 1; perf.refreshProcesses() }
-                            }
-                        }
-                        
-                        Item {
-                            Layout.preferredWidth: 45
-                            implicitHeight: gpuHeaderLabel.implicitHeight
-                            Text {
-                                id: gpuHeaderLabel
-                                anchors.right: parent.right
-                                text: (root.sortMode === 3 ? "▼ " : "") + "GPU%"
-                                font.family: "Oxanium"
-                                font.pixelSize: 8
-                                font.letterSpacing: 1.5
-                                color: root.sortMode === 3 ? Colours.accentPrimary : Colours.textMuted
-                                horizontalAlignment: Text.AlignRight
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: { root.sortMode = 3; perf.refreshProcesses() }
-                            }
-                        }
-
-                        Item {
-                            Layout.preferredWidth: 70
-                            implicitHeight: netHeaderLabel.implicitHeight
-                            Text {
-                                id: netHeaderLabel
-                                anchors.right: parent.right
-                                text: (root.sortMode === 4 ? "▼ " : "") + "NET"
-                                font.family: "Oxanium"
-                                font.pixelSize: 8
-                                font.letterSpacing: 1.5
-                                color: root.sortMode === 4 ? Colours.accentSecondary : Colours.textMuted
-                                horizontalAlignment: Text.AlignRight
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.sortMode = 4
-                            }
-                        }
-                        
-                        Item { Layout.fillWidth: true }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 1
-                        color: Colours.neonBorder(0.15)
-                        visible: !root.graphView
-                    }
-
-                    // Processes lines (scrollable)
-                    Flickable {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        contentWidth: width
-                        contentHeight: procColumn.implicitHeight
-                        clip: true
-                        flickableDirection: Flickable.VerticalFlick
-                        boundsBehavior: Flickable.StopAtBounds
-                        visible: !root.graphView
-
-                        layer.enabled: true
-                        layer.effect: MultiEffect {
-                            maskEnabled: true
-                            maskSource: procListMask
-                        }
-
-                        ColumnLayout {
-                            id: procColumn
-                            width: parent.width
-                            spacing: 2
-
-                            Repeater {
-                                model: root.filteredProcessList
-
-                                delegate: Item {
-                                    required property var modelData
-                                    required property int index
-
-                                    readonly property bool selected: root.selectedProcIndex === index
-
-                                    Layout.fillWidth: true
-                                    implicitHeight: procRowInner.implicitHeight
-
-                                    // Selection background
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        color: selected ? Qt.rgba(Colours.accentDanger.r, Colours.accentDanger.g, Colours.accentDanger.b, 0.1) : "transparent"
-                                    }
-
-                                    // Click to select
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: {
-                                            root.selectedProcIndex = (root.selectedProcIndex === index) ? -1 : index
-                                            procFocusItem.forceActiveFocus()
-                                        }
-                                    }
-
-                                    RowLayout {
-                                        id: procRowInner
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        spacing: 0
-
-                                        Text {
-                                            text: modelData.name
-                                            font.family: "Chakra Petch"
-                                            font.pixelSize: 11
-                                            color: index === 0 ? Colours.accentSecondary : Colours.textPrimary
-                                            elide: Text.ElideRight
-                                            Layout.preferredWidth: 140
-                                        }
-
-                                        Text {
-                                            text: modelData.cpu
-                                            font.family: "Chakra Petch"
-                                            font.pixelSize: 11
-                                            color: parseFloat(modelData.cpu) > 50 ? Colours.accentDanger
-                                                    : parseFloat(modelData.cpu) > 20 ? Colours.accentWarn
-                                                    : Colours.textSecondary
-                                            horizontalAlignment: Text.AlignRight
-                                            Layout.preferredWidth: 55
-                                        }
-
-                                        Text {
-                                            text: modelData.mem
-                                            font.family: "Chakra Petch"
-                                            font.pixelSize: 11
-                                            color: parseFloat(modelData.mem) > 50 ? Colours.accentDanger
-                                                    : parseFloat(modelData.mem) > 20 ? Colours.accentWarn
-                                                    : Colours.textSecondary
-                                            horizontalAlignment: Text.AlignRight
-                                            Layout.preferredWidth: 55
-                                        }
-
-                                        Text {
-                                            text: modelData.gpu
-                                            font.family: "Chakra Petch"
-                                            font.pixelSize: 11
-                                            color: parseFloat(modelData.gpu) > 50 ? Colours.accentDanger
-                                                : parseFloat(modelData.gpu) > 10 ? Colours.accentWarn
-                                                : Colours.textSecondary
-                                            horizontalAlignment: Text.AlignRight
-                                            Layout.preferredWidth: 45
-                                        }
-
-                                        Text {
-                                            readonly property real rate: parseFloat(modelData.net)
-                                            text: rate > 0 ? root.formatBytes(rate) : "0"
-                                            font.family: "Chakra Petch"
-                                            font.pixelSize: 11
-                                            color: rate > 1048576 ? Colours.accentWarn
-                                                : rate > 0 ? Colours.accentSecondary
-                                                : Colours.textSecondary
-                                            horizontalAlignment: Text.AlignRight
-                                            Layout.preferredWidth: 70
-                                        }
-
-                                        Item {
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: 4
-                                            Layout.leftMargin: 10
-
-                                            layer.enabled: true
-                                            layer.effect: MultiEffect {
-                                                maskEnabled: true
-                                                maskSource: procRowMask
-                                            }
-
-                                            Rectangle {
-                                                anchors.fill: parent
-                                                color: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.08)
-                                            }
-                                            Rectangle {
-                                                anchors.left: parent.left
-                                                anchors.top: parent.top
-                                                anchors.bottom: parent.bottom
-                                                width: parent.width * Math.min(1, parseFloat(root.sortMode === 0 ? modelData.cpu : modelData.mem) / 100)
-                                                color: index === 0 ? Colours.accentSecondary
-                                                        : Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.5)
-                                            }
-
-                                            CutShape {
-                                                id: procRowMask
-                                                anchors.fill: parent
-                                                layer.enabled: true
-                                                fillColor: "white"
-                                                visible: false
-                                                cutTopRight: 10
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        CutShape {
-                            id: procListMask
                             anchors.fill: parent
-                            layer.enabled: true
-                            fillColor: "white"
-                            visible: false
+                            color: HudState.alpha(HudState.tech, 0.08)
+                            border.color: HudState.alpha(HudState.tech, 0.4)
+                        }
+                        TextInput {
+                            id: searchInput
+                            anchors.fill: parent
+                            anchors.leftMargin: 6
+                            anchors.rightMargin: 6
+                            verticalAlignment: TextInput.AlignVCenter
+                            clip: true
+                            color: HudState.tech
+                            font { family: HudState.font; pixelSize: 10 }
+                            onTextChanged: root.searchFilter = text
+                            Text {
+                                anchors.fill: parent
+                                verticalAlignment: Text.AlignVCenter
+                                visible: parent.text === ""
+                                text: "SEARCH..."
+                                color: HudState.alpha(HudState.paper, 0.4)
+                                font: parent.font
+                            }
                         }
                     }
-                }
-
-                // Key handler for "K" = kill
-                Item {
-                    id: procFocusItem
-                    focus: true
-                    visible: !root.graphView
-                    Keys.onPressed: event => {
-                        if (event.key === Qt.Key_K && root.selectedProcIndex >= 0 && !root._killConfirmVisible) {
-                            root._killProcName = root.filteredProcessList[root.selectedProcIndex].name
-                            root._killConfirmVisible = true
-                            event.accepted = true
-                        } else if (event.key === Qt.Key_Y && root._killConfirmVisible) {
-                            root.doKill()
-                            event.accepted = true
-                        } else if (event.key === Qt.Key_Escape) {
-                            if (root._killConfirmVisible) {
-                                root._killConfirmVisible = false
+                    ToolButton {
+                        glyph: ""
+                        on: root.searchOpen
+                        onClicked: {
+                            root.searchOpen = !root.searchOpen
+                            if (root.searchOpen) {
+                                searchInput.forceActiveFocus()
                             } else {
-                                root.selectedProcIndex = -1
-                            }
-                            event.accepted = true
-                        }
-                    }
-                }
-
-                // Dialog confirm kill
-                Rectangle {
-                    visible: root._killConfirmVisible && !root.graphView
-                    anchors.centerIn: parent
-                    width: killDialogContent.implicitWidth + 40
-                    height: killDialogContent.implicitHeight + 30
-                    color: Colours.moduleBg
-                    border.width: 1
-                    border.color: Colours.accentDanger
-                    z: 10
-
-                    ColumnLayout {
-                        id: killDialogContent
-                        anchors.centerIn: parent
-                        spacing: 12
-
-                        Text {
-                            text: "TERMINATE PROCESS"
-                            font.family: "Oxanium"
-                            font.pixelSize: 11
-                            font.letterSpacing: 2
-                            color: Colours.accentDanger
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        Text {
-                            text: "Kill \"" + root._killProcName + "\"?"
-                            font.family: "Chakra Petch"
-                            font.pixelSize: 13
-                            color: Colours.textPrimary
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        RowLayout {
-                            Layout.alignment: Qt.AlignHCenter
-                            spacing: 12
-
-                            // Confirm
-                            Rectangle {
-                                width: confirmLabel.implicitWidth + 24
-                                height: 24
-                                color: Qt.rgba(Colours.accentDanger.r, Colours.accentDanger.g, Colours.accentDanger.b, 0.2)
-
-                                Text {
-                                    id: confirmLabel
-                                    anchors.centerIn: parent
-                                    text: "[Y] KILL"
-                                    font.family: "Oxanium"
-                                    font.pixelSize: 10
-                                    font.letterSpacing: 1
-                                    color: Colours.accentDanger
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.doKill()
-                                }
-                            }
-
-                            // Cancel
-                            Rectangle {
-                                width: cancelLabel.implicitWidth + 24
-                                height: 24
-                                color: Qt.rgba(Colours.textMuted.r, Colours.textMuted.g, Colours.textMuted.b, 0.15)
-
-                                Text {
-                                    id: cancelLabel
-                                    anchors.centerIn: parent
-                                    text: "[ESC] CANCEL"
-                                    font.family: "Oxanium"
-                                    font.pixelSize: 10
-                                    font.letterSpacing: 1
-                                    color: Colours.textMuted
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root._killConfirmVisible = false
-                                }
+                                searchInput.text = ""
+                                focusItem.forceActiveFocus()
                             }
                         }
                     }
+                    ToolButton {
+                        glyph: root.graphView ? "" : ""
+                        on: root.graphView
+                        onClicked: root.graphView = !root.graphView
+                    }
+                    CutShape {
+                        visible: !root.graphView
+                        width: 150
+                        height: 20
+                        cutTopRight: 6
+                        cutBottomLeft: 6
+                        fillColor: HudState.alpha(HudState.danger, !root.procMode ? 0.08 : root.killArmed || killHit.containsMouse ? 0.5 : 0.28)
+                        strokeColor: HudState.danger
+                        inset: 0.5
+                        Text {
+                            anchors.centerIn: parent
+                            text: !root.procMode ? "SELECT A PROC"
+                                : root.killArmed ? "[Y] CONFIRM KILL" : "[K] FORCE KILL"
+                            color: HudState.paper
+                            font { family: HudState.font; pixelSize: 10; bold: true; letterSpacing: 1 }
+                        }
+                        MouseArea {
+                            id: killHit
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            enabled: root.procMode
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.kill()
+                        }
+                    }
                 }
+            }
 
-                CutShape {
-                    id: procMask
-                    anchors.fill: parent
-                    layer.enabled: true
-                    fillColor: "white"
-                    visible: false
-                }
+            ProcessGraph {
+                visible: root.graphView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                processList: root.filteredProcessList
+                processTree: perf.processTree
+                graphActive: root.graphView && root.tabActive
+                onInteractionActive: active => root.graphInteraction = active
+            }
 
-                CutShape {
-                    anchors.fill: parent
-                    strokeColor: Colours.neonBorder(0.3)
-                    strokeWidth: 1
-                    inset: 0.5
+            // Column titles: click to sort
+            Item {
+                visible: !root.graphView
+                Layout.fillWidth: true
+                Layout.preferredHeight: 12
+                Sort { x: 10; label: "PROCESS"; mode: 2 }
+                Sort { x: colPid; label: "PID"; mode: -1 }
+                Sort { x: colCpu; label: "CPU"; mode: 0 }
+                Sort { x: colMem; label: "MEM"; mode: 1 }
+                Sort { x: colGpu; label: "GPU"; mode: 3 }
+                Sort { x: colNet; label: "NET"; mode: 4 }
+            }
+
+            Flickable {
+                id: flick
+                visible: !root.graphView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                contentHeight: procColumn.implicitHeight
+                boundsBehavior: Flickable.StopAtBounds
+
+                Column {
+                    id: procColumn
+                    width: flick.width
+                    spacing: 3
+                    // By count, not by array: the list refreshes every 3 s and rows should survive it
+                    Repeater {
+                        model: root.rows.length
+                        ProcRow {}
+                    }
                 }
             }
         }
+
+        // Detail views open over the whole table
+        CpuExpandedOverlay {
+            visible: root.detail === "cpu"
+            anchors.fill: parent
+            z: 20
+            expandProgress: root.detailProgress
+            animTriggered: root.detailProgress === 1
+            expanded: root.detail === "cpu"
+            cpuColor: perf.cpuColor
+            tempColor: perf.tempColor
+            cpuPerc: perf.cpuPerc
+            corePercs: perf.corePercs
+            coreHistories: perf.coreHistories
+            onCloseRequested: root.closeDetail()
+        }
+        GpuExpandedOverlay {
+            visible: root.detail === "gpu"
+            anchors.fill: parent
+            z: 20
+            expandProgress: root.detailProgress
+            animTriggered: root.detailProgress === 1
+            gpuColor: perf.gpuColor
+            gpuTempColor: perf.gpuTempColor
+            gpuName: perf.gpuName
+            gpuPerc: perf.gpuPerc
+            gpuTemp: perf.gpuTemp
+            gpuVramUsedGb: perf.gpuVramUsedGb
+            gpuVramTotalGb: perf.gpuVramTotalGb
+            gpuClockCur: perf.gpuClockCur
+            gpuClockMax: perf.gpuClockMax
+            gpuMemClockCur: perf.gpuMemClockCur
+            gpuMemClockMax: perf.gpuMemClockMax
+            gpuPowerDraw: perf.gpuPowerDraw
+            gpuPowerLimit: perf.gpuPowerLimit
+            gpuFanSpeed: perf.gpuFanSpeed
+            gpuPState: perf.gpuPState
+            gpuPcieGen: perf.gpuPcieGen
+            gpuPcieWidth: perf.gpuPcieWidth
+            gpuEncoderUtil: perf.gpuEncoderUtil
+            gpuDecoderUtil: perf.gpuDecoderUtil
+            gpuMemBwUtil: perf.gpuMemBwUtil
+            onCloseRequested: root.closeDetail()
+        }
     }
 
-    // ── SCANLINE OVERLAY ───────────────────────────────────
-    GlitchEffect {
-        anchors.fill: parent
-        linesEnabled: root.tabActive
-        linesCount: 5
-        linesColor: Colours.scanlineColor
-        linesMinWidth: 200
-        linesMaxWidth: 600
-        linesMinOpacity: 0.04
-        linesMaxOpacity: 0.12
-        linesMaxPause: 6000
-        linesBaseSpeed: 1200
-        linesSpeedVariation: 800
+    readonly property int colPid: 330
+    readonly property int colCpu: 400
+    readonly property int colMem: 460
+    readonly property int colGpu: 520
+    readonly property int colNet: 580
+
+    component Figure: Row {
+        id: figure
+        property real value
+        property string unit
+        property color tone
+        spacing: 5
+        Text {
+            text: Math.round(figure.value)
+            color: figure.tone
+            font { family: HudState.font; pixelSize: 20; bold: true }
+        }
+        Text {
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 3
+            text: figure.unit
+            color: figure.tone
+            font { family: HudState.font; pixelSize: 10; letterSpacing: 1 }
+        }
+    }
+
+    component Section: Text {
+        property string label
+        text: "◢ " + label
+        color: HudState.danger
+        font { family: HudState.font; pixelSize: 10; bold: true; letterSpacing: 1 }
+    }
+
+    // Vertical gauge: a stack of bars that flare out towards the value's flag
+    component Ladder: Item {
+        id: ladder
+        property real value: 0
+        property color tone
+        property string caption
+        property bool flip: false
+        readonly property int bars: Math.max(0, Math.floor((height - 16) / 5))
+        readonly property int level: Math.round(Math.min(1, value) * bars)
+        width: 50
+
+        Column {
+            width: parent.width
+            spacing: 2
+            Repeater {
+                model: ladder.bars
+                Rectangle {
+                    required property int index
+                    readonly property int fromBottom: ladder.bars - index
+                    readonly property int off: Math.abs(fromBottom - ladder.level)
+                    x: ladder.flip ? parent.width - width : 0
+                    width: 15 + Math.max(0, 3 - off) * 7
+                    height: 3
+                    color: fromBottom <= ladder.level ? ladder.tone : HudState.alpha(ladder.tone, 0.14)
+                }
+            }
+        }
+        Rectangle {
+            x: ladder.flip ? 0 : parent.width - width
+            y: (ladder.bars - ladder.level) * 5 - 6
+            width: 26
+            height: 15
+            color: ladder.tone
+            Text {
+                anchors.centerIn: parent
+                text: Math.round(ladder.value * 100)
+                color: "#140a00"
+                font { family: HudState.font; pixelSize: 10; bold: true }
+            }
+        }
+        Text {
+            x: ladder.flip ? parent.width - width : 0
+            anchors.bottom: parent.bottom
+            text: ladder.caption
+            color: ladder.tone
+            font { family: HudState.font; pixelSize: 9; letterSpacing: 1 }
+        }
+    }
+
+    component Slot: CutShape {
+        id: slot
+        property string label
+        property string val
+        property real frac: 0
+        property color tone
+        signal clicked()
+        cutTopRight: 6
+        cutBottomLeft: 6
+        fillColor: HudState.alpha(tone, slotHit.containsMouse ? 0.16 : 0.06)
+        strokeColor: HudState.alpha(tone, 0.65)
+        inset: 0.5
+
+        Text {
+            x: 6
+            y: 3
+            text: slot.label
+            color: HudState.alpha(slot.tone, 0.8)
+            font { family: HudState.font; pixelSize: 8; letterSpacing: 1 }
+        }
+        Text {
+            x: 6
+            y: slot.height - height - 2
+            text: slot.val
+            color: slot.tone
+            font { family: HudState.font; pixelSize: 13; bold: true }
+        }
+        Rectangle {
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 5
+            width: 2
+            height: (parent.height - 12) * Math.min(1, Math.max(0, slot.frac))
+            color: slot.tone
+        }
+        MouseArea {
+            id: slotHit
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: slot.clicked()
+        }
+    }
+
+    component ToolButton: CutShape {
+        id: tool
+        property string glyph
+        property bool on: false
+        signal clicked()
+        width: 24
+        height: 20
+        cutBottomRight: 5
+        fillColor: HudState.alpha(HudState.tech, on || toolHit.containsMouse ? 0.22 : 0.05)
+        strokeColor: HudState.alpha(HudState.tech, 0.6)
+        inset: 0.5
+        Text {
+            anchors.centerIn: parent
+            text: tool.glyph
+            color: HudState.tech
+            font { family: HudState.icons; pixelSize: 11 }
+        }
+        MouseArea {
+            id: toolHit
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: tool.clicked()
+        }
+    }
+
+    component Sort: Text {
+        id: sort
+        property string label
+        property int mode
+        readonly property bool active: perf.sortMode === mode
+        text: label + (active ? " ▼" : "")
+        color: active ? HudState.tech : HudState.alpha(HudState.paper, 0.45)
+        font { family: HudState.font; pixelSize: 8; letterSpacing: 1 }
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -3
+            enabled: sort.mode >= 0
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.setSort(sort.mode)
+        }
+    }
+
+    component ProcRow: CutShape {
+        id: proc
+        required property int index
+        readonly property var data_: root.rows[index] ?? ({ name: "", pid: "", cpu: "0", mem: "0", gpu: "0", net: "0" })
+        readonly property bool current: data_.pid === root.selectedPid
+        width: procColumn.width
+        height: 25
+        cutBottomRight: 6
+        fillColor: current ? HudState.alpha(HudState.danger, 0.2)
+            : procHit.containsMouse ? HudState.alpha(HudState.tech, 0.14) : HudState.alpha(HudState.tech, 0.04)
+        strokeColor: current ? HudState.danger : HudState.alpha(HudState.tech, 0.3)
+        inset: 0.5
+
+        Text {
+            x: 10
+            width: root.colPid - 20
+            anchors.verticalCenter: parent.verticalCenter
+            elide: Text.ElideRight
+            text: proc.data_.name
+            color: proc.current ? HudState.paper : HudState.tech
+            font { family: HudState.font; pixelSize: 12 }
+        }
+        Cell { x: root.colPid; text: proc.data_.pid; color: HudState.alpha(HudState.paper, 0.5) }
+        Cell { x: root.colCpu; text: proc.data_.cpu; color: HudState.power }
+        Cell { x: root.colMem; text: proc.data_.mem; color: HudState.tech }
+        Cell { x: root.colGpu; text: proc.data_.gpu; color: HudState.ok }
+        Cell {
+            readonly property real rate: parseFloat(proc.data_.net)
+            x: root.colNet
+            text: rate > 0 ? perf.formatBytes(rate) : "0"
+            color: rate > 0 ? HudState.tech : HudState.alpha(HudState.paper, 0.5)
+        }
+
+        MouseArea {
+            id: procHit
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.select(proc.data_.pid)
+        }
+    }
+
+    component Cell: Text {
+        anchors.verticalCenter: parent.verticalCenter
+        font { family: HudState.font; pixelSize: 11 }
     }
 }

@@ -549,7 +549,7 @@ Item {
                 "gpu[kv[1]]=kv[2]} n=split(nm,pairs,\" \"); for(i=1;i<=n;i++){split(pairs[i],kv,\"=\"); net[kv[1]]=kv[2]}}" +
                 " /^top -/{s++} s==2 && $1+0>0{cmd=$12; gsub(/.*\\//,\"\",cmd);" +
                 " if(cmd~/^[a-zA-Z]/ && ($9+0>0.1||$10+0>0.1||($1 in net))){g=($1 in gpu)?gpu[$1]:\"0\"; b=($1 in net)?net[$1]:\"0\";" +
-                " printf \"%s|%.1f|%.1f|%s|%s;\",cmd,$9/np,$10+0,g,b}}'"]
+                " printf \"%s|%.1f|%.1f|%s|%s|%s;\",cmd,$9/np,$10+0,g,b,$1}}'"]
         running: false
         stdout: SplitParser { onRead: data => {
             let raw = data.trim()
@@ -559,7 +559,7 @@ Item {
             let list = []
             for (let i = 0; i < entries.length; i++) {
                 const p = entries[i].split("|")
-                if (p.length >= 3) list.push({name: p[0], cpu: p[1], mem: p[2], gpu: p[3] || "0", net: p[4] || "0"})
+                if (p.length >= 3) list.push({name: p[0], cpu: p[1], mem: p[2], gpu: p[3] || "0", net: p[4] || "0", pid: p[5] || ""})
             }
             root.processList = list
         }}
@@ -593,23 +593,9 @@ Item {
     }
 
     // ── Kill process ─────────────────────────────────────────────
-    property string killProcName: ""
-    signal killCompleted()
-
-    Process {
-        id: killProc
-        command: ["pkill", "-f", root.killProcName]
-        running: false
-        onExited: {
-            root.killProcName = ""
-            procProc.running = true
-            root.killCompleted()
-        }
-    }
-
-    function killProcess(name) {
-        root.killProcName = name
-        killProc.running = true
+    function killPid(pid) {
+        Quickshell.execDetached(["kill", "-9", pid])
+        procProc.running = true
     }
 
     function refreshProcesses() {
