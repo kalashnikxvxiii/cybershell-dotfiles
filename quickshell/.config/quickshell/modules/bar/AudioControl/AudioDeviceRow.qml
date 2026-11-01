@@ -15,6 +15,9 @@ Item {
     property var    node:        null
     property string mode:        "selectable"   // "selectable" | "app"
     property color  accent:      Colours.accentSecondary
+    // Outline and level colors, for hosts with a palette of their own
+    property color  frame:       accent
+    property color  meter:       Colours.accentPrimary
     signal selectRequested()
 
     // ── Derived ──────────────────────────────────────────────────
@@ -50,7 +53,7 @@ Item {
         fillColor: muted
                    ? CP.alpha(CP.void2, 0.45)
                    : (rowMa.containsMouse ? CP.alpha(root.accent, 0.08) : "transparent")
-        strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.accent, 0.25)
+        strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.frame, Qt.colorEqual(root.frame, root.accent) ? 0.25 : 0.6)
         strokeWidth: 0.7
         inset: 0.5
         cutBottomRight: 12
@@ -153,7 +156,7 @@ Item {
         font.family: "Oxanium"
         font.pixelSize: 8
         font.bold: true
-        color: muted ? Colours.textMuted : Colours.accentPrimary
+        color: muted ? Colours.textMuted : root.meter
     }
     Text {
         anchors.right: rowVolTxt.right

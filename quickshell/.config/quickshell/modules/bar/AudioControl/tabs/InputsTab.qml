@@ -9,6 +9,12 @@ Item {
     id: root
     implicitHeight: scroll.contentHeight
 
+    // Palette, for hosts with one of their own
+    property color accent: CP.magenta
+    property color frame: accent
+    property color meter: Colours.accentPrimary
+    property color heading: accent
+
     readonly property int otherCount: {
         var n = 0
         var arr = AudioControlState.inputNodes
@@ -56,7 +62,7 @@ Item {
             width: parent.width
             label: "SOURCE CAPTURE"
             trail: "INBOUND SIGNAL · RIGHT → MUTE"
-            accent: CP.magenta
+            accent: root.heading
         }
 
         AC.EndpointCard {
@@ -64,7 +70,9 @@ Item {
             width: parent.width
             node: AudioControlState.focusedSource
             mode: "source"
-            accent: CP.magenta
+            accent: root.accent
+            frame: root.frame
+            meter: root.meter
             showOscilloscope: true
         }
 
@@ -74,7 +82,7 @@ Item {
             width: parent.width
             label: "OTHER SOURCES"
             trail: root.otherCount + " AVAILABLE · RIGHT → MUTE"
-            accent: CP.magenta
+            accent: root.heading
         }
         
         Column {
@@ -90,7 +98,9 @@ Item {
                     visible: modelData !== AudioControlState.focusedSource
                     node: modelData
                     mode: "selectable"
-                    accent: CP.magenta
+                    accent: root.accent
+                    frame: root.frame
+                    meter: root.meter
                     onSelectRequested: AudioControlState._selectedSource = modelData
                 }
             }
@@ -101,7 +111,7 @@ Item {
             width: parent.width
             label: "SIGNAL ANALYSIS"
             trail: "LIVE METRICS · NOMINAL"
-            accent: CP.magenta
+            accent: root.heading
         }
 
         Grid {
@@ -113,33 +123,33 @@ Item {
             // Row 1
             Row {
                 spacing: 4
-                Text { text: "NOISE FLOOR"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: CP.magenta }
+                Text { text: "NOISE FLOOR"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
                 Text { text: "-72.4dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "PEAK"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: CP.magenta }
+                Text { text: "PEAK"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
                 Text { text: "-12.8dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "SNR"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: CP.magenta }
+                Text { text: "SNR"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
                 Text { text: "59.6dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
             }
             // Row 2
             Row {
                 spacing: 4
-                Text { text: "CLIP COUNT"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: CP.magenta }
+                Text { text: "CLIP COUNT"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
                 Text { text: "0"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "RMS"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: CP.magenta }
+                Text { text: "RMS"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
                 Text { text: "-28.4dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "CH"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: CP.magenta }
+                Text { text: "CH"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
                 Text { text: "1.0 MONO"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
             }
         }

@@ -14,6 +14,9 @@ QtObject {
     property bool   popupOpen: false
     property string activeTab: "outputs"  // "outputs" | "inputs" | "apps" | "eq"
 
+    // Asks the bar of that screen to open or close its volume popup
+    signal requestToggle(string screenName)
+
     onExpandedChanged:  _saveUiStateDebounced.restart()
     onActiveTabChanged: _saveUiStateDebounced.restart()
 
@@ -111,6 +114,11 @@ QtObject {
     property bool eqAvailable: false   // flipped by _eqCheckProc if easyeffects exists
     property int    eqSelectedBand: -1   // -1 = none, 0..9 = index of band displayed in CURRENT BAND detail
     property int _eqLoadFailCount: 0
+    property bool eqPerStation: false
+    property bool eqLoudness: false
+    property bool eqSoften: false
+    property bool eqLimiter: false
+    property int  eqBoost: 0
 
     readonly property string _eqScript: Qt.resolvedUrl("../scripts/audio-eq.sh").toString().replace("file://", "")
 
@@ -124,6 +132,15 @@ QtObject {
         Quickshell.execDetached([_eqScript, "set_band", String(idx), String(Math.round(val))])
         _eqReloadTimer.restart()
     }
+
+    function setEqOption(key, val) {
+        Quickshell.execDetached([_eqScript, "set_opt", key, String(val)])
+        _eqReloadTimer.restart()
+    }
+
+    // With per-station EQ, the tuned player decides which bands are loaded
+    readonly property string _eqStation: Players.active?.identity ?? ""
+    on_EqStationChanged: if (_eqStation !== "") Quickshell.execDetached([_eqScript, "station", _eqStation])
 
     function applyEqCustom() {
         Quickshell.execDetached([_eqScript, "apply"])
@@ -148,6 +165,11 @@ QtObject {
                 root.eqBands  = arr
                 root.eqPreset = d.preset || "Flat"
                 root.eqPending = d.pending === true
+                root.eqPerStation = d.per_station === 1
+                root.eqLoudness = d.loudness === 1
+                root.eqSoften = d.soften === 1
+                root.eqLimiter = d.limiter === 1
+                root.eqBoost = Number(d.boost) || 0
             } catch(e) {
                 console.log("[audio] EQ state parse error:", e)
             }

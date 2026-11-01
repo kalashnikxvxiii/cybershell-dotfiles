@@ -18,6 +18,9 @@ Item {
     // -- Public API -------------------------------------------------
     property var    node:               null
     property color  accent:             Colours.accentSecondary
+    // Outline and level colors, for hosts with a palette of their own
+    property color  frame:              accent
+    property color  meter:              Colours.accentPrimary
     property string mode:               "sink"            // "sink" | "source"
     property bool   showOscilloscope:   false
 
@@ -89,8 +92,8 @@ Item {
     // -- Background card ----------------------------------------------
     CutShape {
         anchors.fill: parent
-        fillColor: muted ? CP.alpha(CP.void2, 0.45) : CP.alpha(root.accent, 0.10)
-        strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : root.accent
+        fillColor: muted ? CP.alpha(CP.void2, 0.45) : CP.alpha(root.frame, 0.10)
+        strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : root.frame
         strokeWidth: 1.5
         inset: 0.5
         cutTopRight: 24
@@ -245,7 +248,7 @@ Item {
             font.pixelSize: 9
             font.letterSpacing: 1
             font.bold: true
-            color: muted ? Colours.textMuted : Colours.accentPrimary
+            color: muted ? Colours.textMuted : root.meter
         }
     }
     Item {
@@ -259,7 +262,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             color: CP.alpha(CP.void2, 0.7)
-            border.color: CP.alpha(Colours.accentPrimary, 0.3)
+            border.color: CP.alpha(root.meter, 0.3)
             border.width: 0.5
         }
         Rectangle {
@@ -268,7 +271,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.margins: 1
             width: Math.max(0, (parent.width - 2) * root.vuL)
-            color: muted ? Colours.textMuted : Colours.accentPrimary
+            color: muted ? Colours.textMuted : root.meter
         }
         // Peak hold red rect
         Rectangle {
@@ -297,7 +300,7 @@ Item {
             font.pixelSize: 9
             font.letterSpacing: 1
             font.bold: true
-            color: muted ? Colours.textMuted : Colours.accentPrimary
+            color: muted ? Colours.textMuted : root.meter
         }
     }
     Item {
@@ -311,7 +314,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             color: CP.alpha(CP.void2, 0.7)
-            border.color: CP.alpha(Colours.accentPrimary, 0.3)
+            border.color: CP.alpha(root.meter, 0.3)
             border.width: 0.5
         }
         Rectangle {
@@ -320,7 +323,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.margins: 1
             width: Math.max(0, (parent.width - 2) * root.vuR)
-            color: muted ? Colours.textMuted : Colours.accentPrimary
+            color: muted ? Colours.textMuted : root.meter
         }
         Rectangle {
             visible: !muted && root._peakR > 0.01
@@ -340,7 +343,7 @@ Item {
         font.family: "Oxanium"
         font.pixelSize: 13
         font.bold: true
-        color: muted ? Colours.textMuted : Colours.accentPrimary
+        color: muted ? Colours.textMuted : root.meter
     }
 
     // ── RMB -> mute the active device ───────────────

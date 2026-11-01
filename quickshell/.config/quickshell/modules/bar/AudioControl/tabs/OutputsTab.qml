@@ -10,6 +10,14 @@ Item {
     id: root
     implicitHeight: scroll.contentHeight
 
+    // Palette, for hosts with one of their own
+    property color accent: Colours.accentSecondary
+    property color frame: accent
+    property color meter: Colours.accentPrimary
+    property color heading: accent
+    property color sourceBox: Colours.accentPrimary
+    property color eqBox: CP.neon
+
     // Moves the pipeline particles of both links: a Ticker instead of one
     // NumberAnimation per particle, which kept the popup rendering at the
     // monitor's refresh rate
@@ -62,7 +70,7 @@ Item {
             width: parent.width
             label: "SINK ROUTING"
             trail: "1 ACTIVE / " + root.otherCount + " IDLE"
-            accent: Colours.accentSecondary
+            accent: root.heading
         }
 
         AC.EndpointCard {
@@ -70,7 +78,9 @@ Item {
             width: parent.width
             node: AudioControlState.focusedSink
             mode: "sink"
-            accent: Colours.accentSecondary
+            accent: root.accent
+            frame: root.frame
+            meter: root.meter
             showOscilloscope: false
         }
 
@@ -80,7 +90,7 @@ Item {
             width: parent.width
             label: "ALTERNATIVE ENDPOINTS"
             trail: "CLICK → REROUTE · RIGHT → MUTE"
-            accent: Colours.accentSecondary
+            accent: root.heading
         }
 
         Column {
@@ -96,7 +106,9 @@ Item {
                     visible: modelData !== AudioControlState.focusedSink
                     node: modelData
                     mode: "selectable"
-                    accent: Colours.accentSecondary
+                    accent: root.accent
+                    frame: root.frame
+                    meter: root.meter
                     onSelectRequested: AudioControlState._selectedSink = modelData
                 }
             }
@@ -107,7 +119,7 @@ Item {
             width: parent.width
             label: "PIPELINE"
             trail: AudioControlState.streamNodes.length + " STREAMS → EQ:" + AudioControlState.eqPreset.toUpperCase() + " → " + (AudioControlState.defaultSink ? "OUT" : "—")
-            accent: Colours.accentSecondary
+            accent: root.heading
         }
 
         Item {
@@ -126,8 +138,8 @@ Item {
                     anchors.left: parent.left
                     width: 80
                     height: parent.height
-                    color: CP.alpha(Colours.accentPrimary, 0.15)
-                    border.color: CP.alpha(Colours.accentPrimary, 0.5)
+                    color: CP.alpha(root.sourceBox, 0.15)
+                    border.color: CP.alpha(root.sourceBox, 0.5)
                     border.width: 0.7
                     Column {
                         anchors.centerIn: parent
@@ -139,7 +151,7 @@ Item {
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             font.bold: true
-                            color: Colours.accentPrimary
+                            color: root.sourceBox
                         }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -155,7 +167,7 @@ Item {
                 Item {
                     id: link1
                     anchors.left: srcBox.right
-                    anchors.right: eqBox.left
+                    anchors.right: eqBoxItem.left
                     anchors.verticalCenter: parent.verticalCenter
                     height: 8
                     Rectangle {
@@ -163,14 +175,14 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         height: 0.8
-                        color: CP.alpha(Colours.accentPrimary, 0.6)
+                        color: CP.alpha(root.sourceBox, 0.6)
                     }
                     Repeater {
                         model: 2
                         delegate: Rectangle {
                             required property int index
                             width: 2; height: 2
-                            color: Colours.accentPrimary
+                            color: root.sourceBox
                             opacity: 1.0 - index * 0.4
                             anchors.verticalCenter: parent.verticalCenter
                             x: linkTick.elapsed > 0
@@ -181,12 +193,12 @@ Item {
                 }
 
                 Rectangle {
-                    id: eqBox
+                    id: eqBoxItem
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: 80
                     height: parent.height
-                    color: CP.alpha(CP.neon, 0.15)
-                    border.color: CP.alpha(CP.neon, 0.6)
+                    color: CP.alpha(root.eqBox, 0.15)
+                    border.color: CP.alpha(root.eqBox, 0.6)
                     border.width: 0.7
                     Column {
                         anchors.centerIn: parent
@@ -198,7 +210,7 @@ Item {
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             font.bold: true
-                            color: CP.neon
+                            color: root.eqBox
                         }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -212,7 +224,7 @@ Item {
 
                 Item {
                     id: link2
-                    anchors.left: eqBox.right
+                    anchors.left: eqBoxItem.right
                     anchors.right: sinkBox.left
                     anchors.verticalCenter: parent.verticalCenter
                     height: 8
@@ -221,14 +233,14 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         height: 0.8
-                        color: CP.alpha(Colours.accentSecondary, 0.6)
+                        color: CP.alpha(root.accent, 0.6)
                     }
                     Repeater {
                         model: 2
                         delegate: Rectangle {
                             required property int index
                             width: 2; height: 2
-                            color: Colours.accentSecondary
+                            color: root.accent
                             opacity: 1.0 - index * 0.4
                             anchors.verticalCenter: parent.verticalCenter
                             x: linkTick.elapsed > 0
@@ -243,8 +255,8 @@ Item {
                     anchors.right: parent.right
                     width: 80
                     height: parent.height
-                    color: CP.alpha(Colours.accentSecondary, 0.15)
-                    border.color: CP.alpha(Colours.accentSecondary, 0.6)
+                    color: CP.alpha(root.accent, 0.15)
+                    border.color: CP.alpha(root.accent, 0.6)
                     border.width: 0.7
                     Column {
                         anchors.centerIn: parent
@@ -256,7 +268,7 @@ Item {
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             font.bold: true
-                            color: Colours.accentSecondary
+                            color: root.accent
                         }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter

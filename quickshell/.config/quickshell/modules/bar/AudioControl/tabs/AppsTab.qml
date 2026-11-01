@@ -9,6 +9,11 @@ Item {
     id: root
     implicitHeight: scroll.contentHeight
 
+    // Palette, for hosts with one of their own
+    property color accent: Colours.accentPrimary
+    property color frame: accent
+    property color heading: accent
+
     readonly property int streamCount: AudioControlState.streamNodes.length
     readonly property int mutedCount: {
         var n = 0
@@ -57,7 +62,7 @@ Item {
             width: parent.width
             label: "STREAM PIPELINE"
             trail: root.streamCount + " ACTIVE STREAMS → MASTER · CLICK ROW = MUTE"
-            accent: Colours.accentPrimary
+            accent: root.heading
         }
         Column {
             id: listCol
@@ -70,7 +75,8 @@ Item {
                     required property var modelData
                     width: listCol.width
                     streamNode: modelData
-                    accent: Colours.accentPrimary
+                    accent: root.accent
+                    frame: root.frame
                 }
             }
         }
@@ -81,15 +87,15 @@ Item {
             width: parent.width
             label: "MIXDOWN"
             trail: "COMBINED SIGNAL · " + (root.streamCount - root.mutedCount) + " ACTIVE / " + root.mutedCount + " MUTED"
-            accent: Colours.accentPrimary
+            accent: root.heading
         }
 
         Rectangle {
             visible: root.streamCount > 0
             width: parent.width
             height: 40
-            color: CP.alpha(Colours.accentPrimary, 0.06)
-            border.color: CP.alpha(Colours.accentPrimary, 0.3)
+            color: CP.alpha(root.accent, 0.06)
+            border.color: CP.alpha(root.accent, 0.3)
             border.width: 0.7
 
             Text {
@@ -101,7 +107,7 @@ Item {
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 font.bold: true
-                color: Colours.accentPrimary
+                color: root.accent
             }
 
             // Mini cava bars (right side)
@@ -119,7 +125,7 @@ Item {
                         width: 2
                         height: Math.max(2, 18 * (Audio.cava && Audio.cava.values && Audio.cava.values.length > index ? Audio.cava.values[index] : 0))
                         anchors.verticalCenter: parent.verticalCenter
-                        color: Colours.accentPrimary
+                        color: root.accent
                         opacity: 0.85
                     }
                 }

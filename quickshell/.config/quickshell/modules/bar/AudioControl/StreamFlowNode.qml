@@ -16,6 +16,8 @@ Item {
     // -- API --------------------------------
     property var   streamNode: null
     property color accent: Colours.accentPrimary
+    // Outline color, for hosts with a palette of their own
+    property color frame: accent
 
     // -- Derived ---------------------------
     readonly property bool muted: streamNode && streamNode.audio ? streamNode.audio.muted : false
@@ -95,7 +97,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: muted ? CP.alpha(CP.red, 0.05) : (rowMa.containsMouse ? CP.alpha(root.accent, 0.10) : CP.alpha(root.accent, 0.05))
-        strokeColor: muted ? CP.alpha(CP.red, 0.4) : CP.alpha(root.accent, 0.5)
+        strokeColor: muted ? CP.alpha(CP.red, 0.4) : CP.alpha(root.frame, 0.5)
         strokeWidth: 1
         inset: 0.5
         cutBottomRight: 16
@@ -113,7 +115,7 @@ Item {
         CutShape {
             anchors.fill: parent
             fillColor: muted ? CP.alpha(CP.void2, 0.5) : CP.alpha(root.accent, 0.15)
-            strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.accent, 0.55)
+            strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.frame, 0.55)
             strokeWidth: 0.7
             inset: 0.5
             cutTopRight: 8
@@ -290,7 +292,7 @@ Item {
                 id: sliderTrack
                 anchors.fill: parent
                 fillColor: CP.alpha(CP.void2, 0.6)
-                strokeColor: CP.alpha(root.accent, 0.30)
+                strokeColor: CP.alpha(root.frame, 0.30)
                 strokeWidth: 0.6
                 inset: 0.5
                 cutBottomRight: 6

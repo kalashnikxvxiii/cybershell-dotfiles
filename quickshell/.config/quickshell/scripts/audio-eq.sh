@@ -5,6 +5,8 @@
 #   set_band <idx> <val> → update band idx (1-10) to val (-12..+12), mark pending=true
 #   apply                → write EasyEffects preset + load it, clear pending
 #   preset <name>        → load preset values (Flat/Bass/Treble/Vocal/Pop/Rock/Jazz/Classic) + apply
+#   set_opt <key> <val>  → loudness|soften|limiter|per_station 0/1, boost 0..12 dB, then apply
+#   station <name>       → the tuned station changed: with per_station on, load its own EQ
 
 set -u
 
@@ -70,34 +72,72 @@ for i in range(32):
         "frequency": freq, "gain": gain, "mode": "Bell",
         "mute": False, "q": 1.0, "solo": False, "width": 1.0, "slope": "x1"
     }
-preset = {
-    "output": {
-        "blocklist": [],
-        "plugins_order": ["equalizer"],
-        "equalizer": {
-            "bypass": False, "input-gain": 0.0, "output-gain": 0.0,
-            "left": bands, "right": bands, "mode": "IIR",
-            "num-bands": 32, "split-channels": False
-        }
+output = {
+    "blocklist": [],
+    "plugins_order": ["equalizer"],
+    "equalizer": {
+        "bypass": False, "input-gain": 0.0, "output-gain": float(data.get("boost", 0)),
+        "left": bands, "right": bands, "mode": "IIR",
+        "num-bands": 32, "split-channels": False
     }
 }
+# Switched-off effects stay out of the chain instead of sitting there bypassed
+if data.get("soften"):
+    output["plugins_order"].append("compressor")
+    output["compressor"] = {
+        "bypass": False, "input-gain": 0.0, "output-gain": 0.0, "dry": -80.01, "wet": 0.0,
+        "mode": "Downward", "attack": 20.0, "release": 100.0, "release-threshold": -80.01,
+        "threshold": -18.0, "ratio": 3.0, "knee": -6.0, "makeup": 0.0,
+        "boost-threshold": -72.0, "boost-amount": 6.0, "stereo-split": False,
+        "hpf-mode": "Off", "hpf-frequency": 10.0, "lpf-mode": "Off", "lpf-frequency": 20000.0,
+        "sidechain": {"type": "Feed-forward", "mode": "RMS", "source": "Middle",
+                      "stereo-split-source": "Left/Right", "preamp": 0.0, "reactivity": 10.0, "lookahead": 0.0}
+    }
+if data.get("loudness"):
+    output["plugins_order"].append("autogain")
+    output["autogain"] = {
+        "bypass": False, "input-gain": 0.0, "output-gain": 0.0, "target": -23.0,
+        "silence-threshold": -70.0, "maximum-history": 15, "force-silence": False,
+        "reference": "Geometric Mean (MSI)"
+    }
+if data.get("limiter"):
+    output["plugins_order"].append("limiter")
+    output["limiter"] = {
+        "bypass": False, "input-gain": 0.0, "output-gain": 0.0, "mode": "Herm Thin",
+        "oversampling": "None", "dithering": "None", "sidechain-type": "Internal",
+        "lookahead": 5.0, "attack": 5.0, "release": 5.0, "threshold": -1.0,
+        "gain-boost": False, "sidechain-preamp": 0.0, "stereo-link": 100.0, "alr": False
+    }
+preset = {"output": output}
 print(json.dumps(preset, indent=4))
 PY
     mv "${PRESET_FILE}.tmp" "$PRESET_FILE"
     "$EASYEFFECTS" -l "$PRESET_NAME" >/dev/null 2>&1 &
 }
 
-save_preset() {
-    # args: b1..b10 preset_name
+# Runs python on the state as `data` (argv[2:] as `args`) and saves the result. With
+# per_station on, the bands also go to the tuned station's own entry.
+edit_state() {
     local out
     out=$(python3 -c "
 import json, sys
-vals = sys.argv[1:11]
-name = sys.argv[11]
-print(json.dumps({'b%d'%(i+1): int(vals[i]) for i in range(10)} | {'preset': name, 'pending': False}))
-" "$@") || exit 1
+data = json.loads(sys.argv[1])
+args = sys.argv[3:]
+exec(sys.argv[2])
+if data.get('per_station') and data.get('station'):
+    data.setdefault('stations', {})[data['station']] = {k: data[k] for k in ['b%d' % i for i in range(1, 11)] + ['preset']}
+print(json.dumps(data))
+" "$(cat "$STATE_FILE")" "$@") || exit 1
     [ -n "$out" ] || exit 1
     write_state "$out"
+}
+
+save_preset() {
+    # args: b1..b10 preset_name
+    edit_state "
+for i in range(10): data['b%d' % (i + 1)] = int(args[i])
+data['preset'] = args[10]
+data['pending'] = False" "$@"
 }
 
 cmd="${1:-}"
@@ -111,29 +151,34 @@ case "$cmd" in
         val="${3:-}"
         [[ "$idx" =~ ^([1-9]|10)$ ]] || { echo "set_band: idx must be 1..10" >&2; exit 1; }
         [[ "$val" =~ ^-?([0-9]|1[0-2])$ ]] || { echo "set_band: val must be -12..12" >&2; exit 1; }
-        cur=$(cat "$STATE_FILE")
-        out=$(python3 -c "
-import json, sys
-data = json.loads(sys.argv[1])
-data['b%s' % sys.argv[2]] = int(sys.argv[3])
+        edit_state "
+data['b' + args[0]] = int(args[1])
 data['preset'] = 'Custom'
-data['pending'] = True
-print(json.dumps(data))
-" "$cur" "$idx" "$val") || exit 1
-        [ -n "$out" ] || exit 1
-        write_state "$out"
+data['pending'] = True" "$idx" "$val"
         ;;
     "apply")
-        cur=$(cat "$STATE_FILE")
-        out=$(python3 -c "
-import json, sys
-data = json.loads(sys.argv[1])
-data['pending'] = False
-print(json.dumps(data))
-" "$cur") || exit 1
-        [ -n "$out" ] || exit 1
-        write_state "$out"
+        edit_state "data['pending'] = False"
         apply_eq
+        ;;
+    "set_opt")
+        key="${2:-}"
+        val="${3:-}"
+        case "$key" in
+            loudness|soften|limiter|per_station) [[ "$val" =~ ^[01]$ ]] || { echo "set_opt: $key must be 0 or 1" >&2; exit 1; } ;;
+            boost) [[ "$val" =~ ^([0-9]|1[0-2])$ ]] || { echo "set_opt: boost must be 0..12" >&2; exit 1; } ;;
+            *) echo "set_opt: unknown option '$key'" >&2; exit 1 ;;
+        esac
+        edit_state "data[args[0]] = int(args[1])" "$key" "$val"
+        apply_eq
+        ;;
+    "station")
+        [ -n "${2:-}" ] || { echo "station: name required" >&2; exit 1; }
+        edit_state "
+data['station'] = args[0]
+saved = data.get('stations', {}).get(args[0])
+if data.get('per_station') and saved:
+    data.update(saved)" "$2"
+        python3 -c "import json, sys; sys.exit(0 if json.load(open(sys.argv[1])).get('per_station') else 1)" "$STATE_FILE" && apply_eq
         ;;
     "preset")
         name="${2:-}"
@@ -154,7 +199,7 @@ print(json.dumps(data))
         apply_eq
         ;;
     *)
-        echo "usage: $0 {get|set_band <idx> <val>|apply|preset <name>}" >&2
+        echo "usage: $0 {get|set_band <idx> <val>|apply|preset <name>|set_opt <key> <val>|station <name>}" >&2
         exit 1
         ;;
 esac
