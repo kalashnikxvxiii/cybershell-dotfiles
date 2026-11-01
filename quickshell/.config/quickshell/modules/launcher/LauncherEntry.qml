@@ -2,6 +2,7 @@
 // AndreaNec/Cyberpunk-quickshell (launcher/LauncherEntry.qml).
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Widgets
 import "../../common/Colors.js" as CP
@@ -21,7 +22,7 @@ Item {
     readonly property real reserve: 48
     readonly property real shift: current ? 24 : 0
 
-    readonly property string subtitle: (launcher.query !== "" && modelData.path) ? modelData.path : (modelData.comment || "")
+    readonly property string subtitle: launcher.armedId === modelData.id ? "Select again to confirm" : (launcher.query !== "" && modelData.path) ? modelData.path : (modelData.comment || "")
 
     width: view.width
     height: view.rowHeight
@@ -36,14 +37,15 @@ Item {
         Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
         // Number badge
-        Rectangle {
+        CutShape {
             id: badge
             width: 26
             height: 26
             anchors.verticalCenter: parent.verticalCenter
-            color: "transparent"
-            border.width: 2
-            border.color: CP.cyan
+            fillColor: "transparent"
+            strokeWidth: 1.5
+            strokeColor: CP.cyan
+            cutBottomLeft: 12
             Text {
                 anchors.centerIn: parent
                 text: item.index + 1
@@ -64,13 +66,27 @@ Item {
             anchors.topMargin: 2
             anchors.bottomMargin: 2
 
-            CutShape {
+            // Quickhack frame: cut top right, bevelled step on the left edge
+            Shape {
+                id: frame
                 anchors.fill: parent
-                cutBottomRight: 16
-                strokeWidth: item.current ? 2 : 1
-                inset: strokeWidth / 2
-                strokeColor: item.current ? CP.cyan : CP.alpha(CP.cyan, 0.5)
-                fillColor: item.current ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                preferredRendererType: Shape.CurveRenderer
+
+                ShapePath {
+                    strokeWidth: item.current ? 2 : 1
+                    strokeColor: item.current ? CP.cyan : CP.alpha(CP.cyan, 0.5)
+                    fillColor: item.current ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                    joinStyle: ShapePath.MiterJoin
+                    PathPolyline {
+                        path: {
+                            const i = 1, r = frame.width - i, b = frame.height - i
+                            return [
+                                Qt.point(i, i), Qt.point(r - 6, i), Qt.point(r, i + 6), Qt.point(r, b),
+                                Qt.point(i + 4, b), Qt.point(i + 4, b - 20), Qt.point(i, b - 24), Qt.point(i, i)
+                            ]
+                        }
+                    }
+                }
             }
 
             RowLayout {

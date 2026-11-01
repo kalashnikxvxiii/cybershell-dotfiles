@@ -22,6 +22,10 @@ Scope {
     property var stack: [LauncherMenus.rootNode]
     readonly property var current: stack[stack.length - 1]
     property string query: ""
+    // The item waiting for a second activation: reboot and power off don't go on one slip
+    property string armedId: ""
+    // The keybind being edited; while set, the form takes the list's place
+    property var bindDraft: null
 
     readonly property var results: {
         const q = query.trim().toLowerCase();
@@ -44,11 +48,15 @@ Scope {
         LauncherState.closeMenu();
     }
     function clearQuery() {
+        armedId = "";
+        bindDraft = null;
         search.text = "";
         query = "";
         list.currentIndex = 0;
     }
     function push(node) {
+        if (node.onEnter)
+            node.onEnter();
         stack = stack.concat([node]);
         clearQuery();
     }
@@ -74,6 +82,15 @@ Scope {
             push(item);
             return;
         }
+        if (item.draft) {
+            root.bindDraft = item.draft;
+            return;
+        }
+        if (item.confirm && root.armedId !== item.id) {
+            root.armedId = item.id;
+            return;
+        }
+        root.armedId = "";
 
         const keep = !!item.keepOpen;
         const idx = list.currentIndex;
@@ -84,6 +101,11 @@ Scope {
             });
         else
             close();
+    }
+
+    Connections {
+        target: root
+        function onShownChanged() { Sounds.play("menu", root.shown ? "kiroshi_on.ogg" : "kiroshi_off.ogg") }
     }
 
     onShownChanged: if (shown) {
@@ -109,7 +131,7 @@ Scope {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: root.shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-        // Frosted glass like LogoutOverlay (blur from the qs-launcher layer rule);
+        // Frosted glass (blur from the qs-launcher layer rule);
         // click anywhere outside the card to close
         Rectangle {
             anchors.fill: parent
@@ -235,8 +257,30 @@ Scope {
                     }
 
                     // ---------- Results ----------
+                    BindEditor {
+                        Layout.fillWidth: true
+                        visible: root.bindDraft !== null
+                        draft: root.bindDraft
+                        onClosed: {
+                            root.bindDraft = null;
+                            LauncherMenus.reloadUserBinds();
+                            search.forceActiveFocus();
+                        }
+                    }
+
                     ListView {
                         id: list
+                        visible: root.bindDraft === null
+
+                        onCurrentIndexChanged: {
+                            root.armedId = "";
+                            if (root.shown)
+                                Sounds.beep();
+                        }
+
+                        // The highlight range depends on the height: created at height 0, the list
+                        // would stay scrolled by half a row
+                        onHeightChanged: positionViewAtIndex(currentIndex, ListView.Center)
 
                         readonly property int rowHeight: 50
                         readonly property int maxVisible: 9
@@ -275,7 +319,7 @@ Scope {
 
                     // Empty state
                     Text {
-                        visible: list.count === 0
+                        visible: list.count === 0 && root.bindDraft === null
                         text: "// NO MATCH"
                         color: CP.alpha(CP.cyan, 0.5)
                         font.pixelSize: 12

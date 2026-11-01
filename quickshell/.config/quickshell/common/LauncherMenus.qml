@@ -15,6 +15,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Networking
+import Quickshell.Io
 
 Singleton {
     id: root
@@ -37,10 +38,11 @@ Singleton {
     readonly property var power: [
         { id: "power:lock", name: "Lock", glyph: "", boost: 15, run: sh(["hyprlock"]) },
         { id: "power:suspend", name: "Suspend", glyph: "", boost: 15, keywords: "sleep", run: sh(["systemctl", "suspend"]) },
+        { id: "power:hibernate", name: "Hibernate", glyph: "\uf2dc", boost: 15, run: sh(["systemctl", "hibernate"]) },
         // Not uwsm: the session ends through Hyprland itself
         { id: "power:logout", name: "Log out", glyph: "", boost: 15, keywords: "exit", run: () => HL.exit() },
-        { id: "power:reboot", name: "Reboot", glyph: "", boost: 15, keywords: "restart", run: sh(["systemctl", "reboot"]) },
-        { id: "power:off", name: "Power off", glyph: "", boost: 15, keywords: "shutdown", run: sh(["systemctl", "poweroff"]) }
+        { id: "power:reboot", name: "Reboot", confirm: true, glyph: "", boost: 15, keywords: "restart", run: sh(["systemctl", "reboot"]) },
+        { id: "power:off", name: "Power off", confirm: true, glyph: "", boost: 15, keywords: "shutdown", run: sh(["systemctl", "poweroff"]) }
     ]
 
     // ---------- Wi-Fi ----------
@@ -113,6 +115,105 @@ Singleton {
         return items;
     }
 
+    // ---------- System upgrade ----------
+    property var pendingUpdates: []
+    property string updatesStatus: "paru -Syu"
+
+    function checkUpdates() {
+        if (updateCheck.running)
+            return;
+        root.updatesStatus = "Checking…";
+        updateCheck.running = true;
+    }
+
+    Process {
+        id: updateCheck
+        // checkupdates exits 2 when there is nothing to do and 1 on failure
+        command: ["bash", "-c", "checkupdates 2>/dev/null; rc=$?; paru -Qua 2>/dev/null; [ $rc = 1 ] && echo __FAILED__; true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.split("\n").filter(l => l !== "");
+                const failed = lines.includes("__FAILED__");
+                const packages = lines.filter(l => l !== "__FAILED__");
+                root.pendingUpdates = packages.map(l => {
+                    const i = l.indexOf(" ");
+                    return { id: "upgrade:" + l.slice(0, i), name: l.slice(0, i), comment: l.slice(i + 1), glyph: "\uf1b2", noSearch: true, keepOpen: true, run: () => {} };
+                });
+                root.updatesStatus = failed ? "Check failed, list may be incomplete"
+                    : packages.length > 0 ? packages.length + " packages" : "System up to date";
+            }
+        }
+    }
+
+    readonly property var upgrade: [{
+            id: "upgrade:run",
+            name: "Upgrade all",
+            comment: root.updatesStatus,
+            glyph: "\uf0ed",
+            boost: 15,
+            run: sh(["kitty", "--hold", "paru", "-Syu"])
+        }].concat(root.pendingUpdates)
+
+    // ---------- Personal keybinds ----------
+    property var userBinds: []
+
+    function reloadUserBinds() {
+        userBindsProc.running = true;
+    }
+
+    Process {
+        id: userBindsProc
+        running: true
+        command: ["python3", Qt.resolvedUrl("../scripts/user-binds.py").toString().replace("file://", ""), "list"]
+        stdout: StdioCollector {
+            onStreamFinished: root.userBinds = JSON.parse(text)
+        }
+    }
+
+    function shellQuote(args) {
+        return args.map(a => /^[A-Za-z0-9_\/.:=-]+$/.test(a) ? a : "'" + a.replace(/'/g, "'\\''") + "'").join(" ");
+    }
+
+    // Rows holding `draft` open the bind editor instead of running something
+    readonly property var addBindTargets: [{
+            id: "keybinds:custom",
+            name: "Custom command",
+            comment: "Write the command yourself",
+            glyph: "\uf120",
+            boost: 15,
+            noSearch: true,
+            draft: { index: -1, name: "", keys: "", command: "" }
+        }].concat(DesktopEntries.applications.values.filter(e => !e.noDisplay).map(e => ({
+            id: "keybinds:app:" + e.id,
+            name: e.name,
+            comment: e.comment || e.genericName || "",
+            iconName: e.icon,
+            noSearch: true,
+            draft: { index: -1, name: e.name, keys: "", command: root.shellQuote(e.command) }
+        })).sort((a, b) => a.name.localeCompare(b.name)))
+
+    readonly property var keybinds: [{
+            id: "keybinds:sheet",
+            name: "Cheatsheet",
+            comment: "Every keybind",
+            glyph: "\uf11c",
+            boost: 15,
+            run: () => Quickshell.execDetached(["qs", "ipc", "call", "cheatsheet", "toggle", LauncherState.screenName])
+        }, {
+            id: "keybinds:add",
+            name: "Add bind",
+            comment: "An app or a command on new keys",
+            glyph: "\uf067",
+            boost: 15,
+            children: () => root.addBindTargets
+        }].concat(root.userBinds.map((b, i) => ({
+            id: "keybinds:user:" + i,
+            name: b.name,
+            comment: b.keys + "  ·  " + b.command,
+            glyph: "\uf084",
+            draft: { index: i, name: b.name, keys: b.keys, command: b.command }
+        })))
+
     // ---------- Tree ----------
     readonly property var rootNode: ({
             id: "root",
@@ -122,7 +223,13 @@ Singleton {
                 { id: "power", name: "Power", glyph: "", comment: "Lock, suspend, reboot, power off", children: () => root.power },
                 { id: "network", name: "Network", glyph: "", comment: "Wi-Fi and connections", children: () => root.networks },
                 { id: "bluetooth", name: "Bluetooth", glyph: "", comment: "Adapter and devices", children: () => root.bluetooth },
-                { id: "media", name: "Media", glyph: "󰝚", comment: "open Radioport", run: () => LauncherState.openMedia() }
+                { id: "media", name: "Media", glyph: "󰝚", comment: "open Radioport", run: () => LauncherState.openMedia() },
+                { id: "terminal", name: "Terminal", glyph: "\uf120", comment: "Open a kitty window", run: sh(["kitty"]) },
+                { id: "keybinds", name: "Keybinds", glyph: "\uf11c", comment: "Cheatsheet and your own binds", children: () => root.keybinds },
+                { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and colors", run: () => WallpaperState.togglePicker(LauncherState.screenName) },
+                { id: "upgrade", name: "System upgrade", glyph: "\uf0ed", comment: "Pending packages, repos and AUR", onEnter: () => root.checkUpdates(), children: () => root.upgrade },
+                // After the menu's fade: its surface would otherwise take the click
+                { id: "kill", name: "Kill mode", glyph: "\uf05e", comment: "Click a window to kill it, Esc to cancel", keywords: "force quit", run: () => KillState.start() }
             ]
         })
 
@@ -135,6 +242,8 @@ Singleton {
     function flatten(node, path) {
         let out = [];
         for (const it of childrenOf(node)) {
+            if (it.noSearch)
+                continue;
             if (it.children)
                 out = out.concat(flatten(it, path ? path + " › " + it.name : it.name));
             else
