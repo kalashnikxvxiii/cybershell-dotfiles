@@ -31,7 +31,7 @@ var magenta   = "#ea00d9"   // neon magenta (Street Kid / netrunner)
 var magentaAlt = "#ed1e79"  // mid-range magenta accent
 
 // Greens
-var neon      = "#39ff14"   // neon green (terminal/matrix — already in use)
+var neon      = "#2adc83" // "#39ff14"   // neon green (terminal/matrix — already in use)
 var olive     = "#9a9f17"   // dirty yellow-green (data display / chart)
 
 // Authority / warmth
