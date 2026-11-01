@@ -46,18 +46,93 @@ hl.window_rule({
 
 -- ── Layer rules ───────────────────────────────────────────────────────
 
+-- Quickshell HUD: above linux-wallpaperengine, which shares the Bottom layer.
+-- A lower order means higher in the stack
+hl.layer_rule({
+    name = "qs-hud-order",
+    match = { namespace = "qs-hud" },
+    order = -1,
+    animation = "none",
+})
+
+-- The Sonar card animates itself: Hyprland's slide on top of it reads as a jump
+hl.layer_rule({
+    name = "qs-sonar-animation",
+    match = { namespace = "qs-sonar" },
+    animation = "none",
+})
+
+-- Bar and HUD appear in place: the shell's own glitch is their entrance
+hl.layer_rule({
+    name = "qs-drawers-animation",
+    match = { namespace = "drawers" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-bar-exclusion-animation",
+    match = { namespace = "bar-esclusion" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-nowplaying-animation",
+    match = { namespace = "qs-nowplaying" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-ws-glitch-animation",
+    match = { namespace = "qs-ws-glitch" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-osd-animation",
+    match = { namespace = "qs-osd" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-toasts-animation",
+    match = { namespace = "qs-toasts" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-snip-banner-animation",
+    match = { namespace = "qs-snip-banner" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-rec-frame-animation",
+    match = { namespace = "qs-rec-frame" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-kill-animation",
+    match = { namespace = "qs-kill" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-holo-animation",
+    match = { namespace = "qs-holo" },
+    animation = "none",
+})
+
+hl.layer_rule({
+    name = "qs-messages-animation",
+    match = { namespace = "qs-messages" },
+    animation = "none",
+})
+
 hl.layer_rule({
     name  = "wlogout-blur",
     match = { namespace = "wlogout" },
     blur  = true,
-})
-
--- Quickshell LogoutOverlay: blur del wallpaper sottostante
-hl.layer_rule({
-    name  = "qs-logout-blur",
-    match = { namespace = "qs-logout" },
-    blur  = true,
-    animation = "fade",
 })
 
 hl.layer_rule({
