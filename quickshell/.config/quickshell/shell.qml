@@ -8,15 +8,17 @@ import QtQuick
 import "modules/core"
 import "common"
 import "modules/wallpaper"
-import "modules/logout"
 import "modules/manga"
 import "modules/sonar"
 import "modules/snip"
+import "modules/kill"
+import "modules/notifications"
 import "modules/toasts"
 import "modules/launcher"
 import "modules/media"
 import "modules/wheel"
 import "modules/cheatsheet"
+import "modules/hud"
 
 ShellRoot {
     // Quick action wheel, shown over the Hyprland menus
@@ -48,10 +50,22 @@ ShellRoot {
 
     // Menu (SUPER+SPACE) and standalone radioport, on the focused monitor
     IpcHandler {
+        target: "sounds"
+        function toggle(category: string): void { Sounds.toggle(category) }
+        function test(category: string, file: string): void { Sounds.play(category, file) }
+    }
+    IpcHandler {
+        target: "notifications"
+        function toggle(): void { NotifState.togglePanel() }
+        function toggleDnd(): void { NotifState.toggleDnd() }
+        function clear(): void { NotifState.clear() }
+    }
+    IpcHandler {
         target: "launcher"
         function toggle(): void { LauncherState.toggleMenu() }
         function open(): void { LauncherState.openMenu() }
         function close(): void { LauncherState.closeMenu() }
+        function cancelCapture(): void { LauncherState.captureCancelled() }
     }
     IpcHandler {
         target: "mediapanel"
@@ -63,6 +77,12 @@ ShellRoot {
     IpcHandler {
         target: "contrast-scrim"
         function toggle(): void { WallpaperState.scrimEnabled = !WallpaperState.scrimEnabled }
+    }
+    // Desktop HUD: on/off and above/below the windows (SUPER+ALT+L, then H or J)
+    IpcHandler {
+        target: "hud"
+        function toggle(): void { HudState.toggle() }
+        function toggleLayer(): void { HudState.toggleLayer() }
     }
 
     // Lyrics server: only alive while Spotify is running
@@ -149,10 +169,6 @@ ShellRoot {
                 screen: modelData
             }
 
-            LogoutOverlay {
-                screen: modelData
-            }
-
             MangaPanel {
                 screen: modelData
             }
@@ -165,6 +181,26 @@ ShellRoot {
                 screen: modelData
             }
 
+            SnipBanner {
+                screen: modelData
+            }
+
+            SnipRecordFrame {
+                screen: modelData
+            }
+
+            KillOverlay {
+                screen: modelData
+            }
+
+            HoloCall {
+                screen: modelData
+            }
+
+            MessagesPanel {
+                screen: modelData
+            }
+
             ToastOverlay {
                 screen: modelData
             }
@@ -174,6 +210,10 @@ ShellRoot {
             }
 
             MediaPanel {
+                screen: modelData
+            }
+
+            HudOverlay {
                 screen: modelData
             }
         }
