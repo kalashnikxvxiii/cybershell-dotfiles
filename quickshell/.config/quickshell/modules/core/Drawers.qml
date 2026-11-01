@@ -42,7 +42,26 @@ Scope {
             width: win.width
             height: win.height - win.barHeight
             intersection: Intersection.Xor
-            regions: maskRegions.instances
+            regions: [...maskRegions.instances, leftSideInput, rightSideInput]
+        }
+
+        // The tilted sides of the bar hang below the strip. Their bounding boxes only, so
+        // the windows they don't cover keep their clicks
+        Region {
+            id: leftSideInput
+            x: bar.leftSide.x - 8
+            y: win.barHeight
+            width: BarState.isVisibleOn(root.screen.name) ? bar.leftSide.width + 16 : 0
+            height: bar.sidesBottom - win.barHeight
+            intersection: Intersection.Subtract
+        }
+        Region {
+            id: rightSideInput
+            x: bar.rightSide.x - 8
+            y: win.barHeight
+            width: BarState.isVisibleOn(root.screen.name) ? bar.rightSide.width + 16 : 0
+            height: bar.sidesBottom - win.barHeight
+            intersection: Intersection.Subtract
         }
 
         // Dynamic regions: one per open panel

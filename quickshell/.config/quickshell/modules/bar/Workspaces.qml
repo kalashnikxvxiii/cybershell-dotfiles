@@ -19,10 +19,10 @@ Item {
     // ID of the workspace currently visible on this monitor.
     property int activeWsId: monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : -1
 
-    // Workspaces for this monitor: solo quelli con finestre o quello attivo.
-    // Hyprland tiene comunque tutti i workspace pre-creati dal plugin split-monitor-workspaces
-    // (la chiave enable_persistent_workspaces non è esposta come config key in Lua mode v1.2.0,
-    // quindi non possiamo dirgli "non pre-creare"). Filtro qui per restituire l'UX desiderata.
+    // Workspaces for this monitor: only those with windows, or the currently active one. 
+    // Hyprland keeps all the workspaces pre-created by the split-monitor-workspaces plugin
+    // (the `enable_persistent_workspaces` key is not exposed as a configuration option in Lua mode v1.2.0,
+    // so we cannot tell it "do not pre-create" them). I filter them here to provide the desired UX.
     property var workspaces: {
         var all = Hyprland.workspaces.values
         var result = []
@@ -538,16 +538,15 @@ Item {
                 readonly property color stateColor:
                     isUrgent ? CP.red :
                     isActive ? CP.cyan :
-                    !isEmpty ? CP.alpha(CP.cyan, hoverHandler.hovered ? 0.3 : 0.15) :
-                               CP.alpha(CP.red, 0.5)
+                    !isEmpty ? (hoverHandler.hovered ? CP.alpha(CP.cyan, 0.5) : HudState.track(CP.cyan)) :
+                               CP.alpha(CP.red, 0.75)
                 // Written by the hover glitch instead of stateColor, so the
                 // state binding survives it; transparent = no glitch
                 property color _glitchTint: "transparent"
 
-                implicitWidth: showIcons
-                    ? Math.min(winCount, 3) * 14 + (Math.min(winCount, 3) - 1) * 2 + 10
-                    : 10
-                implicitHeight: 20
+                // Upright like a RAM chip: the height has room for the stacked icons
+                implicitWidth: 20
+                implicitHeight: 32
 
                 RamShape {
                     anchors.fill: parent
@@ -556,7 +555,7 @@ Item {
                 }
 
                 // -- App icons ------------------------------
-                Row {
+                Column {
                     id: iconsRow
                     visible: wsBtn.showIcons
                     anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
@@ -568,7 +567,8 @@ Item {
                         delegate: Item {
                             id: iconSlot
                             required property int index
-                            width: 14; height: 14
+                            width: wsBtn.winCount > 1 ? 9 : 14
+                            height: width
 
                             property string appClass: {
                                 var win = wsBtn.tops[index]

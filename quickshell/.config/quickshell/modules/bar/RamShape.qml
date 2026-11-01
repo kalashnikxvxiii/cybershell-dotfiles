@@ -1,7 +1,6 @@
 // RamShape.qml — workspace tile outline, ported from AndreaNec/Cyberpunk-quickshell
 // (stats/RamShape.qml). Same profile: bottom-right chamfer and a stepped notch
-// on the lower left edge. Details rescaled for the 24px bar; width is free so
-// the tile can hold app icons.
+// on the lower left edge. Details rescaled for the 24px bar
 
 import QtQuick
 import QtQuick.Shapes

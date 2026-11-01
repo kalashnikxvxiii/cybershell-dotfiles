@@ -10,18 +10,21 @@ import "../../common"
 Item {
     id: root
     implicitHeight: 24
-    implicitWidth:  label.implicitWidth + 28
+    implicitWidth:  label.width + 28
 
     property string rawTitle: Hyprland.activeToplevel ? Hyprland.activeToplevel.title : ""
     property string title: {
-        var t = rawTitle.length > 25 ? rawTitle.slice(0, 25) : rawTitle
-        return t.length > 0 ? "╰┈➤ " + t : ""
+        // var t = rawTitle.length > 25 ? rawTitle.slice(0, 25) : rawTitle
+        return rawTitle.length > 0 ? "╰┈➤ " + rawTitle : ""
     }
 
     Text {
         id: label
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 14 }
         text:               root.title
+        // The section leans downwards: any longer and it would reach the windows
+        width:              Math.min(implicitWidth, 340)
+        elide:              Text.ElideRight
         font.family:        "Oxanium"
         font.pixelSize:     12
         font.letterSpacing: 2

@@ -14,6 +14,7 @@ Item {
     property bool showBackground: true
     property var parentWindow
     property int buttonSize: 22
+    property int iconSize: 16
     property int trayGap: 2
     property int expandedContentWidth: pinnedRow.implicitWidth + 
                                     + (root.expanded ? (trayRow.implicitWidth + trayGap) : 0)
@@ -75,8 +76,8 @@ Item {
                 delegate: Item {
                     required property SystemTrayItem modelData
                     visible: root.isPinned(modelData.id)
-                    implicitWidth: visible ? 16 : 0
-                    implicitHeight: 16
+                    implicitWidth: visible ? root.iconSize : 0
+                    implicitHeight: root.iconSize
 
                     Image {
                         anchors.fill: parent
@@ -139,8 +140,8 @@ Item {
                         required property SystemTrayItem modelData
 
                         visible: !root.isPinned(modelData.id)
-                        implicitWidth:  visible ? 16 : 0
-                        implicitHeight: 16
+                        implicitWidth:  visible ? root.iconSize : 0
+                        implicitHeight: root.iconSize
                         anchors.verticalCenter: parent.verticalCenter
 
                         // Icon via QML Image sourced from the tray item
@@ -208,7 +209,7 @@ Item {
                 anchors.centerIn: parent
                 text: root.expanded ? ">" : "<"
                 font.family: "Oxanium"
-                font.pixelSize: 12
+                font.pixelSize: root.iconSize - 4
                 color: CP.cyan
             }
 

@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Effects
+// import QtQuick.Effects
 import "../../common/Colors.js" as CP
 import "../../common/BarConfig.js" as BC
 import "."
@@ -17,30 +17,30 @@ Item {
     implicitHeight: 24
     implicitWidth: innerRow.implicitWidth
 
-    Item {
-        id: bgItem
-        anchors.fill: parent
+    // Item {
+    //     id: bgItem
+    //     anchors.fill: parent
 
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor:            CP.cyan
-            shadowBlur:             0.75
-            shadowOpacity:          0.40
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset:   0
-        }
-        CutShape {
-            anchors.fill: parent
-            fillColor: CP.moduleBg
-            strokeColor: CP.alpha(CP.cyan, 0.35)
-            strokeWidth: 1
-            inset: 0.5
-            radiusTopRight: 4
-            radiusBottomRight: 4
-            cutBottomLeft: 8
-        }
-    }
+    //     layer.enabled: true
+    //     layer.effect: MultiEffect {
+    //         shadowEnabled: true
+    //         shadowColor:            CP.cyan
+    //         shadowBlur:             0.75
+    //         shadowOpacity:          0.40
+    //         shadowHorizontalOffset: 0
+    //         shadowVerticalOffset:   0
+    //     }
+    //     CutShape {
+    //         anchors.fill: parent
+    //         fillColor: CP.moduleBg
+    //         strokeColor: CP.alpha(CP.cyan, 0.35)
+    //         strokeWidth: 1
+    //         inset: 0.5
+    //         radiusTopRight: 4
+    //         radiusBottomRight: 4
+    //         cutBottomLeft: 8
+    //     }
+    // }
 
     Row {
         id: innerRow
@@ -58,22 +58,11 @@ Item {
                     spacing: 0
 
                     PulseModule {
+                        pixelSize: 15
                         height: parent.height; showBackground: false
                         onLeftClick: function() { root.volumeToggleRequested() }
                         Component.onCompleted: root.volumeAnchor = this
                     }
-
-                    Clock {
-                        id: clockItem
-                        height: innerRow.height
-                    }
-
-                    // Network + bluetooth, between the clock and the tray, on
-                    // the primary screen only.
-                    // SonarModule {
-                    //     height: parent.height
-                    //     showBackground: false
-                    // }
 
                     Item {
                         width: trayCtl.expandedContentWidth
@@ -87,6 +76,8 @@ Item {
                         id: trayCtl
                         height: parent.height
                         showBackground: false
+                        buttonSize: 26
+                        iconSize: 20
                         parentWindow: root.parentWindow
                     }
                 }
@@ -104,6 +95,7 @@ Item {
                     spacing: 0
 
                     PulseModule {
+                        pixelSize: 15
                         height: parent.height
                         showBackground: false
                         onLeftClick: function() { root.volumeToggleRequested() }
@@ -123,6 +115,8 @@ Item {
                         id: trayCtlSec
                         height: parent.height
                         showBackground: false
+                        buttonSize: 26
+                        iconSize: 20
                         parentWindow: root.parentWindow
                     }
                 }

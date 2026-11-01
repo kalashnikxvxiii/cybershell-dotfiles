@@ -14,6 +14,7 @@ Item {
     property string text:         ""
     property bool   hovered:      hoverHandler.hovered
     property bool showBackground: true
+    property int  pixelSize:      12
 
     property var onLeftClick:   function() {}
     property var onRightClick:  function() {}
@@ -113,7 +114,7 @@ Item {
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 12 }
         text:               root.text
         font.family:        "Oxanium"
-        font.pixelSize:     12
+        font.pixelSize:     root.pixelSize
         font.letterSpacing: 0
         color:              root.accent
         z: 1

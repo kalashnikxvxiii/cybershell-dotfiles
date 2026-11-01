@@ -21,14 +21,26 @@ Item {
 
     property bool isDP1: BC.isPrimary(screen)
     property int  barHeight: 24
+    // Where the tilted sides end: the gap Hyprland leaves above the windows
+    property int  sidesBottom: 36
+    readonly property alias leftSide: leftSection
+    readonly property alias rightSide: rightSection
     property bool volumePopupVisible: false
+
+    // The HUD's V button opens the same popup, on the screen it was pressed on
+    Connections {
+        target: AudioControlState
+        function onRequestToggle(screenName)  {
+            if (screenName === bar.screen.name) bar.volumePopupVisible = !bar.volumePopupVisible
+        }
+    }
 
     // ── Slide up/down transition coordinated with Exclusions ──────────────────────
     readonly property bool _isVisible: BarState.isVisibleOn(bar.screen.name)
 
     transform: Translate {
         id: barSlide
-        y: bar._isVisible ? 0 : -bar.barHeight
+        y: bar._isVisible ? 0 : -bar.sidesBottom
         Behavior on y {
             NumberAnimation {
                 duration: 500
@@ -41,83 +53,9 @@ Item {
     // Kill input while off-screen (avoid ghost hovers on hidden bar)
     enabled: bar._isVisible
 
-    // ── Background gradient (color from Colours / Wallust) ───────────────
-    Rectangle {
-        anchors.fill: parent
-        gradient: Gradient {
-            orientation: Gradient.Vertical
-            GradientStop { position: 0.0; color: Colours.barBg }
-            GradientStop { position: 1.0; color: "transparent" }
-        }
-    }
-
-    // ── Scanline overlay (HUD effect) ──────────────────────────────────────
-    // Dark horizontal lines every 2px — authentic CRT feel
-    Item {
-        anchors.fill: parent
-        clip: true
-        opacity: 0.16
-        Repeater {
-            model: Math.ceil(bar.barHeight / 2) + 1
-            delegate: Rectangle {
-                required property int index
-                y: index * 2
-                width: parent.width
-                height: 1
-                color: Colours.scanlineColor
-            }
-        }
-    }
-
-    // ── Bottom glow border (neon line with bloom) ─────────────────────────
-    Rectangle {
-        anchors.bottom: parent.top
-        anchors.left:   parent.left
-        anchors.right:  parent.right
-        height: 1
-        color: Colours.accentSecondary
-        opacity: 0.55
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor:            Colours.accentSecondary
-            shadowBlur:             0.85
-            shadowOpacity:          1
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset:   2
-        }
-    }
-
     // ── Layout ────────────────────────────────────────────────────────────
     Item {
         anchors.fill: parent
-
-        // LEFT
-        Row {
-            id: leftRow
-            height: parent.height
-            anchors { left: parent.left; verticalCenter: parent.verticalCenter }
-            spacing: 0
-
-            Repeater {
-                id: leftRepeater
-                model: bar.isDP1
-                       ? BC.entriesPrimaryLeft
-                       : BC.entriesSecondaryLeft
-
-                delegate: DelegateChooser {
-                    role: "name"
-
-                    DelegateChoice {
-                        roleValue: "leftSection"
-                        LeftSection {
-                            barScreen: bar.screen
-                            height:    leftRow.height
-                        }
-                    }
-                }
-            }
-        }
 
         // CENTER
         Row {
@@ -146,14 +84,39 @@ Item {
             }
         }
 
-        // RIGHT
+        // LEFT: leans like the HUD's vitals, down towards the center
+        // Pinned on its left, and with a fixed pivot: the tiles stay put while the title changes
+        LeftSection {
+            id: leftSection
+            anchors.left: parent.left
+            anchors.leftMargin: 320
+            y: 6
+            height: 32
+            barScreen: bar.screen
+            transform: Tilt { w: 400; h: 32; yaw: 24; pitch: 5; roll: -1; focal: 2100 }
+            // Flat at twice the size, then tilted as one texture (see HudPlate)
+            layer.enabled: true
+            layer.smooth: true
+            layer.textureSize: Qt.size(width * 2, height * 2)
+            layer.effect: DarkHalo {}
+        }
+
+        // RIGHT: leans like the HUD's status corner, mirrored
         RightSection {
             id: rightSection
+            // Up against the HUD clock
+            anchors.right: parent.right
+            anchors.rightMargin: 150
+            y: 5
             barScreen: bar.screen
-            height: barHeight
+            height: 32
             parentWindow: bar.parentWindow
-            anchors { right: parent.right; verticalCenter: parent.verticalCenter }
             onVolumeToggleRequested: bar.volumePopupVisible = !bar.volumePopupVisible
+            transform: Tilt { w: rightSection.width; h: rightSection.height; yaw: -16; pitch: 1; roll: -2; focal: 2600 }
+            layer.enabled: true
+            layer.smooth: true
+            layer.textureSize: Qt.size(width * 2, height * 2)
+            layer.effect: DarkHalo {}
         }
     }
 
@@ -163,18 +126,41 @@ Item {
         visible: bar.volumePopupVisible || audioControlContent.height > 0
         color: "transparent"   // let CutShape diagonals show desktop background through
         anchor.window: bar.parentWindow
-        anchor.item: rightSection.volumeAnchor
-        // Edges: Top=1 Left=2 Right=4 Bottom=8
-        anchor.edges: Edges.Bottom
-        anchor.gravity: Edges.Bottom
-        implicitWidth:  Math.max(1, audioControlContent.width)
-        implicitHeight: Math.max(1, audioControlContent.height)
+        // Next to the Sonar: as its card grows, slides along the slope of its top edge
+        anchor.rect: Qt.rect(bar.width - 237 - (HudState.sonarShift[bar.screen.name] || 0), bar.sidesBottom + 0.047 * (HudState.sonarShift[bar.screen.name] || 0), 1, 1)
+        anchor.edges: Edges.Bottom | Edges.Left
+        anchor.gravity: Edges.Bottom | Edges.Left
+        // Fixed size: resizing the surface on every frame made the animation stutter
+        implicitWidth: 560
+        implicitHeight: 740
+        mask: Region { item: audioControlContent }
         onVisibleChanged: if (visible) audioControlContent.forceActiveFocus()
 
-        AudioControlPopup {
-            id: audioControlContent
-            open: bar.volumePopupVisible
-            onCloseRequested: bar.volumePopupVisible = false
+        // Flat at twice the size, tilted as one texture. Fixed and larger than the panel: the
+        // panel's border never touches the texture's edge, and growing never reallocates it
+        Item {
+            width: 560
+            height: 740
+            // The Sonar's plane (HudStatusFrame): same angles and same center, so that the
+            // panel's top edge is the extension of the Sonar's
+            transform: Tilt { w: 1236; h: 368; yaw: -16; pitch: 1; roll: -1.5; focal: 2600 }
+            layer.enabled: volumePopupWin.visible
+            layer.smooth: true
+            layer.textureSize: Qt.size(width * 2, height * 2)
+
+            AudioControlPopup {
+                id: audioControlContent
+                x: 488 - width
+                y: 24
+                // Slightly larger when expanded, driven by the width's own animation
+                transform: Scale {
+                    origin.x: audioControlContent.width
+                    xScale: 1 + 0.08 * (audioControlContent.width - 220) / 200
+                    yScale: xScale
+                }
+                open: bar.volumePopupVisible
+                onCloseRequested: bar.volumePopupVisible = false
+            }
         }
     }
     
@@ -186,7 +172,7 @@ Item {
                 && BarState.previewWorkspace.monitor.name === bar.screen.name
         color: "transparent"
         anchor.window: bar.parentWindow
-        anchor.rect: Qt.rect(0, barHeight, 1, 1)
+        anchor.rect: Qt.rect(leftSection.x, bar.sidesBottom, 1, 1)
         anchor.edges: Edges.Bottom | Edges.Left
         anchor.gravity: Edges.Bottom | Edges.Right
         implicitWidth: Math.max(1, wsPreviewContent.implicitWidth)
