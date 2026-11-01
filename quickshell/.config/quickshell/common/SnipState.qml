@@ -17,6 +17,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 
 Singleton {
@@ -30,6 +31,61 @@ Singleton {
     property real   monitorY: 0
     property real   monitorScale: 1
     property int    action: SnipAction.Action.Screenshot
+
+    // ── Banner ───────────────────────────────────────────────────────────
+    // The instruction while selecting, then for a moment what came of it
+    property string _announced: ""
+    property string bannerScreen: ""
+    readonly property string bannerText: root.active
+        ? (root.action === SnipAction.Action.Record ? "SELECT A REGION TO RECORD" : "SELECT A REGION TO CAPTURE")
+        : root._announced
+
+    function _announce(text) {
+        root._announced = text;
+        Sounds.play("capture", "active.ogg");
+        _announceClear.restart();
+    }
+    readonly property Timer _announceClear: Timer {
+        interval: 3000
+        onTriggered: root._announced = ""
+    }
+
+    function _outcome(act) {
+        switch (act) {
+        case SnipAction.Action.Annotate: return "SENT TO THE ANNOTATOR";
+        case SnipAction.Action.Ocr:      return "READING THE TEXT";
+        case SnipAction.Action.Search:   return "SEARCHING THE IMAGE";
+        case SnipAction.Action.Record:   return "RECORDING STARTED";
+        }
+        return "SCREENSHOT SAVED";
+    }
+
+    // ── Recording ────────────────────────────────────────────────────────
+    property bool   recording: false
+    property string recordScreen: ""
+    // In the screen's own coordinates
+    property var    recordRegion: null
+    property double recordStart: 0
+
+    function _recordStopped() {
+        root.recording = false;
+        root.recordRegion = null;
+    }
+
+    // wf-recorder can also die on its own
+    readonly property Timer _recordWatch: Timer {
+        interval: 2000
+        repeat: true
+        running: root.recording
+        onTriggered: _recordCheck.running = true
+    }
+    readonly property Process _recordCheck: Process {
+        command: ["bash", "-c", "p=$(cat '" + SnipAction.recordPidFile + "' 2>/dev/null); [ \"$(cat /proc/$p/comm 2>/dev/null)\" = wf-recorder ]"]
+        onExited: code => {
+            if (code !== 0)
+                root._recordStopped();
+        }
+    }
 
     // Phase 3 will drive the window-outline picker from here.
     property bool   windowOutlines: false
@@ -108,6 +164,8 @@ Singleton {
 
     onActiveChanged: {
         if (root.active)
+            root.bannerScreen = root.screenName;
+        if (root.active)
             Quickshell.execDetached(["bash", "-c",
                 "mkdir -p \"$(dirname '" + root._lockPath + "')\" && printf '%s' "
                 + Quickshell.processId + " > '" + root._lockPath + "'"]);
@@ -143,6 +201,23 @@ Singleton {
             monitorY: root.monitorY,
             scale: root.monitorScale
         });
+        if (root.action === SnipAction.Action.Record) {
+            const wasRecording = root.recording;
+            if (wasRecording) {
+                root._recordStopped();
+            } else {
+                root.recording = true;
+                root.recordScreen = root.screenName;
+                root.recordRegion = { x: localX, y: localY, w: w, h: h };
+                root.recordStart = Date.now();
+            }
+            // The banner's own corner: not in the video
+            const clearOfBanner = localX >= 524 || localY >= 194 || localX + w <= 24 || localY + h <= 124;
+            if (wasRecording || clearOfBanner)
+                root._announce(wasRecording ? "RECORDING STOPPED" : "RECORDING STARTED");
+        } else {
+            root._announce(root._outcome(root.action));
+        }
         root._close();
     }
 
@@ -195,6 +270,12 @@ Singleton {
                 root.open(act, f[2], f[3],
                           parseFloat(f[4]), parseFloat(f[5]), parseFloat(f[6]) || 1);
             } else if (f[0] === "direct" && f.length >= 10) {
+                // The keybind's way of stopping a recording: a 1x1 region and no image
+                if (act === SnipAction.Action.Record && f[6] === "") {
+                    root.bannerScreen = Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : "";
+                    root._announce("RECORDING STOPPED");
+                    root._recordStopped();
+                }
                 SnipAction.run({
                     x: parseFloat(f[2]), y: parseFloat(f[3]),
                     w: parseFloat(f[4]), h: parseFloat(f[5])
