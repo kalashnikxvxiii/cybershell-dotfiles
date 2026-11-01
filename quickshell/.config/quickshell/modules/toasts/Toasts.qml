@@ -37,7 +37,7 @@ Item {
         let h = -spacing;
         for (let i = 0; i < repeater.count; i++) {
             const item = repeater.itemAt(i);
-            if (item && !item.modelData.closed && !item.previewHidden)
+            if (item && !item.gone && !item.previewHidden)
                 h += item.implicitHeight + spacing;
         }
         return Math.max(0, h);
@@ -96,14 +96,17 @@ Item {
             let y = 0;
             for (let i = 0; i < index; i++) {
                 const item = repeater.itemAt(i);
-                if (item && !item.modelData.closed && !item.previewHidden)
+                if (item && !item.gone && !item.previewHidden)
                     y += item.implicitHeight + root.spacing;
             }
             return y;
         }
         implicitHeight: card.implicitHeight
 
-        opacity: modelData.closed || previewHidden ? 0 : 1
+        // A closed card keeps its slot until its exit is over
+        property bool gone: false
+
+        opacity: previewHidden ? 0 : 1
         visible: opacity > 0
 
         // Any button closes it.
@@ -130,20 +133,30 @@ Item {
             modelData: wrapper.modelData
         }
 
-        // Exit: accelerates out to the right and hands the lock back. The fade
-        // itself is the opacity binding above plus its Behavior -- animating
-        // opacity here too would break that binding.
-        NumberAnimation {
-            target: exitShift
-            property: "x"
-            to: 32
-            duration: 200
-            easing.type: Easing.InCubic
-            running: wrapper.modelData.closed
-            onFinished: wrapper.modelData.unlock()
+        // Exit, as the Now Playing chip's: the card fades, a red line takes its place and
+        // runs out. Then the lock goes back
+        Rectangle {
+            id: exitLine
+            anchors.verticalCenter: parent.verticalCenter
+            width: 0
+            height: 3
+            color: HudState.danger
+            opacity: 0
         }
-
-        transform: Translate { id: exitShift }
+        SequentialAnimation {
+            running: wrapper.modelData.closed
+            NumberAnimation { target: card; property: "opacity"; to: 0; duration: 180 }
+            PropertyAction { target: exitLine; property: "width"; value: wrapper.width }
+            PropertyAction { target: exitLine; property: "opacity"; value: 1 }
+            NumberAnimation { target: exitLine; property: "width"; to: 0; duration: 150 }
+            ScriptAction {
+                script: {
+                    wrapper.gone = true
+                    root.flagChanged()
+                    wrapper.modelData.unlock()
+                }
+            }
+        }
 
         Behavior on opacity {
             Anim { duration: 200; easing.type: Easing.InCubic }

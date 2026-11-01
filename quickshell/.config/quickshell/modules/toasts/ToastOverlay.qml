@@ -34,6 +34,11 @@ Scope {
 
     readonly property int gap: 8
     readonly property int stackWidth: 340
+    // Room around the stack for the tilt and the cards sliding out
+    readonly property int pad: 28
+    // Fixed, whatever is on screen: resizing the surface would move the tilt's pivot, and with it
+    // every card. Room for maxToasts cards of three lines
+    readonly property int stackHeight: 400
 
     PanelWindow {
         id: win
@@ -52,12 +57,11 @@ Scope {
 
         anchors.bottom: true
         anchors.right: true
-        margins.bottom: root.gap
-        margins.right: root.gap
+        // Above the HUD's Apps Launcher hint, which owns the bottom of this corner
+        margins.bottom: HudState.enabled ? 40 : 0
 
-        implicitWidth: root.stackWidth
-        // Never commit a zero-height surface.
-        implicitHeight: Math.max(1, stack.implicitHeight)
+        implicitWidth: root.stackWidth + 2 * root.pad
+        implicitHeight: root.stackHeight + 2 * root.pad
         color: "transparent"
 
         // Mapped only while something is on screen, and kept mapped through the
@@ -66,13 +70,31 @@ Scope {
 
         // Only the cards take clicks; everything else falls through.
         mask: Region {
-            item: stack.implicitHeight > 0 ? stack : null
+            item: cards
         }
 
-        Toasts {
-            id: stack
+        // The HUD's plane for this corner, drawn flat at twice the size (see HudPlate)
+        Item {
+            id: plate
             anchors.fill: parent
-            fullscreen: root.fullscreen
+            transform: Tilt { w: plate.width; h: plate.height; yaw: -14; pitch: -1; roll: 2.5; focal: 1180 }
+            layer.enabled: stack.implicitHeight > 0
+            layer.smooth: true
+            layer.textureSize: Qt.size(width * 2, height * 2)
+
+            Toasts {
+                id: stack
+                anchors.fill: parent
+                anchors.margins: root.pad
+                fullscreen: root.fullscreen
+            }
+            Item {
+                id: cards
+                anchors.left: stack.left
+                anchors.right: stack.right
+                anchors.bottom: stack.bottom
+                height: stack.implicitHeight
+            }
         }
     }
 }
