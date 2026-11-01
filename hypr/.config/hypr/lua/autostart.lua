@@ -26,7 +26,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("awww-daemon")                                                                         -- wallpaper daemon (awww)
     hl.exec_cmd("quickshell >$XDG_RUNTIME_DIR/quickshell.log 2>&1")                                    -- Quickshell
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh")                                          -- set initial wallpapers
-    hl.exec_cmd("~/.config/hypr/scripts/auto-dnd-fullscreen.sh")                                       -- auto DND in fullscreen
     -- hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
     -- hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal
     tray_exec("xwaylandvideobridge")                                                                   -- Discord screen share

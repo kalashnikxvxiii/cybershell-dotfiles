@@ -249,7 +249,7 @@ hl.bind(mainMod .. " + CTRL + B", hl.dsp.exec_cmd("bash ~/.config/quickshell/scr
 -- Toggle bar on all the screens
 hl.bind(mainMod .. " + CTRL + SHIFT + B", hl.dsp.exec_cmd("bash ~/.config/quickshell/scripts/bar-toggle.sh all"))
 -- New Quickshell logout overlay (main)
-hl.bind(mainMod .. " + SHIFT + E",        hl.dsp.exec_cmd("~/.config/quickshell/scripts/logout-toggle.sh"))
+hl.bind(mainMod .. " + SHIFT + E",        hl.dsp.exec_cmd("qs ipc call launcher open"))
 -- Fallback wlogout
 hl.bind(mainMod .. " + CTRL + SHIFT + E",        hl.dsp.exec_cmd("wlogout -b 3 -c 20 -r 20 -m 200"))
 
