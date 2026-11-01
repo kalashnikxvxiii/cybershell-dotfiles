@@ -12,12 +12,17 @@ Item {
     property bool matched: true
     property bool searching: false
     property color accent: CP.cyan
+    // The bind already on the combination being captured
+    property bool conflicted: false
+    property bool clickable: false
+    signal activated()
 
-    opacity: matched ? 1 : 0.16
+    opacity: matched || conflicted ? 1 : 0.16
 
     Rectangle {
         anchors.fill: parent
-        color: hover.containsMouse ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.12)
+        color: root.conflicted ? CP.alpha(CP.red, 0.28)
+            : hover.containsMouse ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.12)
             : root.searching && root.matched ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.07)
             : "transparent"
 
@@ -27,15 +32,17 @@ Item {
     Rectangle {
         width: 2
         height: parent.height
-        color: root.accent
-        opacity: hover.containsMouse ? 1 : root.searching && root.matched ? 0.6 : 0
+        color: root.conflicted ? CP.red : root.accent
+        opacity: root.conflicted || hover.containsMouse ? 1 : root.searching && root.matched ? 0.6 : 0
     }
 
     MouseArea {
         id: hover
         anchors.fill: parent
         hoverEnabled: true
-        acceptedButtons: Qt.NoButton
+        acceptedButtons: root.clickable ? Qt.LeftButton : Qt.NoButton
+        cursorShape: root.clickable ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: root.activated()
     }
 
     Text {

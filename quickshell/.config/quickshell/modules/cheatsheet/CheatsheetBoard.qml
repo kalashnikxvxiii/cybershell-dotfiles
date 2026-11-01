@@ -13,6 +13,10 @@ Item {
     property var sections: []
     property string query: ""
     property string modFilter: ""
+    // The combination to point out, and whether your own binds open on a click
+    property string conflictCombo: ""
+    property bool editable: false
+    signal bindActivated(var row)
 
     readonly property int columnCount: Math.max(1, Math.floor(width / 340))
     readonly property var columns: Model.pack(sections, columnCount)
@@ -125,6 +129,9 @@ Item {
                                     required property var modelData
                                     row: modelData
                                     width: block.width
+                                    conflicted: Model.holdsCombo(modelData, root.conflictCombo)
+                                    clickable: root.editable && modelData.section === "MY BINDS"
+                                    onActivated: root.bindActivated(modelData)
                                     height: root.rowHeight
                                     accent: block.accent
                                     searching: root.searching

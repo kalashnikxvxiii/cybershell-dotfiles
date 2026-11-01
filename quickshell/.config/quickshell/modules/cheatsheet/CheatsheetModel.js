@@ -70,7 +70,7 @@ function build(binds) {
 
         var id = title + "|" + name + "|" + b.modmask
         if (!rows[id]) {
-            rows[id] = { section: title, name: name, note: note, mods: modsOf(b.modmask), keys: [] }
+            rows[id] = { section: title, name: name, note: note, mods: modsOf(b.modmask), keys: [], submap: b.submap }
             sectionFor(title).rows.push(rows[id])
         }
         if (rows[id].keys.indexOf(label) < 0) rows[id].keys.push(label)
@@ -122,6 +122,16 @@ function pack(sections, count) {
         end = start
     }
     return result
+}
+
+// Whether the row is the bind on `combo` ("SUPER + ALT + K"): menu items answer only inside
+// their submap, so they never clash
+function holdsCombo(row, combo) {
+    if (combo === "" || row.submap !== "") return false
+    var parts = combo.split(" + ")
+    var label = keyLabel(parts.pop()).toLowerCase()
+    if (parts.length !== row.mods.length || !parts.every(m => row.mods.indexOf(m) >= 0)) return false
+    return row.keys.some(k => k.toLowerCase() === label || (k === "1…0" && label.length === 1 && label >= "0" && label <= "9"))
 }
 
 function matches(row, query, modFilter) {

@@ -13,6 +13,9 @@ Singleton {
     property bool open: false
     property string screenName: ""
 
+    // Esc during a keybind capture: Hyprland eats it, and calls back through IPC
+    signal captureCancelled()
+
     property bool mediaOpen: false
     property string mediaScreen: ""
 

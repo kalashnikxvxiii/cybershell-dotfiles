@@ -26,6 +26,9 @@ Scope {
     property var pendingMini: null
     property string query: ""
     property string modFilter: ""
+    // The personal bind being added or edited, in the line beside the search
+    property var bindDraft: null
+    property var userBinds: []
 
     // Size of the minimized card; resets with the shell
     property real miniWidth: 440
@@ -51,7 +54,19 @@ Scope {
         clearFilters()
         pendingMini = null
         mini = false
+        bindDraft = null
+        reloadBinds()
+    }
+
+    function reloadBinds() {
         bindsReader.running = true
+        userBindsReader.running = true
+    }
+
+    function editBind(row) {
+        const i = userBinds.findIndex(b => b.name === row.name)
+        if (i >= 0)
+            bindDraft = { index: i, name: userBinds[i].name, keys: userBinds[i].keys, command: userBinds[i].command }
     }
 
     function clearFilters() {
@@ -74,6 +89,7 @@ Scope {
     // Glitch out, swap the mode once it is over, glitch back in
     function setMini(value) {
         if (mini === value || pendingMini !== null) return
+        bindDraft = null
         pendingMini = value
         shown = false
     }
@@ -98,6 +114,14 @@ Scope {
                 root.sections = Model.build(JSON.parse(text))
                 root.shown = true
             }
+        }
+    }
+
+    Process {
+        id: userBindsReader
+        command: ["python3", Qt.resolvedUrl("../../scripts/user-binds.py").toString().replace("file://", ""), "list"]
+        stdout: StdioCollector {
+            onStreamFinished: root.userBinds = JSON.parse(text)
         }
     }
 
@@ -168,7 +192,7 @@ Scope {
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.AllButtons
-                    onClicked: search.forceActiveFocus()
+                    onClicked: if (root.bindDraft === null) search.forceActiveFocus()
                 }
 
                 // ── Header ───────────────────────────────────────────────
@@ -243,8 +267,26 @@ Scope {
                         color: CP.yellow
                     }
 
+                    BindStrip {
+                        id: bindStrip
+                        visible: !root.mini
+                        anchors.left: searchBox.right
+                        anchors.leftMargin: 8
+                        anchors.top: parent.top
+                        draft: root.bindDraft
+                        userBinds: root.userBinds
+                        onOpenRequested: root.bindDraft = { index: -1, name: "", keys: "", command: "" }
+                        onClosed: {
+                            root.bindDraft = null
+                            root.reloadBinds()
+                            LauncherMenus.reloadUserBinds()
+                            search.forceActiveFocus()
+                        }
+                    }
+
                     // Search: typing goes here straight away
                     Item {
+                        id: searchBox
                         visible: !root.mini
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.top
@@ -253,8 +295,7 @@ Scope {
 
                         CutShape {
                             anchors.fill: parent
-                            cutTopRight: 8
-                            cutBottomLeft: 8
+                            cutBottomLeft: 12
                             inset: 0.5
                             fillColor: Qt.rgba(0.03, 0.045, 0.08, 0.9)
                             strokeColor: CP.alpha(CP.cyan, search.text !== "" ? 1 : 0.45)
@@ -365,6 +406,9 @@ Scope {
                     sections: root.sections
                     query: root.query
                     modFilter: root.modFilter
+                    conflictCombo: bindStrip.conflictCombo
+                    editable: !root.mini
+                    onBindActivated: row => root.editBind(row)
                 }
 
                 CornerAccents {
