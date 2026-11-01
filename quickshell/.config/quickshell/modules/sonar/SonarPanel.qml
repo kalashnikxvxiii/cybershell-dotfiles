@@ -22,7 +22,8 @@ Scope {
 
     required property var screen
 
-    readonly property bool wantOpen: SonarState.open
+    // With the HUD on, HudSonarCard shows the Sonar instead
+    readonly property bool wantOpen: !HudState.enabled && SonarState.open
         && (SonarState.screenName === "" || SonarState.screenName === root.screen.name)
 
     // Breathing room from the bar above and from the screen's right edge.

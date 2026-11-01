@@ -18,7 +18,12 @@ FocusScope {
     property bool shown: SonarState.open
 
     readonly property bool netView: SonarState.view === "net"
-    readonly property color accent: netView ? Colours.accentSecondary : Colours.accentMem
+    readonly property color accent: HudState.wallust
+
+    // 1 is the card. Below that it is shrinking towards the HUD's sonar tile: corners and
+    // radar take the tile's shape and the details fade out
+    property real morph: 1
+    readonly property real details: Math.max(0, root.morph * 2 - 1)
 
     implicitWidth: 380
     implicitHeight: 528
@@ -34,10 +39,9 @@ FocusScope {
     }
 
     // ── Chrome ───────────────────────────────────────────────────
-    CutShape {
+    SonarOutline {
         anchors.fill: parent
         fillColor: Colours.moduleBg
-        cutBottomLeft: 32
     }
 
     ScanlineOverlay {
@@ -47,6 +51,7 @@ FocusScope {
 
     CornerAccents {
         anchors.margins: 3
+        opacity: root.details
         accentColor: root.accent
         showTopLeft: true
         showBottomRight: true
@@ -54,17 +59,15 @@ FocusScope {
         showBottomLeft: false
     }
 
-    CutShape {
+    SonarOutline {
         anchors.fill: parent
         strokeColor: CP.alpha(root.accent, 0.45)
-        strokeWidth: 1
-        inset: 0.5
-        cutBottomLeft: 32
     }
 
     // ── Header ───────────────────────────────────────────────────
     Item {
         id: header
+        opacity: root.details
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -166,6 +169,7 @@ FocusScope {
     // ── Status strip ─────────────────────────────────────────────
     Item {
         id: statusRow
+        opacity: root.details
         anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -265,11 +269,11 @@ FocusScope {
     SonarDisplay {
         id: display
         anchors.top: statusRow.bottom
-        anchors.topMargin: 6
+        anchors.topMargin: 6 - 38 * (1 - root.morph)
         anchors.horizontalCenter: parent.horizontalCenter
-        width: parent.width - 24
-        height: 280
-        accent: root.netView ? CP.cyan : CP.magenta
+        width: parent.width - 14 - 10 * root.morph
+        height: 176 + 104 * root.morph
+        accent: HudState.wallust
         entries: root.entries
         revision: root.netView ? SonarState.netRev : SonarState.btRev
         sweeping: root.netView ? SonarState.scanning : SonarState.discovering
@@ -281,6 +285,7 @@ FocusScope {
     // ── Contacts ─────────────────────────────────────────────────
     Rectangle {
         id: listSep
+        opacity: root.details
         anchors.top: display.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -292,6 +297,7 @@ FocusScope {
 
     Flickable {
         id: listView
+        opacity: root.details
         anchors.top: listSep.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -352,6 +358,7 @@ FocusScope {
         anchors.right: listView.right
         anchors.bottom: listView.bottom
         height: 14
+        opacity: root.details
         visible: listView.contentHeight > listView.height
                  && listView.contentY < listView.contentHeight - listView.height - 1
         gradient: Gradient {
@@ -362,6 +369,7 @@ FocusScope {
 
     Rectangle {
         id: listTrack
+        opacity: root.details
         anchors.right: parent.right
         anchors.rightMargin: 6
         anchors.top: listView.top
@@ -382,6 +390,7 @@ FocusScope {
     // ── Actions ──────────────────────────────────────────────────
     Row {
         id: actions
+        opacity: root.details
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.bottomMargin: 12
