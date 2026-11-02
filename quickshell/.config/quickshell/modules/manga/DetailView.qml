@@ -169,7 +169,7 @@ Item {
                 font.pixelSize: 10
                 font.letterSpacing: 1.5
                 font.bold: true
-                color: libBtn.saved ? CP.void_ : CP.alpha(Colours.accentSecondary, 0.8)
+                color: libBtn.saved ? Theme.void_ : CP.alpha(Colours.accentSecondary, 0.8)
             }
 
             MouseArea {
@@ -330,7 +330,7 @@ Item {
                 visible: opacity > 0
                 Behavior on opacity { NumberAnimation { duration: 120 } }
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: CP.alpha(CP.void2, 0.96) }
+                    GradientStop { position: 0.0; color: CP.alpha(Theme.void2, 0.96) }
                     GradientStop { position: 1.0; color: "transparent" }
                 }
             }
@@ -345,7 +345,7 @@ Item {
                 Behavior on opacity { NumberAnimation { duration: 120 } }
                 gradient: Gradient {
                     GradientStop { position: 0.0; color: "transparent" }
-                    GradientStop { position: 1.0; color: CP.alpha(CP.void2, 0.96) }
+                    GradientStop { position: 1.0; color: CP.alpha(Theme.void2, 0.96) }
                 }
             }
 
@@ -356,7 +356,7 @@ Item {
                 anchors.bottom: parent.bottom
                 width: 2
                 visible: descBox.range > 0
-                color: CP.alpha(CP.void_, 0.5)
+                color: CP.alpha(Theme.void_, 0.5)
 
                 Rectangle {
                     width: parent.width
@@ -430,7 +430,7 @@ Item {
                     font.pixelSize: 11
                     font.letterSpacing: 1.5
                     font.bold: true
-                    color: tab.on ? CP.void_ : CP.alpha(Colours.textMuted, 0.85)
+                    color: tab.on ? Theme.void_ : CP.alpha(Colours.textMuted, 0.85)
                 }
 
                 MouseArea {
@@ -631,7 +631,7 @@ Item {
                         font.pixelSize: 8
                         font.letterSpacing: 0.5
                         font.bold: true
-                        color: CP.void_
+                        color: Theme.void_
                     }
                 }
 
@@ -689,7 +689,7 @@ Item {
                                 anchors.leftMargin: 14
                                 anchors.rightMargin: 2
                                 color: vMa.containsMouse ? CP.alpha(Colours.accentSecondary, 0.12)
-                                                         : CP.alpha(CP.void_, 0.35)
+                                                         : CP.alpha(Theme.void_, 0.35)
                             }
 
                             Text {
@@ -731,7 +731,7 @@ Item {
                                     font.pixelSize: 8
                                     font.letterSpacing: 0.5
                                     font.bold: true
-                                    color: CP.void_
+                                    color: Theme.void_
                                 }
                             }
 

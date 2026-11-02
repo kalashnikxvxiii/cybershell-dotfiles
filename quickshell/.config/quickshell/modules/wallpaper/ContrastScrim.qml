@@ -239,7 +239,7 @@ Scope {
                         // A single flat fill does not need a multisampled FBO the
                         // size of the window, reallocated on every resize
                         layer.enabled: false
-                        fillColor: CP.void_
+                        fillColor: Theme.void_
                         cutTopLeft: dim.modelData.cutTL
                         cutTopRight: dim.modelData.cutTR
                         cutBottomRight: dim.modelData.cutBR

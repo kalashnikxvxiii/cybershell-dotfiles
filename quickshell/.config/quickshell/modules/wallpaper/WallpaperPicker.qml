@@ -2319,7 +2319,7 @@ Scope {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: CP.alpha(CP.void2, 0.78)
+                        color: CP.alpha(Theme.void2, 0.78)
                     }
 
                     ScanlineOverlay { opacity: 0.07 }
@@ -2442,7 +2442,7 @@ Scope {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.alpha(CP.void2, 0.94)
+                        fillColor: CP.alpha(Theme.void2, 0.94)
                         strokeColor: CP.alpha(Theme.red, 0.9)
                         strokeWidth: 1
                         inset: 0.5
@@ -2500,7 +2500,7 @@ Scope {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.moduleBg
+                    fillColor: Theme.moduleBg
                     strokeColor: CP.alpha(Theme.cyan, 0.25)
                     strokeWidth: 1
                     inset: 0.5
@@ -2573,7 +2573,7 @@ Scope {
 
                         CutShape {
                             anchors.fill: parent
-                            fillColor: CP.alpha(CP.void2, 0.7)
+                            fillColor: CP.alpha(Theme.void2, 0.7)
                             strokeColor: CP.alpha(Colours.textMuted, 0.35)
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 3; cutBottomRight: 3
@@ -2648,7 +2648,7 @@ Scope {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.void2, 0.85)
+                    fillColor: CP.alpha(Theme.void2, 0.85)
                     strokeColor: CP.alpha(Theme.cyan, 0.35)
                     strokeWidth: 1
                     inset: 0.5
@@ -2766,7 +2766,7 @@ Scope {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.moduleBg
+                    fillColor: Theme.moduleBg
                     strokeColor: CP.alpha(Theme.red, 0.6)
                     strokeWidth: 2
                     inset: 1

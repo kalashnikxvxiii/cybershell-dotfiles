@@ -33,7 +33,7 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.alpha(CP.void2, 0.97)
+        fillColor: CP.alpha(Theme.void2, 0.97)
         strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5

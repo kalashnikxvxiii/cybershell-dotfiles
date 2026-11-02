@@ -89,7 +89,7 @@ FocusScope {
 
     Rectangle {
         anchors.fill: parent
-        color: CP.alpha(CP.void_, 0.97)
+        color: CP.alpha(Theme.void_, 0.97)
     }
 
     // Same reason: clicks on the reading surface must not reach whatever sits

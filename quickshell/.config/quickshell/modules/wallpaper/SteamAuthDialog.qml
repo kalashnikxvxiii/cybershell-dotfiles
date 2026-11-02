@@ -40,7 +40,7 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.moduleBg
+        fillColor: Theme.moduleBg
         strokeColor: CP.alpha(Theme.cyan, 0.6)
         strokeWidth: 2
         inset: 10

@@ -13,7 +13,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: CP.alpha(CP.void2, 0.78)
+        color: CP.alpha(Theme.void2, 0.78)
         MouseArea { anchors.fill: parent; onClicked: TransitionConfig.editorOpen = false }
     }
 
@@ -22,7 +22,7 @@ Item {
         anchors.centerIn: parent
         width: 960
         height: 600
-        fillColor: CP.alpha(CP.void2, 0.96)
+        fillColor: CP.alpha(Theme.void2, 0.96)
         strokeColor: CP.alpha(Theme.yellow, 0.45)
         strokeWidth: 2
         inset: 0.5
@@ -146,7 +146,7 @@ Item {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.alpha(CP.void2, 0.45)
+                        fillColor: CP.alpha(Theme.void2, 0.45)
                         strokeColor: CP.alpha(Theme.yellow, 0.20)
                         strokeWidth: 1; inset: 0.5; cutTopLeft: 12
                     }
@@ -349,7 +349,7 @@ Item {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.alpha(CP.void2, 0.45)
+                        fillColor: CP.alpha(Theme.void2, 0.45)
                         strokeColor: CP.alpha(Theme.yellow, 0.20)
                         strokeWidth: 1; inset: 0.5
                     }
@@ -391,7 +391,7 @@ Item {
 
                                 CutShape {
                                     width: 32; height: 18
-                                    fillColor: CP.alpha(CP.void2, 0.6)
+                                    fillColor: CP.alpha(Theme.void2, 0.6)
                                     strokeColor: CP.alpha(Theme.yellow, 0.4)
                                     strokeWidth: 1; inset: 0.5
                                     cutBottomRight: 3
@@ -566,7 +566,7 @@ Item {
                                 anchors.rightMargin: 4
                                 height: 22
                                 anchors.verticalCenter: parent.verticalCenter
-                                fillColor: CP.alpha(CP.void2, 0.7)
+                                fillColor: CP.alpha(Theme.void2, 0.7)
                                 strokeColor: CP.alpha(Theme.neon, 0.7)
                                 strokeWidth: 1; inset: 0.5
                                 cutTopLeft: 2; cutBottomRight: 2
@@ -695,8 +695,8 @@ Item {
                         anchors.right: presetsScroll.right
                         height: 14
                         gradient: Gradient {
-                            GradientStop { position: 0.0; color: CP.alpha(CP.void2, 0.92) }
-                            GradientStop { position: 1.0; color: CP.alpha(CP.void2, 0.0) }
+                            GradientStop { position: 0.0; color: CP.alpha(Theme.void2, 0.92) }
+                            GradientStop { position: 1.0; color: CP.alpha(Theme.void2, 0.0) }
                         }
                         opacity: presetsScroll.contentY > 4 ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -707,8 +707,8 @@ Item {
                         anchors.right: presetsScroll.right
                         height: 14
                         gradient: Gradient {
-                            GradientStop { position: 0.0; color: CP.alpha(CP.void2, 0.0) }
-                            GradientStop { position: 1.0; color: CP.alpha(CP.void2, 0.92) }
+                            GradientStop { position: 0.0; color: CP.alpha(Theme.void2, 0.0) }
+                            GradientStop { position: 1.0; color: CP.alpha(Theme.void2, 0.92) }
                         }
                         opacity: (presetsScroll.contentHeight - presetsScroll.height - presetsScroll.contentY) > 4 ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -742,7 +742,7 @@ Item {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.alpha(CP.void2, 0.45)
+                        fillColor: CP.alpha(Theme.void2, 0.45)
                         strokeColor: CP.alpha(Theme.neon, 0.25)
                         strokeWidth: 1; inset: 0.5
                     }
@@ -824,7 +824,7 @@ Item {
             height: 28
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.void2, 0.55)
+                fillColor: CP.alpha(Theme.void2, 0.55)
                 strokeColor: CP.alpha(Theme.neon, 0.25)
                 strokeWidth: 1; inset: 0.5; cutBottomRight: 12
             }
@@ -895,7 +895,7 @@ Item {
                     spacing: 5
                     CutShape {
                         width: 22; height: 16
-                        fillColor: CP.alpha(CP.void2, 0.6)
+                        fillColor: CP.alpha(Theme.void2, 0.6)
                         strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
@@ -907,7 +907,7 @@ Item {
                     spacing: 5
                     CutShape {
                         width: 26; height: 16
-                        fillColor: CP.alpha(CP.void2, 0.6)
+                        fillColor: CP.alpha(Theme.void2, 0.6)
                         strokeColor: CP.alpha(Theme.red, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
@@ -919,7 +919,7 @@ Item {
                     spacing: 5
                     CutShape {
                         width: 38; height: 16
-                        fillColor: CP.alpha(CP.void2, 0.6)
+                        fillColor: CP.alpha(Theme.void2, 0.6)
                         strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
@@ -931,7 +931,7 @@ Item {
                     spacing: 5
                     CutShape {
                         width: 38; height: 16
-                        fillColor: CP.alpha(CP.void2, 0.6)
+                        fillColor: CP.alpha(Theme.void2, 0.6)
                         strokeColor: CP.alpha(Theme.cyan, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
@@ -943,7 +943,7 @@ Item {
                     spacing: 5
                     CutShape {
                         width: 22; height: 16
-                        fillColor: CP.alpha(CP.void2, 0.6)
+                        fillColor: CP.alpha(Theme.void2, 0.6)
                         strokeColor: CP.alpha(Theme.neon, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
@@ -955,7 +955,7 @@ Item {
                     spacing: 5
                     CutShape {
                         width: 46; height: 16
-                        fillColor: CP.alpha(CP.void2, 0.6)
+                        fillColor: CP.alpha(Theme.void2, 0.6)
                         strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter

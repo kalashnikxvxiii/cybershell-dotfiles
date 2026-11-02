@@ -96,7 +96,7 @@ Scope {
             anchors.fill: parent
             visible: true
 
-            readonly property color veil: CP.alpha(CP.void2, 0.62)
+            readonly property color veil: CP.alpha(Theme.void2, 0.62)
             readonly property var r: win.hasSel
                 ? { x: win.selX, y: win.selY, w: win.selW, h: win.selH }
                 : { x: 0, y: 0, w: 0, h: 0 }
@@ -189,7 +189,7 @@ Scope {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.void2, 0.88)
+                    fillColor: CP.alpha(Theme.void2, 0.88)
                     strokeColor: Qt.rgba(SnipState.currentAccent.r,
                                          SnipState.currentAccent.g,
                                          SnipState.currentAccent.b, 0.55)

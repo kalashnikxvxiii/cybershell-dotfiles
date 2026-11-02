@@ -695,7 +695,7 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.void2, 0.5)
+                    fillColor: CP.alpha(Theme.void2, 0.5)
                     strokeColor: CP.alpha(Theme.cyan, 0.15)
                     strokeWidth: 1; inset: 0.5
                     cutTopLeft: 6; cutBottomRight: 6
@@ -1364,7 +1364,7 @@ Item {
 
         CutShape {
             anchors.fill: parent
-            fillColor: CP.void2
+            fillColor: Theme.void2
             strokeColor: CP.alpha(Theme.cyan, 0.4)
             strokeWidth: 1; inset: 0.5
             cutTopLeft: 4; cutBottomRight: 4
@@ -1436,7 +1436,7 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.void2
+                fillColor: Theme.void2
                 strokeColor: CP.alpha(Theme.red, 0.6)
                 strokeWidth: 2; inset: 1
                 cutTopLeft: 12; cutBottomRight: 12

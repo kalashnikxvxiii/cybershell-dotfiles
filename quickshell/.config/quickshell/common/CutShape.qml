@@ -23,7 +23,7 @@
 //               cutTopRight: 32; cutBottomLeft: 32 }
 //
 //   // Left section (arc TL+BL r=4, cut BR=8)
-//   CutShape { anchors.fill: parent; fillColor: CP.moduleBg; strokeColor: CP.alpha(Theme.cyan, 0.35)
+//   CutShape { anchors.fill: parent; fillColor: Theme.moduleBg; strokeColor: CP.alpha(Theme.cyan, 0.35)
 //               strokeWidth: 1; inset: 0.5; radiusTopLeft: 4; radiusBottomLeft: 4; cutBottomRight: 8 }
 //
 //   // Workspace button (cut TR+BL, 4px, dynamic fill)

@@ -336,7 +336,7 @@ Item {
         }
 
         ShapePath {
-            fillColor: CP.alpha(CP.void2, 0.92)
+            fillColor: CP.alpha(Theme.void2, 0.92)
             strokeColor: CP.alpha(root.focusedAccent, 0.85)
             strokeWidth: 1.5
             joinStyle: ShapePath.RoundJoin

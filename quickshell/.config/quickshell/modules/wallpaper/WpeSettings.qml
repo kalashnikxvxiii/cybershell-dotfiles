@@ -182,7 +182,7 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.moduleBg
+        fillColor: Theme.moduleBg
         strokeColor: CP.alpha(Theme.yellow, root.open ? 0.45 : 0.3)
         strokeWidth: 1; inset: 0.5
         cutTopLeft: root.open ? 16 : 8

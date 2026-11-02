@@ -114,7 +114,7 @@ Item {
         width: 46; height: 46
         CutShape {
             anchors.fill: parent
-            fillColor: muted ? CP.alpha(CP.void2, 0.5) : CP.alpha(root.accent, 0.15)
+            fillColor: muted ? CP.alpha(Theme.void2, 0.5) : CP.alpha(root.accent, 0.15)
             strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.frame, 0.55)
             strokeWidth: 0.7
             inset: 0.5
@@ -259,7 +259,7 @@ Item {
             anchors.topMargin: 2
             anchors.rightMargin: 6
             height: 2
-            color: CP.alpha(CP.void2, 0.7)
+            color: CP.alpha(Theme.void2, 0.7)
             Rectangle {
                 anchors.left: parent.left
                 anchors.top: parent.top
@@ -291,7 +291,7 @@ Item {
             CutShape {
                 id: sliderTrack
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.void2, 0.6)
+                fillColor: CP.alpha(Theme.void2, 0.6)
                 strokeColor: CP.alpha(root.frame, 0.30)
                 strokeWidth: 0.6
                 inset: 0.5

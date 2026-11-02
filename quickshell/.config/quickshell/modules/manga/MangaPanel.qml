@@ -76,7 +76,7 @@ Scope {
                 Rectangle {
                     id: backdrop
                     anchors.fill: parent
-                    color: CP.alpha(CP.void_, MangaState.readerOpen ? 0.55 : 0.35)
+                    color: CP.alpha(Theme.void_, MangaState.readerOpen ? 0.55 : 0.35)
                     opacity: 0
                     Behavior on color { CAnim {} }
 
@@ -143,7 +143,7 @@ Scope {
 
                         CutShape {
                             anchors.fill: parent
-                            fillColor: CP.alpha(CP.void2, 0.96)
+                            fillColor: CP.alpha(Theme.void2, 0.96)
                             strokeColor: CP.alpha(Colours.accentSecondary, 0.5)
                             strokeWidth: 1
                             inset: 0.5
@@ -200,7 +200,7 @@ Scope {
                                 font.letterSpacing: 1.5
                                 font.bold: true
                                 color: homeMa.containsMouse
-                                       ? CP.void_ : CP.alpha(Colours.accentSecondary, 0.8)
+                                       ? Theme.void_ : CP.alpha(Colours.accentSecondary, 0.8)
                             }
 
                             MouseArea {
@@ -243,7 +243,7 @@ Scope {
                                 font.pixelSize: 10
                                 font.letterSpacing: 1.5
                                 font.bold: true
-                                color: libBtn.on ? CP.void_
+                                color: libBtn.on ? Theme.void_
                                                  : CP.alpha(Colours.accentSecondary, 0.8)
                             }
 

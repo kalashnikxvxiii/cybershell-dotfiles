@@ -51,7 +51,7 @@ Item {
             anchors.top:    parent.top
             anchors.bottom: parent.bottom
             width: 4
-            color: CP.alpha(CP.void2, 0.55)
+            color: CP.alpha(Theme.void2, 0.55)
         }
 
         Rectangle {

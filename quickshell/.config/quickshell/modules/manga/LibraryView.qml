@@ -156,7 +156,7 @@ Item {
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     font.bold: true
-                    color: resumeMa.containsMouse ? CP.void_
+                    color: resumeMa.containsMouse ? Theme.void_
                                                   : CP.alpha(Colours.accentPrimary, 0.85)
                 }
 

@@ -16,7 +16,7 @@ Item {
     readonly property color fg: "#d8e0e8"
 
     // Takes the clicks: the chat under it cannot be used
-    Rectangle { anchors.fill: parent; color: CP.void2 }
+    Rectangle { anchors.fill: parent; color: Theme.void2 }
     MouseArea { anchors.fill: parent }
 
     // A full-width action: the primary one is filled
@@ -95,7 +95,7 @@ Item {
             AiClawd {
                 id: clawd
                 anchors.horizontalCenter: parent.horizontalCenter
-                hole: CP.void2
+                hole: Theme.void2
             }
 
             Rectangle {

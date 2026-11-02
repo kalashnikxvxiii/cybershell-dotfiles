@@ -43,7 +43,7 @@ Item {
         // Track background (only fill: stroke stays out of the mask)
         CutShape {
             anchors.fill: parent
-            fillColor: CP.alpha(CP.void2, 0.6)
+            fillColor: CP.alpha(Theme.void2, 0.6)
             cutBottomRight: 8
         }
 

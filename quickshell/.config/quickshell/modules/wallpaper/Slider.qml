@@ -66,7 +66,7 @@ Item {
         CutShape {
             id: track
             anchors.fill: parent
-            fillColor: CP.alpha(CP.void2, 0.6)
+            fillColor: CP.alpha(Theme.void2, 0.6)
             strokeColor: CP.alpha(Theme.yellow, 0.30)
             strokeWidth: 1
             inset: 0.5

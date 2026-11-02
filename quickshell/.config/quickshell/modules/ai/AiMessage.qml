@@ -197,7 +197,7 @@ Item {
             anchors.topMargin: root.isUser ? 6 : 0
             width: stamp.implicitWidth + 8
             height: stamp.implicitHeight + 2
-            color: CP.alpha(CP.void2, 0.92)
+            color: CP.alpha(Theme.void2, 0.92)
 
             Text {
                 id: stamp

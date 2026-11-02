@@ -91,7 +91,7 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.void2, 0.7)
+                fillColor: CP.alpha(Theme.void2, 0.7)
                 strokeColor: CP.alpha(Theme.neon, 0.55)
                 strokeWidth: 1
                 inset: 0.5

@@ -32,7 +32,7 @@ Item {
         id: moduleBg
         visible: root.showBackground
         anchors.fill: parent
-        fillColor: CP.moduleBg
+        fillColor: Theme.moduleBg
         strokeColor: "transparent"
         cutBottomLeft: 8
 

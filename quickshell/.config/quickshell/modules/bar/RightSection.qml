@@ -32,7 +32,7 @@ Item {
     //     }
     //     CutShape {
     //         anchors.fill: parent
-    //         fillColor: CP.moduleBg
+    //         fillColor: Theme.moduleBg
     //         strokeColor: CP.alpha(Theme.cyan, 0.35)
     //         strokeWidth: 1
     //         inset: 0.5

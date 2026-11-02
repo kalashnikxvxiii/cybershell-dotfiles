@@ -642,7 +642,7 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.void2, 0.85)
+                    fillColor: CP.alpha(Theme.void2, 0.85)
                     strokeColor: playlistBadge._hovered
                                 ? CP.alpha(Theme.yellow, 0.9)
                                 : CP.alpha(Theme.yellow, 0.6)

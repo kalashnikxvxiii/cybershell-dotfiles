@@ -21,7 +21,7 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.alpha(CP.void2, 0.88)
+        fillColor: CP.alpha(Theme.void2, 0.88)
         strokeColor: CP.alpha(SnipState.currentAccent, 0.55)
         strokeWidth: 1
         inset: 0.5
@@ -68,7 +68,7 @@ Item {
                             ? Qt.rgba(chip.accent.r, chip.accent.g, chip.accent.b, 0.20)
                             : (ma.containsMouse
                                 ? Qt.rgba(chip.accent.r, chip.accent.g, chip.accent.b, 0.10)
-                                : CP.alpha(CP.void2, 0.55))
+                                : CP.alpha(Theme.void2, 0.55))
                         strokeColor: chip.current
                             ? chip.accent
                             : Qt.rgba(chip.accent.r, chip.accent.g, chip.accent.b, 0.30)

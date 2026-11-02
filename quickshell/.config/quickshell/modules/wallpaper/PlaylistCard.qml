@@ -50,7 +50,7 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.alpha(CP.void2, 0.9)
+        fillColor: CP.alpha(Theme.void2, 0.9)
         strokeColor: PlaylistState.entryHighlightPath === root.path
                     ? CP.alpha(Theme.cyan, 0.9)
                     : CP.alpha(Theme.yellow, 0.2)
@@ -175,7 +175,7 @@ Item {
             y: 3
             width: 22
             height: 16
-            fillColor: CP.alpha(CP.void2, 0.85)
+            fillColor: CP.alpha(Theme.void2, 0.85)
             strokeColor: CP.alpha(Theme.yellow, 0.5)
             strokeWidth: 1; inset: 0.5
             cutTopLeft: 3; cutBottomRight: 3
@@ -206,7 +206,7 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.void2, 0.85)
+                fillColor: CP.alpha(Theme.void2, 0.85)
                 strokeColor: CP.alpha(Theme.red, 0.5)
                 strokeWidth: 1; inset: 0.5
                 cutTopLeft: 3; cutBottomRight: 3
@@ -235,7 +235,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            color: CP.alpha(CP.void2, 0.92)
+            color: CP.alpha(Theme.void2, 0.92)
         }
 
         Rectangle {
@@ -300,7 +300,7 @@ Item {
                 visible: root.type !== ""
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.void2, 0.7)
+                    fillColor: CP.alpha(Theme.void2, 0.7)
                     strokeColor: CP.alpha(Colours.textMuted, 0.35)
                     strokeWidth: 1; inset: 0.5
                     cutTopLeft: 2; cutBottomRight: 2

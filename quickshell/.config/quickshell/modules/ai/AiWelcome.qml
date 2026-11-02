@@ -73,7 +73,7 @@ Column {
         AiClawd {
             id: clawd
             anchors.horizontalCenter: parent.horizontalCenter
-            hole: CP.void2
+            hole: Theme.void2
         }
 
         // Something to stand on: without it the hop reads as floating

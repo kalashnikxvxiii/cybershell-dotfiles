@@ -58,7 +58,7 @@ Item {
                         ? CP.alpha(chip._isUser ? Theme.neon : Theme.cyan, 0.20)
                         : (ma.containsMouse
                             ? CP.alpha(chip._isUser ? Theme.neon : Theme.cyan, 0.10)
-                            : CP.alpha(CP.void2, 0.55))
+                            : CP.alpha(Theme.void2, 0.55))
                     strokeColor: chip.selectedActive
                         ? (chip._isUser ? Theme.neon : Theme.cyan)
                         : CP.alpha(chip._isUser ? Theme.neon : Theme.cyan, 0.30)

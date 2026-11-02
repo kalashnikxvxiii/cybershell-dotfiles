@@ -79,7 +79,7 @@ Item {
                                     ? CP.alpha(chipItem._accent, 0.30)
                                     : (chipMa.containsMouse
                                         ? CP.alpha(chipItem._accent, 0.10)
-                                        : CP.alpha(CP.void2, 0.55))
+                                        : CP.alpha(Theme.void2, 0.55))
                                 strokeColor: chipItem._selected
                                     ? chipItem._accent
                                     : CP.alpha(chipItem._accent, 0.32)

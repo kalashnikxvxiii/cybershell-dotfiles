@@ -51,7 +51,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 1
         fillColor: muted
-                   ? CP.alpha(CP.void2, 0.45)
+                   ? CP.alpha(Theme.void2, 0.45)
                    : (rowMa.containsMouse ? CP.alpha(root.accent, 0.08) : "transparent")
         strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : CP.alpha(root.frame, Qt.colorEqual(root.frame, root.accent) ? 0.25 : 0.6)
         strokeWidth: 0.7
@@ -116,7 +116,7 @@ Item {
         anchors.verticalCenterOffset: -4
         width: 70
         height: 3
-        color: CP.alpha(CP.void2, 0.6)
+        color: CP.alpha(Theme.void2, 0.6)
         Rectangle {
             anchors.left: parent.left
             anchors.top: parent.top

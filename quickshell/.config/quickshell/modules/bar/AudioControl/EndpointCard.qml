@@ -92,7 +92,7 @@ Item {
     // -- Background card ----------------------------------------------
     CutShape {
         anchors.fill: parent
-        fillColor: muted ? CP.alpha(CP.void2, 0.45) : CP.alpha(root.frame, 0.10)
+        fillColor: muted ? CP.alpha(Theme.void2, 0.45) : CP.alpha(root.frame, 0.10)
         strokeColor: muted ? CP.alpha(Colours.textMuted, 0.4) : root.frame
         strokeWidth: 1.5
         inset: 0.5
@@ -261,7 +261,7 @@ Item {
         height: 5
         Rectangle {
             anchors.fill: parent
-            color: CP.alpha(CP.void2, 0.7)
+            color: CP.alpha(Theme.void2, 0.7)
             border.color: CP.alpha(root.meter, 0.3)
             border.width: 0.5
         }
@@ -313,7 +313,7 @@ Item {
         height: 5
         Rectangle {
             anchors.fill: parent
-            color: CP.alpha(CP.void2, 0.7)
+            color: CP.alpha(Theme.void2, 0.7)
             border.color: CP.alpha(root.meter, 0.3)
             border.width: 0.5
         }

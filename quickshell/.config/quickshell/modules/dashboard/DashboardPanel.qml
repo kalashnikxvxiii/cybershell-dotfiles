@@ -257,7 +257,7 @@ Item {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.moduleBg
+                        fillColor: Theme.moduleBg
                         strokeColor: Theme.yellow
                         strokeWidth: 2
                         inset: 0.5

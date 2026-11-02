@@ -1,7 +1,7 @@
 pragma Singleton
-// Theme.qml -- the shell's palette: the accent colors every component paints with. Two fixed
-// palettes (cp2077, the colors of Colors.js; netwatch, CyberArch's) plus the user's own, kept in
-// ~/.config/quickshell/palettes.json. Backgrounds and the wallust-driven parts are not palettes.
+// Theme.qml -- the shell's palette: the accent and background colors every component paints with. Two fixed
+// palettes (netwatch, the colors of Colors.js; cp2077, CyberArch's) plus the user's own, kept in
+// ~/.config/quickshell/palettes.json. The wallust-driven parts are not palettes.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -11,17 +11,18 @@ Singleton {
     id: root
 
     // The roles a palette sets
-    readonly property var roles: ["cyan", "yellow", "red", "magenta", "neon", "amber"]
+    readonly property var roles: ["cyan", "yellow", "red", "magenta", "neon", "amber", "void_", "void2", "moduleBg", "moduleBgAlt"]
 
     readonly property var builtin: ({
-        cp2077: { cyan: CP.cyan, yellow: CP.yellow, red: CP.red, magenta: CP.magenta, neon: CP.neon, amber: CP.amber },
-        netwatch: { cyan: "#5ef4f8", yellow: "#ffd62e", red: "#ff2a3a", magenta: "#e432c8", neon: "#50f096", amber: "#ffb224" }
+        netwatch: { cyan: CP.cyan, yellow: CP.yellow, red: CP.red, magenta: CP.magenta, neon: CP.neon, amber: CP.amber, void_: CP.void_, void2: CP.void2, moduleBg: String(CP.moduleBg), moduleBgAlt: String(CP.moduleBgAlt) },
+        // CyberArch's: red where netwatch has yellow, and its maroon backgrounds
+        cp2077: { cyan: "#5ef4f8", yellow: "#ff2a3a", red: "#ff2a3a", magenta: "#e432c8", neon: "#2adc83", amber: "#ffb224", void_: "#14050a", void2: "#120307", moduleBg: "#eb1a060b", moduleBgAlt: "#d91f070e" }
     })
     // Name -> roles
     property var custom: ({})
-    property string current: "cp2077"
+    property string current: "netwatch"
 
-    readonly property var active: root.builtin[root.current] || root.custom[root.current] || root.builtin.cp2077
+    readonly property var active: root.builtin[root.current] || root.custom[root.current] || root.builtin.netwatch
 
     readonly property color cyan: root.active.cyan
     readonly property color yellow: root.active.yellow
@@ -29,6 +30,10 @@ Singleton {
     readonly property color magenta: root.active.magenta
     readonly property color neon: root.active.neon
     readonly property color amber: root.active.amber
+    readonly property color void_: root.active.void_
+    readonly property color void2: root.active.void2
+    readonly property color moduleBg: root.active.moduleBg
+    readonly property color moduleBgAlt: root.active.moduleBgAlt
 
     function isBuiltin(name) { return root.builtin[name] !== undefined }
     function names() { return Object.keys(root.builtin).concat(Object.keys(root.custom)) }
@@ -70,7 +75,7 @@ Singleton {
         delete c[name]
         root.custom = c
         if (root.current === name)
-            root.current = "cp2077"
+            root.current = "netwatch"
         root._save()
     }
 

@@ -692,7 +692,7 @@ Item {
 
         CutShape {
             anchors.fill: parent
-            fillColor: CP.alpha(CP.void2, 0.75)
+            fillColor: CP.alpha(Theme.void2, 0.75)
             strokeColor: input.activeFocus ? CP.alpha(Theme.magenta, 0.75)
                         : CP.alpha(Theme.magenta, 0.30)
             strokeWidth: input.activeFocus ? 1.5 : 1

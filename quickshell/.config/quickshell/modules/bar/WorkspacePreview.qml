@@ -297,7 +297,7 @@ Item {
     // -- Sfondo -----------------------------------
     CutShape {
         anchors.fill: parent
-        fillColor: CP.alpha(CP.void2, 0.92)
+        fillColor: CP.alpha(Theme.void2, 0.92)
         strokeColor: CP.alpha(Colours.accentSecondary, 0.55)
         strokeWidth: 1
         inset: 0.5
@@ -425,7 +425,7 @@ Item {
                 // Velo appena percettibile + icona identificativa, sopra la cattura
                 Rectangle {
                     anchors.fill: parent
-                    color: CP.alpha(CP.void_, 0.10)
+                    color: CP.alpha(Theme.void_, 0.10)
                     border.color: CP.alpha(Colours.accentSecondary, 0.4)
                     border.width: 1
 
@@ -533,7 +533,7 @@ Item {
                                     text: mediaBtn.glyph
                                     font.family: "JetBrainsMono Nerd Font"
                                     font.pixelSize: mediaBtn.base
-                                    color: CP.alpha(CP.void_, 0.75)
+                                    color: CP.alpha(Theme.void_, 0.75)
                                 }
 
                                 Text {
@@ -596,7 +596,7 @@ Item {
                     height: 24
                     fillColor: winItem.muted
                         ? (muteMa.containsMouse ? Theme.red : CP.alpha(Theme.red, 0.85))
-                        : CP.alpha(CP.void_, muteMa.containsMouse ? 0.9 : 0.7)
+                        : CP.alpha(Theme.void_, muteMa.containsMouse ? 0.9 : 0.7)
                     strokeColor: winItem.muted
                         ? Theme.red
                         : CP.alpha(Colours.accentSecondary, muteMa.containsMouse ? 1.0 : 0.6)
@@ -670,7 +670,7 @@ Item {
                     visible: opacity > 0
                     opacity: volFlash.running && volBtn.visible ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: 120 } }
-                    fillColor: CP.alpha(CP.void_, 0.85)
+                    fillColor: CP.alpha(Theme.void_, 0.85)
                     strokeColor: winItem.muted ? Theme.red
                                                : CP.alpha(Colours.accentSecondary, 0.8)
                     strokeWidth: 1
@@ -763,7 +763,7 @@ Item {
             Behavior on opacity { NumberAnimation { duration: 120 } }
             gradient: Gradient {
                 orientation: Gradient.Horizontal
-                GradientStop { position: 0.0; color: CP.alpha(CP.void_, 0.9) }
+                GradientStop { position: 0.0; color: CP.alpha(Theme.void_, 0.9) }
                 GradientStop { position: 1.0; color: "transparent" }
             }
         }
@@ -778,7 +778,7 @@ Item {
             gradient: Gradient {
                 orientation: Gradient.Horizontal
                 GradientStop { position: 0.0; color: "transparent" }
-                GradientStop { position: 1.0; color: CP.alpha(CP.void_, 0.9) }
+                GradientStop { position: 1.0; color: CP.alpha(Theme.void_, 0.9) }
             }
         }
     }

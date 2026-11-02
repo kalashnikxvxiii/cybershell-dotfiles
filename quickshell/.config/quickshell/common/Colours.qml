@@ -31,8 +31,8 @@ QtObject {
     readonly property color accentMem:       Theme.magenta   // #ea00d9 — memory
 
     // ── Modular backgrounds ───────────────────────────────────────────────
-    readonly property color moduleBg:    layer(colorFromRgba(CP.moduleBg), 0)
-    readonly property color moduleBgAlt: layer(colorFromRgba(CP.moduleBgAlt), 1)
+    readonly property color moduleBg:    layer(colorFromRgba(Theme.moduleBg), 0)
+    readonly property color moduleBgAlt: layer(colorFromRgba(Theme.moduleBgAlt), 1)
 
     // ── Canonical opacities ────────────────────────────────────────────────
     readonly property real baseOpacity:  0.92   // active panel

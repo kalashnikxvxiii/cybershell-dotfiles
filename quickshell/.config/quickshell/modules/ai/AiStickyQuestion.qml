@@ -70,7 +70,7 @@ Item {
         // Opaque: the transcript scrolls under it
         CutShape {
             anchors.fill: parent
-            fillColor: CP.void2
+            fillColor: Theme.void2
             cutTopLeft: 5
             cutBottomRight: 5
         }
@@ -129,7 +129,7 @@ Item {
             height: 26
             gradient: Gradient {
                 GradientStop { position: 0; color: "transparent" }
-                GradientStop { position: 1; color: CP.void2 }
+                GradientStop { position: 1; color: Theme.void2 }
             }
         }
 
@@ -158,7 +158,7 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.void2, 0.95)
+                fillColor: CP.alpha(Theme.void2, 0.95)
                 strokeColor: CP.alpha(Theme.cyan, moreMa.containsMouse ? 0.8 : 0.45)
                 strokeWidth: 1
                 inset: 0.5

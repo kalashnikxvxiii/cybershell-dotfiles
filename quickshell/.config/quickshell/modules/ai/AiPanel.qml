@@ -156,7 +156,7 @@ Item {
 
         CutShape {
             anchors.fill: parent
-            fillColor: CP.alpha(CP.void2, 0.93)
+            fillColor: CP.alpha(Theme.void2, 0.93)
             cutTopLeft: shell.cutTL; cutBottomLeft: shell.cutBL
             cutTopRight: shell.cutTR; cutBottomRight: shell.cutBR
         }

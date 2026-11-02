@@ -29,7 +29,7 @@ Item {
         // Background
         CutShape {
             anchors.fill: parent
-            fillColor: CP.moduleBg
+            fillColor: Theme.moduleBg
             cutBottomRight: 8
             cutBottomLeft: 8
         }

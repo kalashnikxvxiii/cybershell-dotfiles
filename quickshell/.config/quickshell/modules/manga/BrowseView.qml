@@ -49,7 +49,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 30
-        fillColor: CP.alpha(CP.void2, 0.6)
+        fillColor: CP.alpha(Theme.void2, 0.6)
         strokeColor: CP.alpha(Colours.accentSecondary, searchInput.activeFocus ? 0.9 : 0.35)
         strokeWidth: 1
         inset: 0.5
@@ -96,7 +96,7 @@ Item {
                 font.letterSpacing: 1.5
                 font.bold: true
                 color: root.searchMode === "author"
-                       ? CP.void_ : CP.alpha(Colours.accentPrimary, 0.75)
+                       ? Theme.void_ : CP.alpha(Colours.accentPrimary, 0.75)
             }
 
             MouseArea {
@@ -276,7 +276,7 @@ Item {
             font.pixelSize: 10
             font.letterSpacing: 1.5
             font.bold: true
-            color: CP.void_
+            color: Theme.void_
         }
 
         MouseArea {
@@ -326,7 +326,7 @@ Item {
             font.letterSpacing: 1.5
             font.bold: true
             color: root.selectedTags.length > 0
-                   ? CP.void_ : CP.alpha(Colours.accentSecondary, 0.75)
+                   ? Theme.void_ : CP.alpha(Colours.accentSecondary, 0.75)
         }
 
         MouseArea {
@@ -378,7 +378,7 @@ Item {
                         font.pixelSize: 9
                         font.letterSpacing: 1
                         font.bold: true
-                        color: chip.on ? CP.void_ : CP.alpha(Colours.textMuted, 0.85)
+                        color: chip.on ? Theme.void_ : CP.alpha(Colours.textMuted, 0.85)
                     }
 
                     MouseArea {
@@ -432,7 +432,7 @@ Item {
                         font.family: "Oxanium"
                         font.pixelSize: 9
                         font.letterSpacing: 0.5
-                        color: aChip.on ? CP.void_ : CP.alpha(Colours.textMuted, 0.85)
+                        color: aChip.on ? Theme.void_ : CP.alpha(Colours.textMuted, 0.85)
                     }
 
                     MouseArea {
@@ -538,7 +538,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     visible: card.nsfw && !cardMa.containsMouse
-                    fillColor: CP.alpha(CP.void_, 0.88)
+                    fillColor: CP.alpha(Theme.void_, 0.88)
                     cutBottomRight: 10
                     Text {
                         anchors.centerIn: parent
@@ -579,7 +579,7 @@ Item {
                         font.pixelSize: 8
                         font.letterSpacing: 0.5
                         font.bold: true
-                        color: CP.void_
+                        color: Theme.void_
                     }
                 }
 
