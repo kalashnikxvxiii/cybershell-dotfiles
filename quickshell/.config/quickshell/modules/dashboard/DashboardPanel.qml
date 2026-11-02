@@ -163,7 +163,7 @@ Item {
     // Border (outside the mask — full stroke, not clipped)
     CutShape {
         anchors.fill: parent
-        strokeColor: CP.yellow
+        strokeColor: Theme.yellow
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 32; cutBottomLeft: 32
@@ -172,7 +172,7 @@ Item {
     // CornerAccents — only on the NON-cut corners (top-left and bottom-right)
     CornerAccents {
         anchors.fill: parent
-        accentColor:     CP.yellow
+        accentColor:     Theme.yellow
         size:            14
         showTopLeft:     true
         showTopRight:    false
@@ -258,7 +258,7 @@ Item {
                     CutShape {
                         anchors.fill: parent
                         fillColor: CP.moduleBg
-                        strokeColor: CP.yellow
+                        strokeColor: Theme.yellow
                         strokeWidth: 2
                         inset: 0.5
                         cutTopLeft: 20

@@ -257,7 +257,7 @@ Item {
                 cutTopRight: 8
                 fillColor: "transparent"
                 strokeWidth: 1
-                strokeColor: CP.alpha(CP.cyan, 0.55)
+                strokeColor: CP.alpha(Theme.cyan, 0.55)
                 inset: 0.5
                 visible: dropZone.containsDrag && !mouseArea.drag.active
             }
@@ -318,7 +318,7 @@ Item {
                         layer.enabled: true
                         layer.effect: MultiEffect {
                             colorization: 1.0
-                            colorizationColor: CP.cyan
+                            colorizationColor: Theme.cyan
                         }
                     }
                 }
@@ -356,7 +356,7 @@ Item {
                     anchors.right:  parent.right
                     anchors.margins: 7
                     width: 5; height: 5
-                    color: CP.cyan
+                    color: Theme.cyan
                     visible: model.pinned ?? false
                 }
 
@@ -367,7 +367,7 @@ Item {
                     cutTopRight: 12
                     fillColor: "transparent"
                     strokeWidth: mouseArea.drag.active ? 1 : 0
-                    strokeColor: CP.alpha(CP.cyan, 0.7)
+                    strokeColor: CP.alpha(Theme.cyan, 0.7)
                     inset: 0.5
 
                     Behavior on strokeColor { Anim { duration: 80 } }
@@ -457,7 +457,7 @@ Item {
                 layer.enabled: true
                 layer.effect: MultiEffect {
                     colorization: 1.0
-                    colorizationColor: CP.cyan
+                    colorizationColor: Theme.cyan
                 }
             }
         }
@@ -493,8 +493,8 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor:   CP.alpha(CP.cyan, 0.15)
-                strokeColor: CP.alpha(CP.cyan, 0.55)
+                fillColor:   CP.alpha(Theme.cyan, 0.15)
+                strokeColor: CP.alpha(Theme.cyan, 0.55)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopLeft: 8
@@ -507,7 +507,7 @@ Item {
                 text: "+"
                 font.pixelSize: 15
                 font.family: "Oxanium"
-                color: CP.cyan
+                color: Theme.cyan
                 transform: Translate { id: addShift; x: 0 }
             }
 
@@ -515,7 +515,7 @@ Item {
                 id: addGlitch
                 labelTarget: addLabel
                 shiftTarget: addShift
-                baseColor: CP.cyan
+                baseColor: Theme.cyan
                 shortMode: true
                 x1: 2; x2: -2
                 finalPause: 100
@@ -561,23 +561,23 @@ Item {
                     width: parent.width
                     text: "ADD APP"
                     font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3
-                    color: CP.cyan
+                    color: Theme.cyan
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                Rectangle { width: parent.width; height: 1; color: CP.alpha(CP.cyan, 0.3) }
+                Rectangle { width: parent.width; height: 1; color: CP.alpha(Theme.cyan, 0.3) }
 
                 // Exec
                 Text {
                     text: "exec"
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
-                    color: CP.alpha(CP.cyan, 0.6)
+                    color: CP.alpha(Theme.cyan, 0.6)
                 }
                 CutShape {
                     width: parent.width; height: 24; cutTopRight: 3
-                    fillColor: CP.alpha(CP.cyan, 0.07)
+                    fillColor: CP.alpha(Theme.cyan, 0.07)
                     strokeWidth: 1
-                    strokeColor: execInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
+                    strokeColor: execInput.activeFocus ? CP.alpha(Theme.cyan, 0.7) : CP.alpha(Theme.cyan, 0.25)
 
                     Behavior on strokeColor { CAnim {} }
 
@@ -597,13 +597,13 @@ Item {
                 Text {
                     text: "icon path  (empty = auto)"
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
-                    color: CP.alpha(CP.cyan, 0.6)
+                    color: CP.alpha(Theme.cyan, 0.6)
                 }
                 CutShape {
                     width: parent.width; height: 24; cutTopRight: 3
-                    fillColor: CP.alpha(CP.cyan, 0.07)
+                    fillColor: CP.alpha(Theme.cyan, 0.07)
                     strokeWidth: 1
-                    strokeColor: iconInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
+                    strokeColor: iconInput.activeFocus ? CP.alpha(Theme.cyan, 0.7) : CP.alpha(Theme.cyan, 0.25)
 
                     Behavior on strokeColor { CAnim {} }
 
@@ -625,8 +625,8 @@ Item {
 
                     CutShape {
                         width: (parent.width - 6) / 2; height: 26; cutBottomLeft: 3
-                        fillColor: cancelHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
-                        strokeWidth: 1; strokeColor: CP.alpha(CP.red, 0.4); inset: 0.5
+                        fillColor: cancelHover.containsMouse ? CP.alpha(Theme.red, 0.12) : "transparent"
+                        strokeWidth: 1; strokeColor: CP.alpha(Theme.red, 0.4); inset: 0.5
 
                         Behavior on fillColor { CAnim {} }
 
@@ -634,7 +634,7 @@ Item {
                             anchors.centerIn: parent
                             text: "CANCEL"
                             font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
-                            color: CP.red
+                            color: Theme.red
                         }
                         MouseArea {
                             id: cancelHover
@@ -646,8 +646,8 @@ Item {
 
                     CutShape {
                         width: (parent.width - 6) / 2; height: 26; cutBottomLeft: 3
-                        fillColor: confirmHover.containsMouse ? CP.alpha(CP.cyan, 0.2) : CP.alpha(CP.cyan, 0.08)
-                        strokeWidth: 1; strokeColor: CP.alpha(CP.cyan, 0.5)
+                        fillColor: confirmHover.containsMouse ? CP.alpha(Theme.cyan, 0.2) : CP.alpha(Theme.cyan, 0.08)
+                        strokeWidth: 1; strokeColor: CP.alpha(Theme.cyan, 0.5)
 
                         Behavior on fillColor { CAnim {} }
 
@@ -655,7 +655,7 @@ Item {
                             anchors.centerIn: parent
                             text: "ADD"
                             font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
-                            color: CP.cyan
+                            color: Theme.cyan
                         }
                         MouseArea {
                             id: confirmHover
@@ -706,22 +706,22 @@ Item {
                     width: parent.width
                     text: "CHANGE ICON"
                     font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3
-                    color: CP.cyan
+                    color: Theme.cyan
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                Rectangle { width: parent.width; height: 1; color: CP.alpha(CP.cyan, 0.3) }
+                Rectangle { width: parent.width; height: 1; color: CP.alpha(Theme.cyan, 0.3) }
 
                 Text {
                     text: "icon name or path"
                     font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
-                    color: CP.alpha(CP.cyan, 0.6)
+                    color: CP.alpha(Theme.cyan, 0.6)
                 }
                 CutShape {
                     width: parent.width; height: 24; cutTopRight: 3
-                    fillColor: CP.alpha(CP.cyan, 0.07)
+                    fillColor: CP.alpha(Theme.cyan, 0.07)
                     strokeWidth: 1
-                    strokeColor: iconEditInput.activeFocus ? CP.alpha(CP.cyan, 0.7) : CP.alpha(CP.cyan, 0.25)
+                    strokeColor: iconEditInput.activeFocus ? CP.alpha(Theme.cyan, 0.7) : CP.alpha(Theme.cyan, 0.25)
 
                     Behavior on strokeColor { CAnim {} }
 
@@ -743,8 +743,8 @@ Item {
 
                     CutShape {
                         width: (parent.width - 6) / 2; height: 26; cutTopRight: 3
-                        fillColor: ieCancel.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
-                        strokeWidth: 1; strokeColor: CP.alpha(CP.red, 0.4); inset: 0.5
+                        fillColor: ieCancel.containsMouse ? CP.alpha(Theme.red, 0.12) : "transparent"
+                        strokeWidth: 1; strokeColor: CP.alpha(Theme.red, 0.4); inset: 0.5
 
                         Behavior on fillColor { CAnim {} }
 
@@ -752,7 +752,7 @@ Item {
                             anchors.centerIn: parent
                             text: "CANCEL"
                             font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
-                            color: CP.red
+                            color: Theme.red
                         }
                         MouseArea {
                             id: ieCancel
@@ -764,8 +764,8 @@ Item {
 
                     CutShape {
                         width: (parent.width - 6) / 2; height: 26; cutTopRight: 3
-                        fillColor: ieConfirm.containsMouse ? CP.alpha(CP.cyan, 0.2) : CP.alpha(CP.cyan, 0.08)
-                        strokeWidth: 1; strokeColor: CP.alpha(CP.cyan, 0.5); inset: 0.5
+                        fillColor: ieConfirm.containsMouse ? CP.alpha(Theme.cyan, 0.2) : CP.alpha(Theme.cyan, 0.08)
+                        strokeWidth: 1; strokeColor: CP.alpha(Theme.cyan, 0.5); inset: 0.5
 
                         Behavior on fillColor { CAnim {} }
 
@@ -773,7 +773,7 @@ Item {
                             anchors.centerIn: parent
                             text: "APPLY"
                             font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
-                            color: CP.cyan
+                            color: Theme.cyan
                         }
                         MouseArea {
                             id: ieConfirm

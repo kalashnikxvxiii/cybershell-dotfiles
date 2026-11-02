@@ -36,7 +36,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 12
@@ -78,7 +78,7 @@ Item {
                 text: "\u21e7 + tab"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 9
-                color: CP.alpha(CP.cyan, 0.55)
+                color: CP.alpha(Theme.cyan, 0.55)
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -111,7 +111,7 @@ Item {
                     anchors.fill: parent
                     anchors.leftMargin: 4
                     anchors.rightMargin: 4
-                    color: CP.alpha(meta.accent ?? CP.cyan,
+                    color: CP.alpha(meta.accent ?? Theme.cyan,
                         ma.containsMouse ? 0.11 : (active ? 0.07 : 0))
                     Behavior on color { ColorAnimation { duration: 110 } }
                 }
@@ -125,8 +125,8 @@ Item {
                     text: meta.glyph ?? ""
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 13
-                    color: active ? (meta.accent ?? CP.cyan)
-                        : CP.alpha(meta.accent ?? CP.cyan, 0.50)
+                    color: active ? (meta.accent ?? Theme.cyan)
+                        : CP.alpha(meta.accent ?? Theme.cyan, 0.50)
                     Behavior on color { ColorAnimation { duration: 110 } }
                 }
 
@@ -171,7 +171,7 @@ Item {
                     text: "\u2713"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 12
-                    color: meta.accent ?? CP.cyan
+                    color: meta.accent ?? Theme.cyan
                 }
 
                 MouseArea {
@@ -192,7 +192,7 @@ Item {
         anchors.leftMargin: 6
         anchors.rightMargin: 6
         height: 1
-        color: CP.alpha(CP.magenta, 0.20)
+        color: CP.alpha(Theme.magenta, 0.20)
     }
 
     // -- Effort ----------------------------------------

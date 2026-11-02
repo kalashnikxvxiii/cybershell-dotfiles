@@ -269,9 +269,9 @@ Item {
         focusedIndex < 0 ? "" : DockConfig.entries[focusedIndex].label
     readonly property real focusedCenterY: root.apexY
     readonly property color focusedAccent:
-        focusedIndex < 0 ? CP.cyan
+        focusedIndex < 0 ? Theme.cyan
         : (DockConfig.activeMap[DockConfig.entries[focusedIndex].id] === true
-        ? CP.yellow : DockConfig.entries[focusedIndex].accent)
+        ? Theme.yellow : DockConfig.entries[focusedIndex].accent)
 
     // Where the chat drawer anchors itself.
     readonly property real aiSlotCenterY: {

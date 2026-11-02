@@ -7,6 +7,7 @@ import QtQuick
 import "CheatsheetModel.js" as Model
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Item {
     id: root
 
@@ -38,12 +39,12 @@ Item {
     }
 
     function accentFor(title) {
-        if (title === "APPS" || title === "TOOLS") return CP.yellow
-        if (title === "WINDOWS" || title === "WALLPAPER" || title === "CAPTURE") return CP.cyan
-        if (title === "WORKSPACES" || title === "LOOK") return CP.magenta
-        if (title === "SYSTEM") return CP.red
-        if (title === "MEDIA") return CP.amber
-        return CP.neon
+        if (title === "APPS" || title === "TOOLS") return Theme.yellow
+        if (title === "WINDOWS" || title === "WALLPAPER" || title === "CAPTURE") return Theme.cyan
+        if (title === "WORKSPACES" || title === "LOOK") return Theme.magenta
+        if (title === "SYSTEM") return Theme.red
+        if (title === "MEDIA") return Theme.amber
+        return Theme.neon
     }
 
     Flickable {
@@ -153,7 +154,7 @@ Item {
                 x: (index + 1) * (root.width + root.columnGap) / root.columns.length - root.columnGap / 2
                 width: 1
                 height: Math.max(strip.height, flick.height)
-                color: CP.alpha(CP.cyan, 0.2)
+                color: CP.alpha(Theme.cyan, 0.2)
             }
         }
     }
@@ -165,7 +166,7 @@ Item {
         y: flick.visibleArea.yPosition * parent.height
         width: 2
         height: flick.visibleArea.heightRatio * parent.height
-        color: CP.cyan
+        color: Theme.cyan
         opacity: 0.6
     }
 }

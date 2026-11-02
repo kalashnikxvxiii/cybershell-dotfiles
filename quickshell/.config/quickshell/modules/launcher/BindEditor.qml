@@ -73,8 +73,8 @@ ColumnLayout {
         CutShape {
             anchors.fill: parent
             cutBottomRight: 10
-            fillColor: logic.capturing ? CP.alpha(CP.cyan, 0.15) : "transparent"
-            strokeColor: logic.capturing || captureBox.activeFocus ? CP.cyan : CP.alpha(CP.cyan, 0.5)
+            fillColor: logic.capturing ? CP.alpha(Theme.cyan, 0.15) : "transparent"
+            strokeColor: logic.capturing || captureBox.activeFocus ? Theme.cyan : CP.alpha(Theme.cyan, 0.5)
             strokeWidth: logic.capturing ? 2 : 1
             inset: strokeWidth / 2
         }
@@ -82,7 +82,7 @@ ColumnLayout {
             x: 14
             anchors.verticalCenter: parent.verticalCenter
             text: "KEYS"
-            color: CP.alpha(CP.cyan, 0.7)
+            color: CP.alpha(Theme.cyan, 0.7)
             font { family: "Oxanium"; pixelSize: 10 }
         }
         Text {
@@ -106,7 +106,7 @@ ColumnLayout {
         text: logic.status !== "" ? logic.status
             : logic.conflict !== "" ? "Already used by " + logic.conflict + ": both would fire"
             : ""
-        color: CP.red
+        color: Theme.red
         wrapMode: Text.WordWrap
         font { family: "Oxanium"; pixelSize: 12 }
     }
@@ -117,20 +117,20 @@ ColumnLayout {
 
         Button {
             label: "SAVE"
-            accent: CP.cyan
+            accent: Theme.cyan
             enabled: root.canSave && !logic.busy
             onClicked: logic.save(nameField.text, commandField.text)
         }
         Button {
             visible: root.draft !== null && root.draft.index >= 0
             label: logic.deleteArmed ? "CLICK AGAIN" : "DELETE"
-            accent: CP.red
+            accent: Theme.red
             enabled: !logic.busy
             onClicked: logic.remove()
         }
         Button {
             label: "CANCEL"
-            accent: CP.cyan
+            accent: Theme.cyan
             onClicked: logic.cancel()
         }
         Item { Layout.fillWidth: true }
@@ -147,7 +147,7 @@ ColumnLayout {
         CutShape {
             anchors.fill: parent
             cutBottomRight: 10
-            strokeColor: input.activeFocus ? CP.cyan : CP.alpha(CP.cyan, 0.5)
+            strokeColor: input.activeFocus ? Theme.cyan : CP.alpha(Theme.cyan, 0.5)
             strokeWidth: input.activeFocus ? 2 : 1
             inset: strokeWidth / 2
         }
@@ -155,7 +155,7 @@ ColumnLayout {
             x: 14
             anchors.verticalCenter: parent.verticalCenter
             text: field.label
-            color: CP.alpha(CP.cyan, 0.7)
+            color: CP.alpha(Theme.cyan, 0.7)
             font { family: "Oxanium"; pixelSize: 10 }
         }
         TextInput {

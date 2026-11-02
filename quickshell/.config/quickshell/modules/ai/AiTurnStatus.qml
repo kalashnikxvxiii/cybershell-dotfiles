@@ -97,7 +97,7 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: CP.alpha(CP.void2, 0.85)
-                strokeColor: CP.alpha(CP.magenta, 0.30)
+                strokeColor: CP.alpha(Theme.magenta, 0.30)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopRight: 8
@@ -155,7 +155,7 @@ Item {
                 visible: flick.contentHeight > flick.height
                 y: flick.y + flick.visibleArea.yPosition * flick.height
                 height: Math.max(18, flick.visibleArea.heightRatio * flick.height)
-                color: CP.alpha(CP.magenta, flick.moving ? 0.55 : 0.25)
+                color: CP.alpha(Theme.magenta, flick.moving ? 0.55 : 0.25)
                 Behavior on color { ColorAnimation { duration: 200 } }
             }
         }
@@ -185,7 +185,7 @@ Item {
                     text: frames[frame]
                     font.family: "DejaVu Sans"
                     font.pixelSize: 13
-                    color: CP.magenta
+                    color: Theme.magenta
 
                     Timer {
                         interval: 110
@@ -204,7 +204,7 @@ Item {
                         font.pixelSize: 10
                         font.letterSpacing: 1.5
                         font.bold: true
-                        color: CP.yellow
+                        color: Theme.yellow
                     }
 
                     // A fixed slot: the word does not shuffle as the dots fill
@@ -212,7 +212,7 @@ Item {
                         width: dotsMetrics.width
                         text: "...".slice(0, root.dots)
                         font: dotsMetrics.font
-                        color: CP.yellow
+                        color: Theme.yellow
 
                         TextMetrics {
                             id: dotsMetrics
@@ -243,7 +243,7 @@ Item {
                                 && index > root.sweep - bar.run
                             width: 4
                             height: 7
-                            color: lit ? CP.yellow : CP.alpha(CP.yellow, 0.14)
+                            color: lit ? Theme.yellow : CP.alpha(Theme.yellow, 0.14)
                         }
                     }
                 }
@@ -272,12 +272,12 @@ Item {
                     textFormat: Text.StyledText
                     text: root.calls + (root.calls === 1 ? " TOOL CALL" : " TOOL CALLS")
                         + (root.fails > 0
-                            ? " \u00b7 <font color='" + CP.red + "'>" + root.fails + " FAILED</font>"
+                            ? " \u00b7 <font color='" + Theme.red + "'>" + root.fails + " FAILED</font>"
                             : "")
                     font.family: "Oxanium"
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
-                    color: CP.alpha(CP.cyan, 0.7)
+                    color: CP.alpha(Theme.cyan, 0.7)
                 }
 
                 Text {
@@ -285,7 +285,7 @@ Item {
                     text: root.expanded ? "\uf077" : "\uf078"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 9
-                    color: CP.alpha(CP.magenta, hover.containsMouse ? 1 : 0.65)
+                    color: CP.alpha(Theme.magenta, hover.containsMouse ? 1 : 0.65)
                     Behavior on color { ColorAnimation { duration: 100 } }
                 }
             }

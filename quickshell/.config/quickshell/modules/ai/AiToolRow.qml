@@ -6,13 +6,14 @@
 import QtQuick
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Item {
     id: root
 
     required property var call      // { name, input, id, state }
 
-    readonly property color tone: root.call.state === "error" ? CP.red
-        : root.call.state === "running" ? CP.yellow : CP.neon
+    readonly property color tone: root.call.state === "error" ? Theme.red
+        : root.call.state === "running" ? Theme.yellow : Theme.neon
 
     // The field that says what the call was about, by tool
     readonly property string arg: {

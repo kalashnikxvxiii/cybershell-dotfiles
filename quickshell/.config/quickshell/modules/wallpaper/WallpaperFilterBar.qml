@@ -41,7 +41,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.moduleBg
-        strokeColor: CP.alpha(CP.cyan, 0.3)
+        strokeColor: CP.alpha(Theme.cyan, 0.3)
         strokeWidth: 1
         inset: 0.5
         cutTopLeft: 8
@@ -73,8 +73,8 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: parent.active ? CP.alpha(CP.red, 0.2) : "transparent"
-                strokeColor: parent.active ? CP.red : CP.alpha(CP.red, 0.3)
+                fillColor: parent.active ? CP.alpha(Theme.red, 0.2) : "transparent"
+                strokeColor: parent.active ? Theme.red : CP.alpha(Theme.red, 0.3)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopLeft: 4
@@ -86,7 +86,7 @@ Item {
                 anchors.centerIn: parent
                 text: "\u2665"
                 font.pixelSize: 12
-                color: parent.active ? CP.red : Colours.textMuted
+                color: parent.active ? Theme.red : Colours.textMuted
             }
 
             MouseArea {
@@ -110,8 +110,8 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: parent.active ? CP.alpha(CP.cyan, 0.2) : "transparent"
-                    strokeColor: parent.active ? Colours.accentSecondary : CP.alpha(CP.cyan, 0.2)
+                    fillColor: parent.active ? CP.alpha(Theme.cyan, 0.2) : "transparent"
+                    strokeColor: parent.active ? Colours.accentSecondary : CP.alpha(Theme.cyan, 0.2)
                     strokeWidth: 1
                     inset: 0.5
                     cutTopLeft: 4
@@ -160,10 +160,10 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: parent.active ? CP.alpha(CP.yellow, 0.15) : "transparent"
+                    fillColor: parent.active ? CP.alpha(Theme.yellow, 0.15) : "transparent"
                     strokeColor: parent.active
                                 ? Colours.accentPrimary
-                                : CP.alpha(CP.yellow, 0.2)
+                                : CP.alpha(Theme.yellow, 0.2)
                     strokeWidth: 1
                     inset: 0.5
                     cutTopLeft: 3
@@ -196,7 +196,7 @@ Item {
             Layout.preferredWidth: 1
             Layout.preferredHeight: 28
             Layout.alignment: Qt.AlignVCenter
-            color: CP.alpha(CP.cyan, 0.25)
+            color: CP.alpha(Theme.cyan, 0.25)
         }
 
         // ── Color circles ──────────────────────────────────────────────
@@ -256,7 +256,7 @@ Item {
             Layout.preferredWidth: 1
             Layout.preferredHeight: 28
             Layout.alignment: Qt.AlignVCenter
-            color: CP.alpha(CP.cyan, 0.25)
+            color: CP.alpha(Theme.cyan, 0.25)
         }
 
         WallpaperSearch {

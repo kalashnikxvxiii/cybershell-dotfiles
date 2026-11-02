@@ -29,7 +29,7 @@ Item {
     property bool thinkingLive: false
 
     readonly property bool  isUser: root.role === "user"
-    readonly property color accent: isUser ? CP.cyan : CP.magenta
+    readonly property color accent: isUser ? Theme.cyan : Theme.magenta
     readonly property color fg: "#d8e0e8"
     readonly property bool  focusView: AiState.focusView
 
@@ -160,8 +160,8 @@ Item {
         CutShape {
             anchors.fill: parent
             visible: root.isUser
-            fillColor: CP.alpha(CP.cyan, 0.05)
-            strokeColor: CP.alpha(CP.cyan, 0.28)
+            fillColor: CP.alpha(Theme.cyan, 0.05)
+            strokeColor: CP.alpha(Theme.cyan, 0.28)
             strokeWidth: 1
             inset: 0.5
             cutTopLeft: 5
@@ -184,7 +184,7 @@ Item {
             frame: false
             glyph: "\uf0e2"
             glyphSize: 11
-            accent: CP.cyan
+            accent: Theme.cyan
             onTriggered: AiState.messageMenuRequested(root.rowIndex, actions)
         }
 
@@ -353,7 +353,7 @@ Item {
                             wrapMode: Text.Wrap
                             font.family: "Oxanium"
                             font.pixelSize: 10
-                            color: CP.red
+                            color: Theme.red
                         }
                     }
                 }

@@ -24,7 +24,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.92)
-        strokeColor: CP.alpha(CP.cyan, 0.35)
+        strokeColor: CP.alpha(Theme.cyan, 0.35)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 8
@@ -43,7 +43,7 @@ Item {
             font.pixelSize: 10
             font.letterSpacing: 2
             font.bold: true
-            color: CP.cyan
+            color: Theme.cyan
         }
 
         Text {
@@ -99,11 +99,11 @@ Item {
                         width: 5
                         height: 5
                         rotation: 45
-                        color: finished ? CP.alpha(CP.neon, 0.5)
-                            : active ? CP.cyan : "transparent"
+                        color: finished ? CP.alpha(Theme.neon, 0.5)
+                            : active ? Theme.cyan : "transparent"
                         border.width: 1
-                        border.color: finished ? CP.alpha(CP.neon, 0.5)
-                            : CP.alpha(CP.cyan, active ? 1 : 0.5)
+                        border.color: finished ? CP.alpha(Theme.neon, 0.5)
+                            : CP.alpha(Theme.cyan, active ? 1 : 0.5)
                     }
 
                     Text {

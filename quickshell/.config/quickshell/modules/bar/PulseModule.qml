@@ -5,6 +5,7 @@ import Quickshell.Io
 import QtQuick
 import "../../common/Colors.js" as CP
 
+import "../../common"
 CyberpunkModule {
     id: root
 
@@ -17,7 +18,7 @@ CyberpunkModule {
     property bool muted: sink && sink.audio ? sink.audio.muted : false
     property int  vol:   sink && sink.audio ? Math.round(sink.audio.volume * 100) : 0
 
-    accent: muted ? Qt.rgba(0.5, 0.5, 0.5, 1.0) : CP.yellow
+    accent: muted ? Qt.rgba(0.5, 0.5, 0.5, 1.0) : Theme.yellow
     text: {
         if (muted) return "MUTE"
         var icon = vol === 0 ? "󰸈" : vol < 50 ? "󰖀" : ""

@@ -60,7 +60,7 @@ Item {
             width: 4
             height: sb.thumbH
             y: sb._range > 0 ? (flick.contentY / sb._range) * (sb.height - height) : 0
-            color: sbMa.pressed ? CP.cyan : CP.alpha(CP.cyan, 0.7)
+            color: sbMa.pressed ? Theme.cyan : CP.alpha(Theme.cyan, 0.7)
             Behavior on color { ColorAnimation { duration: 100 } }
         }
 

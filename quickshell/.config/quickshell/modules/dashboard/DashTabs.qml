@@ -40,7 +40,7 @@ Item {
                 // Background hover/active
                 Rectangle {
                     anchors.fill: parent
-                    color: tab.current ? CP.alpha(CP.cyan, 0.10) : "transparent"
+                    color: tab.current ? CP.alpha(Theme.cyan, 0.10) : "transparent"
                     Behavior on color { CAnim { duration: 150 } }
                 }
 
@@ -50,7 +50,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: 10
                     font.letterSpacing: 1.2
-                    color: tab.current ? CP.cyan : CP.alpha(CP.cyan, 0.45)
+                    color: tab.current ? Theme.cyan : CP.alpha(Theme.cyan, 0.45)
                     Behavior on color { CAnim { duration: 150 } }
                 }
 
@@ -76,7 +76,7 @@ Item {
         anchors.topMargin: 3
         height: 2
         width: bar.width / root.tabCount
-        color: CP.cyan
+        color: Theme.cyan
         x: root.dashState.currentTab * width
 
         Behavior on x {

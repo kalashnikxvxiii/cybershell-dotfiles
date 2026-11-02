@@ -43,7 +43,7 @@ Item {
                 font.pixelSize: 14
                 font.letterSpacing: 3
                 font.bold: true
-                color: CP.red
+                color: Theme.red
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -66,7 +66,7 @@ Item {
         AC.SectionHeader {
             width: parent.width
             label: "PRESETS"
-            accent: CP.neon
+            accent: Theme.neon
             divider: false
         }
 
@@ -81,7 +81,7 @@ Item {
                 spacing: 4
                 Text {
                     text: "· CURRENT:"
-                    color: CP.alpha(CP.neon, 0.65)
+                    color: CP.alpha(Theme.neon, 0.65)
                     font.family: "Oxanium"
                     font.pixelSize: 12
                     font.letterSpacing: 2
@@ -90,7 +90,7 @@ Item {
                 }
                 ChromaticText {
                     text: AudioControlState.eqPreset.toUpperCase()
-                    color: CP.neon
+                    color: Theme.neon
                     font.family: "Oxanium"
                     font.pixelSize: 14
                     font.letterSpacing: 2
@@ -128,11 +128,11 @@ Item {
                         CutShape {
                             anchors.fill: parent
                             fillColor: presetChip.active
-                                       ? CP.alpha(CP.neon, 0.20)
+                                       ? CP.alpha(Theme.neon, 0.20)
                                        : (chipMa.containsMouse
-                                          ? CP.alpha(CP.neon, 0.10)
+                                          ? CP.alpha(Theme.neon, 0.10)
                                           : Colours.moduleBgAlt)
-                            strokeColor: presetChip.active ? CP.neon : CP.alpha(CP.neon, 0.30)
+                            strokeColor: presetChip.active ? Theme.neon : CP.alpha(Theme.neon, 0.30)
                             strokeWidth: presetChip.active ? 1.5 : 1
                             inset: 0.5
                             cutBottomRight: 6
@@ -145,7 +145,7 @@ Item {
                             anchors.left: parent.left
                             anchors.top: parent.top
                             anchors.margins: 3
-                            color: CP.neon
+                            color: Theme.neon
                         }
                         Text {
                             id: chipTxt
@@ -155,7 +155,7 @@ Item {
                             font.pixelSize: 11
                             font.letterSpacing: 1
                             font.bold: true
-                            color: presetChip.active ? "white" : CP.alpha(CP.neon, 0.7)
+                            color: presetChip.active ? "white" : CP.alpha(Theme.neon, 0.7)
                             Behavior on color { CAnim {} }
                         }
                         MouseArea {
@@ -235,7 +235,7 @@ Item {
             width: parent.width
             label: "FREQUENCY RESPONSE"
             trail: "-12 / +12 dB · LIVE"
-            accent: CP.neon
+            accent: Theme.neon
         }
 
         // ── Hero canvas: FrequencyResponseCurve ─────────────────
@@ -262,7 +262,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: 9
                     font.letterSpacing: 1
-                    color: CP.alpha(CP.neon, 0.65)
+                    color: CP.alpha(Theme.neon, 0.65)
                     // Position at the band's X (approximation; precise math is in FrequencyResponseCurve)
                     x: {
                         var freqs = [31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
@@ -280,7 +280,7 @@ Item {
             width: parent.width
             label: "CURRENT BAND"
             trail: AudioControlState.eqSelectedBand >= 0 ? "DRAG TO EDIT" : "TAP A NODE"
-            accent: CP.neon
+            accent: Theme.neon
         }
 
         Item {
@@ -296,7 +296,7 @@ Item {
 
                 Row {
                     spacing: 4
-                    Text { text: "SELECTED"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "SELECTED"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
                     Text {
                         text: AudioControlState.eqSelectedBand >= 0 ? root.bandFreqs[AudioControlState.eqSelectedBand] + " Hz" : "—"
                         font.family: "Oxanium"; font.pixelSize: 10; color: "white"
@@ -304,7 +304,7 @@ Item {
                 }
                 Row {
                     spacing: 4
-                    Text { text: "GAIN"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "GAIN"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
                     Text {
                         text: AudioControlState.eqSelectedBand >= 0 ? (AudioControlState.eqBands[AudioControlState.eqSelectedBand] > 0 ? "+" : "") + AudioControlState.eqBands[AudioControlState.eqSelectedBand] + " dB" : "—"
                         font.family: "Oxanium"; font.pixelSize: 10; font.bold: true; color: Colours.accentPrimary
@@ -312,12 +312,12 @@ Item {
                 }
                 Row {
                     spacing: 4
-                    Text { text: "Q"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "Q"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
                     Text { text: "1.0"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "MODE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: CP.neon }
+                    Text { text: "MODE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
                     Text { text: "BELL"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
                 }
             }

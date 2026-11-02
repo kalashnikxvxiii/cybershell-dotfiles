@@ -147,7 +147,7 @@ Item {
                         width: parent.width
                         height: parent.height
                         cutBottomRight: 6
-                        fillColor: dayItem.model.today ? CP.alpha(CP.cyan, 0.25) : "transparent"
+                        fillColor: dayItem.model.today ? CP.alpha(Theme.cyan, 0.25) : "transparent"
                     }
 
                     Text {
@@ -161,10 +161,10 @@ Item {
                         font.weight: dayItem.model.today ? Font.Bold : Font.Normal
                         color: {
                             if (dayItem.model.today)
-                                return CP.cyan
+                                return Theme.cyan
                             const dayOfWeek = dayItem.model.date.getDay()
                             if (dayOfWeek === 0 || dayOfWeek === 6)
-                                return CP.alpha(CP.cyan, 0.7)
+                                return CP.alpha(Theme.cyan, 0.7)
                             return dayItem.model.month === grid.month ? Colours.textPrimary : CP.alpha(Colours.textSecondary, 0.4)
                         }
                     }

@@ -28,7 +28,7 @@ TextEdit {
     // Ctrl+A would select the whole transcript in a terminal; here it selects
     // the block, which is the most a single document can hold
     selectByKeyboard: true
-    selectionColor: CP.alpha(CP.magenta, 0.4)
+    selectionColor: CP.alpha(Theme.magenta, 0.4)
     selectedTextColor: "#f2f6f8"
     // Kept on screen without the focus only while a selection spans blocks
     persistentSelection: AiState.multiSelect

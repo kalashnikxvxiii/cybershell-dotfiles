@@ -70,7 +70,7 @@ Item {
         anchors.fill: parent
         fillColor: CP.moduleBg
         radiusBottomLeft: 10
-        Rectangle { width: 2; height: parent.height; color: CP.cyan }
+        Rectangle { width: 2; height: parent.height; color: Theme.cyan }
     }
 
     // ── Bars ─────────────────────────────────────────────────────────────────
@@ -93,8 +93,8 @@ Item {
                 height:         Math.max(0, level * barsRow.height)
 
                 gradient: Gradient {
-                    GradientStop { position: 1.0; color: CP.alpha(CP.yellow, 0.9) }
-                    GradientStop { position: 0.0; color: CP.alpha(CP.yellow, 0.0) }
+                    GradientStop { position: 1.0; color: CP.alpha(Theme.yellow, 0.9) }
+                    GradientStop { position: 0.0; color: CP.alpha(Theme.yellow, 0.0) }
                 }
             }
         }

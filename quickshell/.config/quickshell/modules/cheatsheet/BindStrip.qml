@@ -52,7 +52,7 @@ Item {
     Small {
         visible: !root.draft
         label: "+"
-        tone: CP.cyan
+        tone: Theme.cyan
         onClicked: root.openRequested()
     }
 
@@ -70,7 +70,7 @@ Item {
                 // cutBottomLeft: 8
                 inset: 0.5
                 fillColor: Qt.rgba(0.03, 0.045, 0.08, 0.9)
-                strokeColor: CP.alpha(CP.cyan, command.activeFocus ? 1 : 0.45)
+                strokeColor: CP.alpha(Theme.cyan, command.activeFocus ? 1 : 0.45)
             }
             TextInput {
                 id: command
@@ -124,8 +124,8 @@ Item {
             CutShape {
                 anchors.fill: parent
                 inset: 0.5
-                fillColor: logic.capturing ? CP.alpha(CP.cyan, 0.15) : Qt.rgba(0.03, 0.045, 0.08, 0.9)
-                strokeColor: logic.conflict !== "" ? CP.red : CP.alpha(CP.cyan, logic.capturing || capture.activeFocus ? 1 : 0.45)
+                fillColor: logic.capturing ? CP.alpha(Theme.cyan, 0.15) : Qt.rgba(0.03, 0.045, 0.08, 0.9)
+                strokeColor: logic.conflict !== "" ? Theme.red : CP.alpha(Theme.cyan, logic.capturing || capture.activeFocus ? 1 : 0.45)
             }
             Text {
                 anchors.centerIn: parent
@@ -145,7 +145,7 @@ Item {
 
         Small {
             label: "✓"
-            tone: CP.cyan
+            tone: Theme.cyan
             opacity: command.text.trim() !== "" && logic.keys !== "" ? 1 : 0.35
             onClicked: root.save()
         }
@@ -153,12 +153,12 @@ Item {
         Small {
             visible: !!root.draft && root.draft.index >= 0
             label: logic.deleteArmed ? "?" : "−"
-            tone: CP.red
+            tone: Theme.red
             onClicked: logic.remove()
         }
         Small {
             label: "✕"
-            tone: CP.red
+            tone: Theme.red
             onClicked: logic.cancel()
         }
     }
@@ -168,7 +168,7 @@ Item {
         anchors.topMargin: 6
         visible: !!root.draft
         text: root.message
-        color: CP.red
+        color: Theme.red
         font { family: "Oxanium"; pixelSize: 11; letterSpacing: 1 }
     }
 

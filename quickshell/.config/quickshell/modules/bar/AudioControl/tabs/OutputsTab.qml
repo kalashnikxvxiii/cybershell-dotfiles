@@ -16,7 +16,7 @@ Item {
     property color meter: Colours.accentPrimary
     property color heading: accent
     property color sourceBox: Colours.accentPrimary
-    property color eqBox: CP.neon
+    property color eqBox: Theme.neon
 
     // Moves the pipeline particles of both links: a Ticker instead of one
     // NumberAnimation per particle, which kept the popup rendering at the

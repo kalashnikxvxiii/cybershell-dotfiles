@@ -8,6 +8,7 @@ import "../../common/effects"
 import Quickshell
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Column {
     id: root
 
@@ -80,7 +81,7 @@ Column {
             anchors.bottom: parent.bottom
             width: parent.width
             height: 1
-            color: CP.alpha(CP.magenta, 0.30)
+            color: CP.alpha(Theme.magenta, 0.30)
         }
     }
 
@@ -103,7 +104,7 @@ Column {
         font.family: "Oxanium"
         font.pixelSize: 9
         font.letterSpacing: 3
-        color: CP.magenta
+        color: Theme.magenta
 
         opacity: awaitPulse.k
         Pulse { id: awaitPulse; running: root.visible; from: 0.55; to: 0.18; halfMs: 1700; sine: true }

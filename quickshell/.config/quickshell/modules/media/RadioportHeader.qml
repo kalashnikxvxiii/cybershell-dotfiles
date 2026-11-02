@@ -18,7 +18,7 @@ Item {
 
     Text {
         text: root.code
-        color: CP.alpha(CP.red, 0.7)
+        color: CP.alpha(Theme.red, 0.7)
         font { family: "Oxanium"; pixelSize: 10; letterSpacing: 1 }
     }
     CutShape {
@@ -27,7 +27,7 @@ Item {
         height: 34
         cutTopLeft: 2
         cutBottomLeft: 2
-        fillColor: CP.alpha(CP.red, 0.75)
+        fillColor: CP.alpha(Theme.red, 0.75)
     }
     CutShape {
         x: 10
@@ -36,7 +36,7 @@ Item {
         height: 34
         cutBottomRight: 10
         fillColor: Qt.rgba(0.07, 0.02, 0.05, 0.75)
-        strokeColor: root.tint.a > 0 ? root.tint : CP.alpha(CP.red, 0.8)
+        strokeColor: root.tint.a > 0 ? root.tint : CP.alpha(Theme.red, 0.8)
         inset: 0.5
     }
     Text {
@@ -45,7 +45,7 @@ Item {
         height: 34
         verticalAlignment: Text.AlignVCenter
         text: root.title
-        color: CP.cyan
+        color: Theme.cyan
         transform: Translate { id: shift }
         font { family: "Oxanium"; pixelSize: 19; letterSpacing: 1 }
     }

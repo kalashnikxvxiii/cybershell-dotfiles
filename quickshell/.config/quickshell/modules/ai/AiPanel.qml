@@ -193,7 +193,7 @@ Item {
             anchors.fill: parent
             fillColor: "transparent"
             // Magenta: the netrunner accent, same as the dock's AI slot.
-            strokeColor: CP.alpha(CP.magenta, 0.45)
+            strokeColor: CP.alpha(Theme.magenta, 0.45)
             strokeWidth: 2
             inset: 0.5
             cutTopLeft: shell.cutTL; cutBottomLeft: shell.cutBL
@@ -203,7 +203,7 @@ Item {
         CornerAccents {
             anchors.fill: parent
             anchors.margins: 6
-            accentColor: CP.magenta
+            accentColor: Theme.magenta
             size: 10
             thickness: 1
             opacity: 0.75

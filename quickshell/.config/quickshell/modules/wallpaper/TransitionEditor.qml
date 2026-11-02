@@ -23,7 +23,7 @@ Item {
         width: 960
         height: 600
         fillColor: CP.alpha(CP.void2, 0.96)
-        strokeColor: CP.alpha(CP.yellow, 0.45)
+        strokeColor: CP.alpha(Theme.yellow, 0.45)
         strokeWidth: 2
         inset: 0.5
         cutTopLeft: 16
@@ -34,7 +34,7 @@ Item {
         ScanlineOverlay { anchors.fill: parent; opacity: 0.05; lineSpacing: 3 }
         CornerAccents {
             anchors.fill: parent; anchors.margins: 8
-            accentColor: CP.yellow; size: 14; thickness: 1
+            accentColor: Theme.yellow; size: 14; thickness: 1
             showTopLeft: false
             showBottomRight: false
         }
@@ -88,7 +88,7 @@ Item {
                 anchors.rightMargin: 14
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
-                Text { text: "▮▮▮"; color: CP.alpha(CP.yellow, 0.4); font.pixelSize: 7; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "▮▮▮"; color: CP.alpha(Theme.yellow, 0.4); font.pixelSize: 7; anchors.verticalCenter: parent.verticalCenter }
                 Text { text: "ID:" + TransitionConfig.transitionType.toUpperCase(); color: Colours.textMuted; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1.5; anchors.verticalCenter: parent.verticalCenter }
             }
 
@@ -100,8 +100,8 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 CutShape {
                     anchors.fill: parent
-                    fillColor: closeMa.containsMouse ? CP.alpha(CP.red, 0.20) : CP.alpha(CP.red, 0.08)
-                    strokeColor: CP.alpha(CP.red, 0.55)
+                    fillColor: closeMa.containsMouse ? CP.alpha(Theme.red, 0.20) : CP.alpha(Theme.red, 0.08)
+                    strokeColor: CP.alpha(Theme.red, 0.55)
                     strokeWidth: 1; inset: 0.5; cutBottomLeft: 4
                     Behavior on fillColor { ColorAnimation { duration: 120 } }
                 }
@@ -122,7 +122,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: CP.alpha(CP.yellow, 0.25)
+            color: CP.alpha(Theme.yellow, 0.25)
         }
 
         // ── Body 3 colonne ──
@@ -147,7 +147,7 @@ Item {
                     CutShape {
                         anchors.fill: parent
                         fillColor: CP.alpha(CP.void2, 0.45)
-                        strokeColor: CP.alpha(CP.yellow, 0.20)
+                        strokeColor: CP.alpha(Theme.yellow, 0.20)
                         strokeWidth: 1; inset: 0.5; cutTopLeft: 12
                     }
 
@@ -177,7 +177,7 @@ Item {
                             }
 
                             // Separator
-                            Rectangle { width: parent.width; height: 1; color: CP.alpha(CP.yellow, 0.18) }
+                            Rectangle { width: parent.width; height: 1; color: CP.alpha(Theme.yellow, 0.18) }
 
                             // TIMING header
                             Row {
@@ -211,7 +211,7 @@ Item {
                             Rectangle {
                                 visible: angleSec.visible
                                 width: parent.width; height: 1
-                                color: CP.alpha(CP.yellow, 0.15)
+                                color: CP.alpha(Theme.yellow, 0.15)
                             }
                             Column {
                                 id: angleSec
@@ -243,7 +243,7 @@ Item {
                             Rectangle {
                                 visible: posSec.visible
                                 width: parent.width; height: 1
-                                color: CP.alpha(CP.magenta, 0.15)
+                                color: CP.alpha(Theme.magenta, 0.15)
                             }
                             Column {
                                 id: posSec
@@ -269,7 +269,7 @@ Item {
                             Rectangle {
                                 visible: waveSec.visible
                                 width: parent.width; height: 1
-                                color: CP.alpha(CP.neon, 0.15)
+                                color: CP.alpha(Theme.neon, 0.15)
                             }
                             Column {
                                 id: waveSec
@@ -325,7 +325,7 @@ Item {
                         anchors.right: parent.right
                         anchors.margins: 4
                         width: 2
-                        color: CP.alpha(CP.yellow, 0.10)
+                        color: CP.alpha(Theme.yellow, 0.10)
                         visible: col1Scroll.contentHeight > col1Scroll.height
 
                         Rectangle {
@@ -336,7 +336,7 @@ Item {
                             height: col1Scroll.contentHeight > 0
                                 ? Math.max(20, (col1Scroll.height / col1Scroll.contentHeight) * parent.height)
                                 : parent.height
-                            color: CP.alpha(CP.yellow, 0.55)
+                            color: CP.alpha(Theme.yellow, 0.55)
                             Behavior on y { NumberAnimation { duration: 80 } }
                         }
                     }
@@ -350,7 +350,7 @@ Item {
                     CutShape {
                         anchors.fill: parent
                         fillColor: CP.alpha(CP.void2, 0.45)
-                        strokeColor: CP.alpha(CP.yellow, 0.20)
+                        strokeColor: CP.alpha(Theme.yellow, 0.20)
                         strokeWidth: 1; inset: 0.5
                     }
 
@@ -374,7 +374,7 @@ Item {
                             Text {
                                 text: "/ FADE ONLY"
                                 font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5
-                                color: CP.alpha(CP.yellow, 0.4)
+                                color: CP.alpha(Theme.yellow, 0.4)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -392,7 +392,7 @@ Item {
                                 CutShape {
                                     width: 32; height: 18
                                     fillColor: CP.alpha(CP.void2, 0.6)
-                                    strokeColor: CP.alpha(CP.yellow, 0.4)
+                                    strokeColor: CP.alpha(Theme.yellow, 0.4)
                                     strokeWidth: 1; inset: 0.5
                                     cutBottomRight: 3
                                     anchors.verticalCenter: parent.verticalCenter
@@ -416,8 +416,8 @@ Item {
 
                                 CutShape {
                                     anchors.fill: parent
-                                    fillColor: mirrorMa.containsMouse ? CP.alpha(CP.magenta, 0.25) : CP.alpha(CP.magenta, 0.08)
-                                    strokeColor: CP.alpha(CP.magenta, 0.55)
+                                    fillColor: mirrorMa.containsMouse ? CP.alpha(Theme.magenta, 0.25) : CP.alpha(Theme.magenta, 0.08)
+                                    strokeColor: CP.alpha(Theme.magenta, 0.55)
                                     strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                                     Behavior on fillColor { ColorAnimation { duration: 120 } }
                                 }
@@ -444,8 +444,8 @@ Item {
 
                                 CutShape {
                                     anchors.fill: parent
-                                    fillColor: resetMa.containsMouse ? CP.alpha(CP.cyan, 0.25) : CP.alpha(CP.cyan, 0.08)
-                                    strokeColor: CP.alpha(CP.cyan, 0.55)
+                                    fillColor: resetMa.containsMouse ? CP.alpha(Theme.cyan, 0.25) : CP.alpha(Theme.cyan, 0.08)
+                                    strokeColor: CP.alpha(Theme.cyan, 0.55)
                                     strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                                     Behavior on fillColor { ColorAnimation { duration: 120 } }
                                 }
@@ -515,7 +515,7 @@ Item {
                             Text {
                                 text: presetsScroll.contentHeight > presetsScroll.height ? "/ SCROLL ↓" : ""
                                 font.family: "Oxanium"; font.pixelSize: 7; font.letterSpacing: 1.5
-                                color: CP.alpha(CP.cyan, 0.5)
+                                color: CP.alpha(Theme.cyan, 0.5)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -529,8 +529,8 @@ Item {
 
                             CutShape {
                                 anchors.fill: parent
-                                fillColor: saveBtnMa.containsMouse ? CP.alpha(CP.neon, 0.22) : CP.alpha(CP.neon, 0.10)
-                                strokeColor: CP.alpha(CP.neon, 0.6)
+                                fillColor: saveBtnMa.containsMouse ? CP.alpha(Theme.neon, 0.22) : CP.alpha(Theme.neon, 0.10)
+                                strokeColor: CP.alpha(Theme.neon, 0.6)
                                 strokeWidth: 1; inset: 0.5
                                 cutTopLeft: 3
                                 Behavior on fillColor { ColorAnimation { duration: 120 } }
@@ -567,7 +567,7 @@ Item {
                                 height: 22
                                 anchors.verticalCenter: parent.verticalCenter
                                 fillColor: CP.alpha(CP.void2, 0.7)
-                                strokeColor: CP.alpha(CP.neon, 0.7)
+                                strokeColor: CP.alpha(Theme.neon, 0.7)
                                 strokeWidth: 1; inset: 0.5
                                 cutTopLeft: 2; cutBottomRight: 2
                             }
@@ -607,8 +607,8 @@ Item {
 
                                 CutShape {
                                     anchors.fill: parent
-                                    fillColor: confirmMa.containsMouse ? CP.alpha(CP.neon, 0.3) : CP.alpha(CP.neon, 0.15)
-                                    strokeColor: CP.alpha(CP.neon, 0.7)
+                                    fillColor: confirmMa.containsMouse ? CP.alpha(Theme.neon, 0.3) : CP.alpha(Theme.neon, 0.15)
+                                    strokeColor: CP.alpha(Theme.neon, 0.7)
                                     strokeWidth: 1; inset: 0.5
                                     cutTopLeft: 2; cutBottomRight: 2
                                     Behavior on fillColor { ColorAnimation { duration: 120 } }
@@ -641,8 +641,8 @@ Item {
 
                                 CutShape {
                                     anchors.fill: parent
-                                    fillColor: cancelMa.containsMouse ? CP.alpha(CP.red, 0.3) : CP.alpha(CP.red, 0.10)
-                                    strokeColor: CP.alpha(CP.red, 0.6)
+                                    fillColor: cancelMa.containsMouse ? CP.alpha(Theme.red, 0.3) : CP.alpha(Theme.red, 0.10)
+                                    strokeColor: CP.alpha(Theme.red, 0.6)
                                     strokeWidth: 1; inset: 0.5
                                     cutTopLeft: 2; cutBottomRight: 2
                                     Behavior on fillColor { ColorAnimation { duration: 120 } }
@@ -720,7 +720,7 @@ Item {
                         anchors.rightMargin: 6
                         width: 3
                         visible: presetsScroll.contentHeight > presetsScroll.height
-                        Rectangle { anchors.fill: parent; color: CP.alpha(CP.yellow, 0.10) }
+                        Rectangle { anchors.fill: parent; color: CP.alpha(Theme.yellow, 0.10) }
                         Rectangle {
                             width: parent.width
                             y: presetsScroll.contentHeight > 0
@@ -729,7 +729,7 @@ Item {
                             height: presetsScroll.contentHeight > 0
                                 ? Math.max(20, (presetsScroll.height / presetsScroll.contentHeight) * parent.height)
                                 : parent.height
-                            color: CP.alpha(CP.yellow, 0.55)
+                            color: CP.alpha(Theme.yellow, 0.55)
                             Behavior on y { NumberAnimation { duration: 80 } }
                         }
                     }
@@ -743,7 +743,7 @@ Item {
                     CutShape {
                         anchors.fill: parent
                         fillColor: CP.alpha(CP.void2, 0.45)
-                        strokeColor: CP.alpha(CP.neon, 0.25)
+                        strokeColor: CP.alpha(Theme.neon, 0.25)
                         strokeWidth: 1; inset: 0.5
                     }
 
@@ -767,7 +767,7 @@ Item {
             z: 100
 
             property string message:    ""
-            property color accent:      CP.neon
+            property color accent:      Theme.neon
 
             CutShape {
                 id: toastBg
@@ -808,8 +808,8 @@ Item {
 
         Connections {
             target: TransitionConfig
-            function onSaved()      { toast.show("⬢ SAVED", CP.neon) }
-            function onReverted()   { toast.show("↺ REVERTED", CP.cyan) }
+            function onSaved()      { toast.show("⬢ SAVED", Theme.neon) }
+            function onReverted()   { toast.show("↺ REVERTED", Theme.cyan) }
         }
 
         // ── Status bar ──
@@ -825,7 +825,7 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: CP.alpha(CP.void2, 0.55)
-                strokeColor: CP.alpha(CP.neon, 0.25)
+                strokeColor: CP.alpha(Theme.neon, 0.25)
                 strokeWidth: 1; inset: 0.5; cutBottomRight: 12
             }
             Row {
@@ -837,7 +837,7 @@ Item {
                 // Dirty state LED + label
                 Rectangle {
                     width: 8; height: 8
-                    color: TransitionConfig.isDirty ? CP.amber : CP.neon
+                    color: TransitionConfig.isDirty ? Theme.amber : Theme.neon
                     anchors.verticalCenter: parent.verticalCenter
                     opacity: dirtyPulse.k
                     Pulse { id: dirtyPulse; running: TransitionConfig.editorOpen && TransitionConfig.isDirty; from: 1.0; to: 0.4; halfMs: 600 }
@@ -852,19 +852,19 @@ Item {
                     color: TransitionConfig.isDirty ? Colours.accentWarn : Colours.accentOk
                     anchors.verticalCenter: parent.verticalCenter
                 }
-                Rectangle { width: 1; height: 12; color: CP.alpha(CP.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
 
-                Text { text: "⬢"; color: CP.neon; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "⬢"; color: Theme.neon; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
                 Text { text: "ACTIVE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 2; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 1; height: 12; color: CP.alpha(CP.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: TransitionConfig.transitionType.toUpperCase(); font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1.5; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 1; height: 12; color: CP.alpha(CP.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: TransitionConfig.transitionDuration.toFixed(2) + "s"; font.family: "Oxanium"; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 1; height: 12; color: CP.alpha(CP.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: TransitionConfig.transitionFps + "FPS"; font.family: "Oxanium"; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 1; height: 12; color: CP.alpha(CP.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: "STEP " + TransitionConfig.transitionStep; font.family: "Oxanium"; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
-                Rectangle { width: 1; height: 12; color: CP.alpha(CP.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
+                Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
                 Text { text: "BEZIER " + TransitionConfig.transitionBezier; font.family: "Oxanium"; font.pixelSize: 8; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
             }
         }
@@ -875,7 +875,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: CP.alpha(CP.yellow, 0.25)
+            color: CP.alpha(Theme.yellow, 0.25)
         }
 
         // ── Footer ──
@@ -896,7 +896,7 @@ Item {
                     CutShape {
                         width: 22; height: 16
                         fillColor: CP.alpha(CP.void2, 0.6)
-                        strokeColor: CP.alpha(CP.yellow, 0.45)
+                        strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: "A"; font.family: "Oxanium"; font.pixelSize: 9; font.bold: true; color: Colours.accentPrimary }
@@ -908,7 +908,7 @@ Item {
                     CutShape {
                         width: 26; height: 16
                         fillColor: CP.alpha(CP.void2, 0.6)
-                        strokeColor: CP.alpha(CP.red, 0.45)
+                        strokeColor: CP.alpha(Theme.red, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: "ESC"; font.family: "Oxanium"; font.pixelSize: 7; font.bold: true; color: Colours.accentDanger }
@@ -920,7 +920,7 @@ Item {
                     CutShape {
                         width: 38; height: 16
                         fillColor: CP.alpha(CP.void2, 0.6)
-                        strokeColor: CP.alpha(CP.yellow, 0.45)
+                        strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: "⌃S"; font.family: "Oxanium"; font.pixelSize: 8; font.bold: true; color: Colours.accentPrimary }
@@ -932,7 +932,7 @@ Item {
                     CutShape {
                         width: 38; height: 16
                         fillColor: CP.alpha(CP.void2, 0.6)
-                        strokeColor: CP.alpha(CP.cyan, 0.45)
+                        strokeColor: CP.alpha(Theme.cyan, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: "⌃Z"; font.family: "Oxanium"; font.pixelSize: 8; font.bold: true; color: Colours.accentSecondary }
@@ -944,7 +944,7 @@ Item {
                     CutShape {
                         width: 22; height: 16
                         fillColor: CP.alpha(CP.void2, 0.6)
-                        strokeColor: CP.alpha(CP.neon, 0.45)
+                        strokeColor: CP.alpha(Theme.neon, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: "R"; font.family: "Oxanium"; font.pixelSize: 9; font.bold: true; color: Colours.accentOk }
@@ -956,7 +956,7 @@ Item {
                     CutShape {
                         width: 46; height: 16
                         fillColor: CP.alpha(CP.void2, 0.6)
-                        strokeColor: CP.alpha(CP.yellow, 0.45)
+                        strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: "←→"; font.family: "Oxanium"; font.pixelSize: 9; font.bold: true; color: Colours.accentPrimary }
@@ -980,9 +980,9 @@ Item {
                     CutShape {
                         anchors.fill: parent
                         fillColor: revertButton._flash
-                        ? CP.alpha(CP.cyan, 0.6)
-                        : (revertMa.containsMouse ? CP.alpha(CP.cyan, 0.20) : CP.alpha(CP.cyan, 0.08))
-                        strokeColor: CP.alpha(CP.cyan, 0.6)
+                        ? CP.alpha(Theme.cyan, 0.6)
+                        : (revertMa.containsMouse ? CP.alpha(Theme.cyan, 0.20) : CP.alpha(Theme.cyan, 0.08))
+                        strokeColor: CP.alpha(Theme.cyan, 0.6)
                         strokeWidth: 1; inset: 0.5; cutTopLeft: 4; cutBottomRight: 4
                         Behavior on fillColor { ColorAnimation { duration: 80 } }
                     }
@@ -1021,15 +1021,15 @@ Item {
                     CutShape {
                         anchors.fill: parent
                         fillColor: saveButton._flash
-                                ? CP.alpha(CP.yellow, 0.95)
-                                : (saveMa.containsMouse ? CP.alpha(CP.yellow, 0.38) : CP.alpha(CP.yellow, 0.24))
-                        strokeColor: CP.alpha(CP.yellow, 0.95)
+                                ? CP.alpha(Theme.yellow, 0.95)
+                                : (saveMa.containsMouse ? CP.alpha(Theme.yellow, 0.38) : CP.alpha(Theme.yellow, 0.24))
+                        strokeColor: CP.alpha(Theme.yellow, 0.95)
                         strokeWidth: 1.5; inset: 0.5; cutTopLeft: 4; cutBottomRight: 4
                         Behavior on fillColor { ColorAnimation { duration: 80 } }
                         layer.enabled: saveMa.containsMouse || saveButton._flash
                         layer.effect: MultiEffect {
                             shadowEnabled: true; shadowBlur: 1.0
-                            shadowColor: CP.yellow; shadowOpacity: 0.5
+                            shadowColor: Theme.yellow; shadowOpacity: 0.5
                             shadowHorizontalOffset: 0; shadowVerticalOffset: 0
                         }
                     }

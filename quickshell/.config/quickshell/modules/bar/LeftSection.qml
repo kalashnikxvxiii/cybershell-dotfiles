@@ -37,7 +37,7 @@ Item {
                 layer.enabled: true
                 layer.effect: MultiEffect {
                     shadowEnabled: true
-                    shadowColor:            CP.cyan
+                    shadowColor:            Theme.cyan
                     shadowBlur:             0.75
                     shadowOpacity:          0.40
                     shadowHorizontalOffset: 0
@@ -47,7 +47,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor:    CP.moduleBg
-                    strokeColor:  CP.alpha(CP.cyan, 0.50)
+                    strokeColor:  CP.alpha(Theme.cyan, 0.50)
                     strokeWidth:  1
                     inset:        0.5
                     cutBottomRight: 9

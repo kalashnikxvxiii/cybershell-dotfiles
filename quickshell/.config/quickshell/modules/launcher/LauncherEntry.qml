@@ -44,12 +44,12 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             fillColor: "transparent"
             strokeWidth: 1.5
-            strokeColor: CP.cyan
+            strokeColor: Theme.cyan
             cutBottomLeft: 12
             Text {
                 anchors.centerIn: parent
                 text: item.index + 1
-                color: CP.cyan
+                color: Theme.cyan
                 font.family: "Oxanium"
                 font.bold: true
                 font.pixelSize: 12
@@ -74,8 +74,8 @@ Item {
 
                 ShapePath {
                     strokeWidth: item.current ? 2 : 1
-                    strokeColor: item.current ? CP.cyan : CP.alpha(CP.cyan, 0.5)
-                    fillColor: item.current ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                    strokeColor: item.current ? Theme.cyan : CP.alpha(Theme.cyan, 0.5)
+                    fillColor: item.current ? CP.alpha(Theme.cyan, 0.15) : "transparent"
                     joinStyle: ShapePath.MiterJoin
                     PathPolyline {
                         path: {
@@ -109,7 +109,7 @@ Item {
                         anchors.centerIn: parent
                         visible: !!item.modelData.glyph
                         text: item.modelData.glyph || ""
-                        color: CP.cyan
+                        color: Theme.cyan
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 18
                     }
@@ -131,7 +131,7 @@ Item {
                     Text {
                         visible: text !== ""
                         text: item.subtitle
-                        color: CP.alpha(CP.cyan, 0.7)
+                        color: CP.alpha(Theme.cyan, 0.7)
                         font.family: "Oxanium"
                         font.pixelSize: 10
                         elide: Text.ElideRight
@@ -143,7 +143,7 @@ Item {
                 Text {
                     visible: !!item.modelData.children
                     text: ""
-                    color: CP.cyan
+                    color: Theme.cyan
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 12
                 }

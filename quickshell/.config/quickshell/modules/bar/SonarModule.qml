@@ -32,7 +32,7 @@ Item {
                                                              : "WIFI"
         return "NET OFF"
     }
-    readonly property color netColor: root.online ? CP.cyan : CP.red
+    readonly property color netColor: root.online ? Theme.cyan : Theme.red
 
     // ── Bluetooth segment ────────────────────────────────────────────────
     // Three states, not two: a linked device, the adapter on with nothing
@@ -43,8 +43,8 @@ Item {
     readonly property string btText: root.btLink
         ? (root.btLink.deviceName || root.btLink.name || "BT").toUpperCase()
         : (root.btOn ? "BT" : "BT OFF")
-    readonly property color btColor: root.btLink ? CP.magenta
-                                    : root.btOn  ? CP.alpha(CP.magenta, 0.55)
+    readonly property color btColor: root.btLink ? Theme.magenta
+                                    : root.btOn  ? CP.alpha(Theme.magenta, 0.55)
                                                  : Qt.rgba(0.45, 0.45, 0.5, 1)
 
     implicitHeight: 24
@@ -101,7 +101,7 @@ Item {
         Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             width: 1; height: 10
-            color: CP.alpha(CP.cyan, 0.3)
+            color: CP.alpha(Theme.cyan, 0.3)
         }
 
         Text {
@@ -138,7 +138,7 @@ Item {
         labelTarget: netTint
         shiftTarget: labelShift
         baseColor: root.netColor
-        c1: CP.magenta
+        c1: Theme.magenta
         c3: root.netColor
     }
 

@@ -20,7 +20,7 @@ Item {
         layer.enabled: true
         layer.effect: MultiEffect {
             shadowEnabled: true
-            shadowColor:            CP.yellow
+            shadowColor:            Theme.yellow
             shadowBlur:             0.75
             shadowOpacity:          0.40
             shadowHorizontalOffset: 0
@@ -90,7 +90,7 @@ Item {
     // Border
     CutShape {
         anchors.fill: parent
-        strokeColor: CP.alpha(CP.yellow, 0.35)
+        strokeColor: CP.alpha(Theme.yellow, 0.35)
         strokeWidth: 1
         inset: 0.5
         cutBottomRight: 8

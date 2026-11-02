@@ -46,7 +46,7 @@ Item {
 
     component HeadButton: Text {
         id: hb
-        property color accent: CP.cyan
+        property color accent: Theme.cyan
         signal clicked()
         font.family: "Oxanium"
         font.pixelSize: 8
@@ -66,7 +66,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha("#000000", 0.45)
-        strokeColor: CP.alpha(CP.cyan, 0.30)
+        strokeColor: CP.alpha(Theme.cyan, 0.30)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 6
@@ -83,7 +83,7 @@ Item {
         font.family: "Oxanium"
         font.pixelSize: 8
         font.letterSpacing: 1.8
-        color: CP.alpha(CP.cyan, 0.65)
+        color: CP.alpha(Theme.cyan, 0.65)
     }
 
     Row {
@@ -100,7 +100,7 @@ Item {
         }
         HeadButton {
             text: root.running ? "\uf04d STOP" : "\uf04b RUN"
-            accent: root.running ? CP.red : CP.neon
+            accent: root.running ? Theme.red : Theme.neon
             onClicked: root.running ? AiRunner.stop(root.code)
                 : AiRunner.run(root.code, root.lang, root.cwd)
         }
@@ -116,8 +116,8 @@ Item {
         font.family: "Oxanium"
         font.pixelSize: 8
         font.letterSpacing: 1.8
-        color: root._copied ? CP.neon
-            : (copyMa.containsMouse ? CP.cyan : CP.alpha(CP.cyan, 0.45))
+        color: root._copied ? Theme.neon
+            : (copyMa.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.45))
         Behavior on color { ColorAnimation { duration: 120 } }
 
         MouseArea {
@@ -173,8 +173,8 @@ Item {
 
         readonly property int exitCode: root.run?.exitCode ?? -1
         readonly property bool stopped: root.run?.stopped ?? false
-        readonly property color tone: root.running || outPane.stopped ? CP.yellow
-            : outPane.exitCode === 0 ? CP.neon : CP.red
+        readonly property color tone: root.running || outPane.stopped ? Theme.yellow
+            : outPane.exitCode === 0 ? Theme.neon : Theme.red
 
         Rectangle {
             width: parent.width

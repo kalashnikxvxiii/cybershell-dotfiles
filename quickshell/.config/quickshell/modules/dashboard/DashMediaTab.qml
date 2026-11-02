@@ -22,8 +22,8 @@ FocusScope {
     implicitHeight: col.implicitHeight + 24
 
     readonly property int    shapeHeight: 35
-    readonly property color  accent1: CP.cyan
-    readonly property color  accent2: CP.alpha(CP.red, 0.5)
+    readonly property color  accent1: Theme.cyan
+    readonly property color  accent2: CP.alpha(Theme.red, 0.5)
     readonly property real   h1: 14
     readonly property real   h2: 10
 
@@ -136,7 +136,7 @@ FocusScope {
                 text: Players.isSpotifyActive ? "" : ""
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 18
-                color: badgeArea.containsMouse ? CP.neon : root.accent1
+                color: badgeArea.containsMouse ? Theme.neon : root.accent1
                 MouseArea {
                     id: badgeArea
                     anchors.fill: parent
@@ -283,7 +283,7 @@ FocusScope {
                               ? (root.activePlayer.trackArtist || "Unknown Artist") + " - "
                                 + (root.activePlayer.trackTitle || root.activePlayer.identity || "Unknown Title")
                               : "Nessun player"
-                        color: CP.red
+                        color: Theme.red
                         font.family: "Oxanium"
                         font.pixelSize: root.h1
                         wrapMode: Text.WordWrap
@@ -316,7 +316,7 @@ FocusScope {
 
                     Text {
                         text: "volume"
-                        color: CP.red
+                        color: Theme.red
                         font.family: "Oxanium"
                         font.pixelSize: root.h1
                     }
@@ -374,9 +374,9 @@ FocusScope {
                     layer.effect: MultiEffect {
                         colorization: 1.0
                         colorizationColor: {
-                            if (root.isLiked && likeHover.hovered) return CP.red
-                            if (root.isLiked) return CP.magenta
-                            if (likeHover.hovered) return CP.cyan
+                            if (root.isLiked && likeHover.hovered) return Theme.red
+                            if (root.isLiked) return Theme.magenta
+                            if (likeHover.hovered) return Theme.cyan
                             return CP.alpha(CP.white, 0.6)
                         }
                         Behavior on colorizationColor { ColorAnimation { duration: 150 } }
@@ -618,10 +618,10 @@ FocusScope {
             PauseAnimation { duration: 510 }
         }
 
-        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 2.0;  font.family: "JetBrains Mono"; color: CP.alpha(CP.yellow, 0.06 * gb.glowOp) }
-        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 1.67; font.family: "JetBrains Mono"; color: CP.alpha(CP.yellow, 0.12 * gb.glowOp) }
-        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 1.39; font.family: "JetBrains Mono"; color: CP.alpha(CP.yellow, 0.25 * gb.glowOp) }
-        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 1.17; font.family: "JetBrains Mono"; color: CP.alpha(CP.yellow, 0.45 * gb.glowOp) }
+        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 2.0;  font.family: "JetBrains Mono"; color: CP.alpha(Theme.yellow, 0.06 * gb.glowOp) }
+        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 1.67; font.family: "JetBrains Mono"; color: CP.alpha(Theme.yellow, 0.12 * gb.glowOp) }
+        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 1.39; font.family: "JetBrains Mono"; color: CP.alpha(Theme.yellow, 0.25 * gb.glowOp) }
+        Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size * 1.17; font.family: "JetBrains Mono"; color: CP.alpha(Theme.yellow, 0.45 * gb.glowOp) }
         Text { anchors.centerIn: parent; text: gb.icon; font.pixelSize: gb.size;        font.family: "JetBrains Mono"; color: Qt.rgba(1, 1, 0.4, 0.70 * gb.glowOp) }
         Text {
             id: gbLabel
@@ -629,7 +629,7 @@ FocusScope {
             text: gb.icon
             font.pixelSize: gb.size
             font.family: "JetBrains Mono"
-            color: CP.yellow
+            color: Theme.yellow
             transform: Translate { id: gbShift; x: 0 }
         }
         MouseArea {
@@ -643,7 +643,7 @@ FocusScope {
             id: gbGlitch
             labelTarget: gbLabel
             shiftTarget: gbShift
-            baseColor: CP.yellow
+            baseColor: Theme.yellow
             onFinished: if (gbHover.hovered) gbPause.start()
         }
         Timer {
@@ -732,20 +732,20 @@ FocusScope {
         PropertyAction { target: tagShift; property: "x"; value: 0 }
         PauseAnimation { duration: 1600 }
 
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.magenta }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.magenta }
         PropertyAction { target: tagShift; property: "x"; value: 3 }
         PauseAnimation { duration: 55 }
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.yellow }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.yellow }
         PropertyAction { target: tagShift; property: "x"; value: -3 }
         PauseAnimation { duration: 55 }
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.cyan }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.cyan }
         PropertyAction { target: tagShift; property: "x"; value: 2 }
         PauseAnimation { duration: 55 }
         PropertyAction { target: tagGlitch; property: "tint"; value: "transparent" }
         PropertyAction { target: tagShift; property: "x"; value: 0 }
         PauseAnimation { duration: 130 }
 
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.magenta }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.magenta }
         PropertyAction { target: tagShift; property: "x"; value: -2 }
         PauseAnimation { duration: 35 }
         PropertyAction { target: tagGlitch; property: "tint"; value: "transparent" }

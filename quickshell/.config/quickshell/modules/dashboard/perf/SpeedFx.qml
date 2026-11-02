@@ -76,10 +76,10 @@ Canvas {
     function burst(kind, forPhase) {
         var ph = forPhase !== undefined ? forPhase : phase
         var n = { start: 28, phase: 14, done: 44, fail: 22 }[kind] || 16
-        var palette = kind === "fail" ? [CP.red, CP.red, CP.magenta]
-                    : kind === "done" ? [downColor, upColor, CP.neon]
-                    : ph === "upload" ? [upColor, upColor, CP.magenta]
-                    : [downColor, downColor, CP.magenta]
+        var palette = kind === "fail" ? [Theme.red, Theme.red, Theme.magenta]
+                    : kind === "done" ? [downColor, upColor, Theme.neon]
+                    : ph === "upload" ? [upColor, upColor, Theme.magenta]
+                    : [downColor, downColor, Theme.magenta]
         for (var i = 0; i < n; i++) {
             var a = Math.random() * Math.PI * 2
             var sp = 110 + Math.random() * (kind === "done" ? 260 : 200)
@@ -97,7 +97,7 @@ Canvas {
                           color: _c(palette[0]), width: 2 })
         if (kind === "done")
             _waves.push({ r: radius, speed: 90, life: -0.08, ttl: 0.5, color: _c(palette[1]), width: 1 })
-        tear(kind === "fail" ? [CP.red, CP.magenta] : [downColor, CP.magenta, upColor],
+        tear(kind === "fail" ? [Theme.red, Theme.magenta] : [downColor, Theme.magenta, upColor],
              kind === "phase" ? 3 : 6)
         _alive = _count()
     }
@@ -105,7 +105,7 @@ Canvas {
     // Digital tearing: a few thin horizontal bars that jump to new places a
     // couple of times and vanish. Stepped, never eased.
     function tear(colors, count) {
-        colors = colors || [downColor, CP.magenta, upColor]
+        colors = colors || [downColor, Theme.magenta, upColor]
         count = count || 4
         for (var i = 0; i < count; i++)
             _bars.push({ colors: colors, life: 0, ttl: 0.08 + Math.random() * 0.14,

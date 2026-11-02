@@ -51,7 +51,7 @@ Item {
 
     // The gutter marker of the step takes this: in progress, failed, done
     readonly property color dot: (root.runningLabel !== "" || (root.live && root.fold.streaming))
-        ? CP.yellow : root.fold.fails > 0 ? CP.red : CP.neon
+        ? Theme.yellow : root.fold.fails > 0 ? Theme.red : Theme.neon
 
     implicitHeight: col.implicitHeight
     height: implicitHeight
@@ -80,7 +80,7 @@ Item {
                     font.letterSpacing: 1.5
                     font.bold: true
                     opacity: pulse.k
-                    color: CP.yellow
+                    color: Theme.yellow
                 }
 
                 Text {
@@ -90,7 +90,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
-                    color: ma.containsMouse ? CP.cyan : CP.alpha(CP.cyan, 0.62)
+                    color: ma.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.62)
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
 
@@ -99,7 +99,7 @@ Item {
                     text: root.expanded ? "\uf077" : "\uf078"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 8
-                    color: CP.alpha(CP.cyan, ma.containsMouse ? 1 : 0.55)
+                    color: CP.alpha(Theme.cyan, ma.containsMouse ? 1 : 0.55)
                 }
             }
 
@@ -124,7 +124,7 @@ Item {
                 x: 3
                 width: 1
                 height: parent.height
-                color: CP.alpha(CP.cyan, 0.22)
+                color: CP.alpha(Theme.cyan, 0.22)
             }
 
             Column {
@@ -181,7 +181,7 @@ Item {
                             font.family: "Oxanium"
                             font.pixelSize: 9
                             font.letterSpacing: 1.5
-                            color: endMa.containsMouse ? CP.cyan : CP.alpha(CP.cyan, 0.45)
+                            color: endMa.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.45)
                         }
 
                         Text {
@@ -189,7 +189,7 @@ Item {
                             text: "\uf077"
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 8
-                            color: CP.alpha(CP.cyan, endMa.containsMouse ? 1 : 0.45)
+                            color: CP.alpha(Theme.cyan, endMa.containsMouse ? 1 : 0.45)
                         }
                     }
 

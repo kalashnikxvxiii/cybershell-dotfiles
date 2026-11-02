@@ -25,7 +25,7 @@ Item {
 
         property string label: ""
         property string note: ""
-        property color accent: CP.cyan
+        property color accent: Theme.cyan
         property bool primary: false
 
         signal triggered()
@@ -102,7 +102,7 @@ Item {
                 anchors.bottom: parent.bottom
                 width: parent.width
                 height: 1
-                color: CP.alpha(CP.magenta, 0.30)
+                color: CP.alpha(Theme.magenta, 0.30)
             }
         }
 
@@ -131,7 +131,7 @@ Item {
                 text: root.session?.loginError ?? ""
                 font.family: "Oxanium"
                 font.pixelSize: 10
-                color: CP.red
+                color: Theme.red
             }
 
             Text {
@@ -142,13 +142,13 @@ Item {
                 font.pixelSize: 9
                 font.letterSpacing: 2
                 font.bold: true
-                color: CP.magenta
+                color: Theme.magenta
             }
 
             LoginButton {
                 label: "CLAUDE.AI SUBSCRIPTION"
                 note: "Use your Claude Pro, Team, or Enterprise subscription"
-                accent: CP.yellow
+                accent: Theme.yellow
                 primary: true
                 onTriggered: root.session.login(true)
             }
@@ -162,7 +162,7 @@ Item {
             LoginButton {
                 label: "BEDROCK, FOUNDRY, OR VERTEX  \u2197"
                 note: "Instructions on how to use API keys or third-party providers."
-                accent: CP.magenta
+                accent: Theme.magenta
                 onTriggered: Quickshell.execDetached(["xdg-open",
                     "https://code.claude.com/docs/en/vs-code#use-third-party-providers"])
             }
@@ -182,7 +182,7 @@ Item {
                 font.pixelSize: 12
                 font.letterSpacing: 3
                 font.bold: true
-                color: CP.cyan
+                color: Theme.cyan
             }
 
             LoginButton {
@@ -205,7 +205,7 @@ Item {
                 font.pixelSize: 12
                 font.letterSpacing: 3
                 font.bold: true
-                color: CP.cyan
+                color: Theme.cyan
             }
 
             Text {
@@ -224,8 +224,8 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.cyan, 0.04)
-                    strokeColor: CP.alpha(CP.cyan, 0.30)
+                    fillColor: CP.alpha(Theme.cyan, 0.04)
+                    strokeColor: CP.alpha(Theme.cyan, 0.30)
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomRight: 6
@@ -244,7 +244,7 @@ Item {
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 9
                     color: CP.alpha(root.fg, 0.75)
-                    selectionColor: CP.alpha(CP.cyan, 0.35)
+                    selectionColor: CP.alpha(Theme.cyan, 0.35)
                     // Show the start of it, not where the text ended
                     onTextChanged: cursorPosition = 0
                 }
@@ -257,7 +257,7 @@ Item {
                     frame: false
                     glyph: "\uf0c5"
                     glyphSize: 11
-                    accent: CP.cyan
+                    accent: Theme.cyan
                     onTriggered: Quickshell.execDetached(["wl-copy", "-n", "--",
                         root.session?.loginUrl ?? ""])
                 }
@@ -279,7 +279,7 @@ Item {
                 text: root.session?.loginError ?? ""
                 font.family: "Oxanium"
                 font.pixelSize: 10
-                color: CP.red
+                color: Theme.red
             }
 
             Item {
@@ -288,8 +288,8 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.cyan, 0.04)
-                    strokeColor: CP.alpha(CP.cyan, code.activeFocus ? 0.80 : 0.30)
+                    fillColor: CP.alpha(Theme.cyan, 0.04)
+                    strokeColor: CP.alpha(Theme.cyan, code.activeFocus ? 0.80 : 0.30)
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomRight: 6
@@ -306,7 +306,7 @@ Item {
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 10
                     color: root.fg
-                    selectionColor: CP.alpha(CP.cyan, 0.35)
+                    selectionColor: CP.alpha(Theme.cyan, 0.35)
                     onAccepted: root.session.submitLoginCode(code.text)
 
                     Text {
@@ -321,7 +321,7 @@ Item {
 
             LoginButton {
                 label: "CONTINUE"
-                accent: CP.yellow
+                accent: Theme.yellow
                 primary: true
                 enabled: code.text.trim() !== ""
                 onTriggered: root.session.submitLoginCode(code.text)

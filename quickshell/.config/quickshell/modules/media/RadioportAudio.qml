@@ -43,9 +43,9 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     cutBottomRight: 8
-                    fillColor: chip.current ? CP.alpha(CP.cyan, 0.16)
-                        : hit.containsMouse ? CP.alpha(CP.cyan, 0.08) : Qt.rgba(0.07, 0.02, 0.05, 0.75)
-                    strokeColor: chip.current ? CP.cyan : CP.alpha(CP.red, 0.8)
+                    fillColor: chip.current ? CP.alpha(Theme.cyan, 0.16)
+                        : hit.containsMouse ? CP.alpha(Theme.cyan, 0.08) : Qt.rgba(0.07, 0.02, 0.05, 0.75)
+                    strokeColor: chip.current ? Theme.cyan : CP.alpha(Theme.red, 0.8)
                     strokeWidth: chip.current ? 1.5 : 1
                     inset: 0.75
                 }
@@ -55,20 +55,20 @@ Item {
                     y: 3
                     width: 4
                     height: 4
-                    color: CP.cyan
+                    color: Theme.cyan
                 }
                 Text {
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.margins: 3
                     text: chip.index + 1
-                    color: chip.current ? CP.cyan : CP.alpha(CP.red, 0.8)
+                    color: chip.current ? Theme.cyan : CP.alpha(Theme.red, 0.8)
                     font { family: "Oxanium"; pixelSize: 8 }
                 }
                 Text {
                     anchors.centerIn: parent
                     text: chip.modelData
-                    color: CP.cyan
+                    color: Theme.cyan
                     opacity: chip.current ? 1 : 0.75
                     font { family: "Oxanium"; pixelSize: 16; letterSpacing: 1 }
                 }
@@ -92,31 +92,31 @@ Item {
             anchors.fill: parent
             active: root.active && root.tab === 0
             sourceComponent: Tabs.OutputsTab {
-                accent: CP.cyan
-                frame: CP.red
-                meter: CP.cyan
-                heading: CP.red
-                sourceBox: CP.red
-                eqBox: CP.cyan
+                accent: Theme.cyan
+                frame: Theme.red
+                meter: Theme.cyan
+                heading: Theme.red
+                sourceBox: Theme.red
+                eqBox: Theme.cyan
             }
         }
         Loader {
             anchors.fill: parent
             active: root.active && root.tab === 1
             sourceComponent: Tabs.InputsTab {
-                accent: CP.cyan
-                frame: CP.red
-                meter: CP.cyan
-                heading: CP.red
+                accent: Theme.cyan
+                frame: Theme.red
+                meter: Theme.cyan
+                heading: Theme.red
             }
         }
         Loader {
             anchors.fill: parent
             active: root.active && root.tab === 2
             sourceComponent: Tabs.AppsTab {
-                accent: CP.cyan
-                frame: CP.red
-                heading: CP.red
+                accent: Theme.cyan
+                frame: Theme.red
+                heading: Theme.red
             }
         }
     }

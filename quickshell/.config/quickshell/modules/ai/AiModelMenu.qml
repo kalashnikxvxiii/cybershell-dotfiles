@@ -34,7 +34,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 24
@@ -81,7 +81,7 @@ Item {
             // The entry the CLI marks as the session default reads as a
             // recommendation, so it carries the accent the others do not
             readonly property color accent:
-                modelData.value === "default" ? CP.neon : CP.magenta
+                modelData.value === "default" ? Theme.neon : Theme.magenta
 
             width: view.width
             height: root.rowH
@@ -160,7 +160,7 @@ Item {
             visible: view.contentHeight > view.height
             y: view.visibleArea.yPosition * view.height
             height: Math.max(18, view.visibleArea.heightRatio * view.height)
-            color: CP.alpha(CP.magenta, view.moving ? 0.55 : 0.25)
+            color: CP.alpha(Theme.magenta, view.moving ? 0.55 : 0.25)
             Behavior on color { ColorAnimation { duration: 200 } }
         }
     }
@@ -171,7 +171,7 @@ Item {
         anchors.leftMargin: 6
         anchors.rightMargin: 6
         height: 1
-        color: CP.alpha(CP.magenta, 0.20)
+        color: CP.alpha(Theme.magenta, 0.20)
     }
 
     AiEffortRow {

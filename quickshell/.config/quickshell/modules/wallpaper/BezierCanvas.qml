@@ -183,7 +183,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: width / 2
-            color: ma1.pressed ? CP.cyan : CP.alpha(CP.cyan, 0.85)
+            color: ma1.pressed ? Theme.cyan : CP.alpha(Theme.cyan, 0.85)
             border.color: "white"
             border.width: 1
         }
@@ -223,7 +223,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: width / 2
-            color: ma2.pressed ? CP.cyan : CP.alpha(CP.cyan, 0.85)
+            color: ma2.pressed ? Theme.cyan : CP.alpha(Theme.cyan, 0.85)
             border.color: "white"
             border.width: 1
         }

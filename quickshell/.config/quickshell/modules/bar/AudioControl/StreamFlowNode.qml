@@ -96,8 +96,8 @@ Item {
     // ── Background card ──────────────────────────────────────────
     CutShape {
         anchors.fill: parent
-        fillColor: muted ? CP.alpha(CP.red, 0.05) : (rowMa.containsMouse ? CP.alpha(root.accent, 0.10) : CP.alpha(root.accent, 0.05))
-        strokeColor: muted ? CP.alpha(CP.red, 0.4) : CP.alpha(root.frame, 0.5)
+        fillColor: muted ? CP.alpha(Theme.red, 0.05) : (rowMa.containsMouse ? CP.alpha(root.accent, 0.10) : CP.alpha(root.accent, 0.05))
+        strokeColor: muted ? CP.alpha(Theme.red, 0.4) : CP.alpha(root.frame, 0.5)
         strokeWidth: 1
         inset: 0.5
         cutBottomRight: 16
@@ -237,7 +237,7 @@ Item {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 height: 0.8
-                color: CP.alpha(CP.red, 0.4)
+                color: CP.alpha(Theme.red, 0.4)
             }
             Text {
                 anchors.centerIn: parent
@@ -246,7 +246,7 @@ Item {
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 font.bold: true
-                color: CP.alpha(CP.red, 0.7)
+                color: CP.alpha(Theme.red, 0.7)
             }
         }
 

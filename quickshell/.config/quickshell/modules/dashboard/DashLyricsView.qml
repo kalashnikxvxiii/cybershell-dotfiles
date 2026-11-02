@@ -422,7 +422,7 @@ Item {
             anchors.centerIn: parent
             visible: !root.lyricsReady && !!root.player
             text: root.lyricsBuffer === "" && !root.lyricsReady ? "♪ ..." : "♪ not found"
-            color: CP.magenta; font.family: "Oxanium"; font.pixelSize: root.fontSize * 1.5
+            color: Theme.magenta; font.family: "Oxanium"; font.pixelSize: root.fontSize * 1.5
         }
 
         Item {
@@ -486,7 +486,7 @@ Item {
                         transform: Translate { id: outRightShift; x: 0 } }
                 Text { id: outgoingCenter; width: parent.width; text: root._prevPrevLyricsTxt === "..." ? root.interlude.join(" ") : root._prevPrevLyricsTxt
                     font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
-                    color: CP.alpha(CP.magenta, 0.7); horizontalAlignment: Text.AlignLeft
+                    color: CP.alpha(Theme.magenta, 0.7); horizontalAlignment: Text.AlignLeft
                     leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap }
             }
 
@@ -513,7 +513,7 @@ Item {
                     opacity: root._prevIsInterlude ? 0 : 1
                     font.family: "Oxanium"; 
                     font.pixelSize: root.effectiveFontSize * 0.45; font.weight: Font.Medium
-                    color: CP.alpha(CP.magenta, 0.38); horizontalAlignment: Text.AlignLeft
+                    color: CP.alpha(Theme.magenta, 0.38); horizontalAlignment: Text.AlignLeft
                     leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap
                 }
                 Row {
@@ -532,7 +532,7 @@ Item {
                                 anchors.fill: parent
                                 font.pixelSize: root.fontSize * 0.45
                                 text: root.interlude[index]
-                                color: CP.alpha(CP.magenta, 0.38)
+                                color: CP.alpha(Theme.magenta, 0.38)
                                 horizontalAlignment: Text.AlignHCenter
                             }
                         }
@@ -550,7 +550,7 @@ Item {
                 Text {
                     id: currTxt; visible: !(root.lyricsLines[root.currentLyricsIdx]?.isInterlude ?? false)
                     width: parent.width; text: root._currLyricsTxt; font.weight: Font.Bold
-                    font.family: "Oxanium"; font.pixelSize: root.effectiveFontSize * 0.8; color: CP.magenta
+                    font.family: "Oxanium"; font.pixelSize: root.effectiveFontSize * 0.8; color: Theme.magenta
                     horizontalAlignment: Text.AlignLeft; wrapMode: Text.WordWrap; leftPadding: 16
                     opacity: (root.hasWordSync && (root.lyricsLines[root.currentLyricsIdx]?.words ?? null) !== null) ? 0 : 0.9
                 }
@@ -583,7 +583,7 @@ Item {
                                 height: width
                                 font.pixelSize: root.fontSize * 0.8
                                 text: root.interlude[index]
-                                color: CP.magenta
+                                color: Theme.magenta
                                 opacity: 0.3
                                 scale: 0.8
                                 y: root.fontSize * 0.25
@@ -599,20 +599,20 @@ Item {
                                     PauseAnimation { duration: index * 800 }
 
                                     // PRE-GLITCH: position jitter + cyan flash (80ms)
-                                    PropertyAction { target: dot;       property: "color";      value: CP.alpha(CP.cyan, 0.9) }
+                                    PropertyAction { target: dot;       property: "color";      value: CP.alpha(Theme.cyan, 0.9) }
                                     PropertyAction { target: dot;       property: "scale";      value: 1.2 }
                                     PropertyAction { target: dotShift;  property: "x";          value: -3 }
                                     PauseAnimation { duration: 25 }
                                     PropertyAction { target: dot;       property: "scale";      value: 0.72 }
                                     PropertyAction { target: dotShift;  property: "x";          value: 3 }
                                     PauseAnimation { duration: 25 }
-                                    PropertyAction { target: dot;       property: "color";      value: CP.magenta }
+                                    PropertyAction { target: dot;       property: "color";      value: Theme.magenta }
                                     PropertyAction { target: dot;       property: "opacity";    value: 0.85 }
                                     PropertyAction { target: dotShift;  property: "x";          value: 0 }
                                     PauseAnimation { duration: 30 }
 
                                     // MAIN BURST: peak yellow + micro-stutter (120ms)
-                                    PropertyAction { target: dot;       property: "color";      value: CP.yellow }
+                                    PropertyAction { target: dot;       property: "color";      value: Theme.yellow }
                                     PropertyAction { target: dot;       property: "scale";      value: 1.35 }
                                     PropertyAction { target: dot;       property: "opacity";    value: 1.0 }
                                     PauseAnimation { duration: 40 }
@@ -624,7 +624,7 @@ Item {
                                     PauseAnimation { duration: 40 }
 
                                     // HOLDBRIGHT: magenta (150ms)
-                                    PropertyAction { target: dot;       property: "color";      value: CP.magenta }
+                                    PropertyAction { target: dot;       property: "color";      value: Theme.magenta }
                                     PauseAnimation { duration: 150 }
 
                                     // DECAY STUTTER: opacity flicker + lateral jolt (100ms)
@@ -722,7 +722,7 @@ Item {
                                             }
                                             Text { id: baseWord; text: sylDel.modelData.word; font.family: "Oxanium"
                                                     font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
-                                                    color: CP.alpha(CP.magenta, 0.52); visible: !sylContent.letterMode }
+                                                    color: CP.alpha(Theme.magenta, 0.52); visible: !sylContent.letterMode }
                                             Item {
                                                 visible: !sylContent.letterMode
                                                 width: baseWord.implicitWidth
@@ -732,7 +732,7 @@ Item {
                                                     maskEnabled: true
                                                     maskSource: sweepMask
                                                     shadowEnabled: true
-                                                    shadowColor: CP.yellow
+                                                    shadowColor: Theme.yellow
                                                     shadowBlur: 0.8
                                                     shadowOpacity: Math.sin(Math.max(0, Math.min(1, sylDel.fillProg)) * Math.PI) * 0.65
                                                     shadowHorizontalOffset: 0
@@ -744,7 +744,7 @@ Item {
                                                     font.family: "Oxanium"
                                                     font.pixelSize: root.fontSize * 0.8
                                                     font.weight: Font.Bold
-                                                    color: CP.yellow
+                                                    color: Theme.yellow
                                                 }
                                                 Rectangle {
                                                     id: sweepMask
@@ -810,21 +810,21 @@ Item {
                                                             id: letterBase
                                                             text: letterDel.ch
                                                             font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
-                                                            color: CP.alpha(CP.magenta, 0.52)
+                                                            color: CP.alpha(Theme.magenta, 0.52)
                                                         }
                                                         Item {
                                                             width: letterBase.implicitWidth; height: letterBase.implicitHeight
                                                             layer.enabled: true
                                                             layer.effect: MultiEffect {
                                                                 maskEnabled: true; maskSource: letterMask
-                                                                shadowEnabled: true; shadowColor: CP.yellow; shadowBlur: 0.9
+                                                                shadowEnabled: true; shadowColor: Theme.yellow; shadowBlur: 0.9
                                                                 shadowOpacity: Math.sin(letterDel.lfp * Math.PI) * letterDel.gFalloff * 1.1
                                                                 shadowHorizontalOffset: 0; shadowVerticalOffset: 0
                                                             }
                                                             Text {
                                                                 width: parent.width; text: letterDel.ch
                                                                 font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
-                                                                color: CP.yellow
+                                                                color: Theme.yellow
                                                             }
                                                             Rectangle {
                                                                 id: letterMask; visible: false; layer.enabled: true
@@ -856,7 +856,7 @@ Item {
                     width: parent.width; height: root._sweepProgress * currTxt.implicitHeight; clip: true
                     Text {
                         width: parent.width; text: root._currLyricsTxt; font.family: "Oxanium"; font.weight: Font.Bold
-                        font.pixelSize: root.effectiveFontSize * 0.8; color: CP.yellow; leftPadding: 16
+                        font.pixelSize: root.effectiveFontSize * 0.8; color: Theme.yellow; leftPadding: 16
                         horizontalAlignment: Text.AlignLeft; wrapMode: Text.WordWrap
                     }
                 }
@@ -889,7 +889,7 @@ Item {
                 text: root._nextLyricsTxt
                 opacity: root._nextIsInterlude ? 0 : 1
                 font.family: "Oxanium"; font.pixelSize: root.effectiveFontSize * 0.45; font.weight: Font.Medium
-                color: CP.alpha(CP.magenta, 0.38); horizontalAlignment: Text.AlignLeft
+                color: CP.alpha(Theme.magenta, 0.38); horizontalAlignment: Text.AlignLeft
                 leftPadding: 36; bottomPadding: 12; wrapMode: Text.WordWrap 
             }
             Row {
@@ -907,7 +907,7 @@ Item {
                             anchors.fill: parent
                             font.pixelSize: root.fontSize * 0.45
                             text: root.interlude[index]
-                            color: CP.alpha(CP.magenta, 0.38)
+                            color: CP.alpha(Theme.magenta, 0.38)
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }

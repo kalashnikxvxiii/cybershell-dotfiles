@@ -1,7 +1,7 @@
 // CornerAccents.qml — CP2077-style corner bracket decorations
 // Overlay on any panel to add those signature corner bracket markers.
 //
-// Usage: CornerAccents { anchors.fill: parent; color: CP.yellow; size: 10 }
+// Usage: CornerAccents { anchors.fill: parent; color: Theme.yellow; size: 10 }
 // Props: color, size (arm length), thickness, opacity
 //        showTopLeft/Right/BottomLeft/Right: enable individual corners
 

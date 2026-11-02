@@ -41,7 +41,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         width: 1
-        color: CP.alpha(CP.yellow, 0.3)
+        color: CP.alpha(Theme.yellow, 0.3)
     }
 
     ScanlineOverlay {
@@ -160,7 +160,7 @@ Item {
                                     anchors.top:    _nameLabel.bottom
                                     anchors.topMargin: 1
                                     height: 1
-                                    color: CP.alpha(CP.cyan, 0.6)
+                                    color: CP.alpha(Theme.cyan, 0.6)
                                 }
 
                                 MouseArea {
@@ -180,7 +180,7 @@ Item {
                                     font.pixelSize: 13
                                     font.letterSpacing: 3
                                     color: Colours.accentSecondary
-                                    selectionColor: CP.alpha(CP.cyan, 0.35)
+                                    selectionColor: CP.alpha(Theme.cyan, 0.35)
                                     selectedTextColor: Colours.textPrimary
 
                                     onAccepted: {
@@ -209,7 +209,7 @@ Item {
                                 font.family: "Oxanium"
                                 font.pixelSize: 9
                                 font.letterSpacing: 2
-                                color: CP.alpha(CP.yellow, 0.65)
+                                color: CP.alpha(Theme.yellow, 0.65)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                             Text {
@@ -219,7 +219,7 @@ Item {
                                 font.family: "Oxanium"
                                 font.pixelSize: 9
                                 font.letterSpacing: 2
-                                color: CP.alpha(CP.cyan, 0.75)
+                                color: CP.alpha(Theme.cyan, 0.75)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -260,7 +260,7 @@ Item {
                         CutShape {
                             anchors.fill: parent
                             fillColor: "transparent"
-                            strokeColor: CP.alpha(CP.cyan, 0.3)
+                            strokeColor: CP.alpha(Theme.cyan, 0.3)
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 6; cutBottomRight: 6
                         }
@@ -284,7 +284,7 @@ Item {
                         CutShape {
                             anchors.fill: parent
                             fillColor: "transparent"
-                            strokeColor: CP.alpha(CP.red, 0.3)
+                            strokeColor: CP.alpha(Theme.red, 0.3)
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 6; cutBottomRight: 6
                         }
@@ -312,8 +312,8 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.cyan, 0.06)
-                    strokeColor: _nameInput.text !== "" ? CP.alpha(CP.yellow, 0.7) : CP.alpha(CP.cyan, 0.3)
+                    fillColor: CP.alpha(Theme.cyan, 0.06)
+                    strokeColor: _nameInput.text !== "" ? CP.alpha(Theme.yellow, 0.7) : CP.alpha(Theme.cyan, 0.3)
                     strokeWidth: 1; inset: 0.5
                     cutTopLeft: 12; cutBottomRight: 12
                     Behavior on strokeColor { ColorAnimation { duration: 150 } }
@@ -379,8 +379,8 @@ Item {
 
                             CutShape {
                                 anchors.fill: parent
-                                fillColor: CP.alpha(CP.cyan, 0.08)
-                                strokeColor: CP.alpha(CP.cyan, 0.3)
+                                fillColor: CP.alpha(Theme.cyan, 0.08)
+                                strokeColor: CP.alpha(Theme.cyan, 0.3)
                                 strokeWidth: 1; inset: 0.5
                                 cutTopLeft: 9
                             }
@@ -435,8 +435,8 @@ Item {
 
                             CutShape {
                                 anchors.fill: parent
-                                fillColor: CP.alpha(CP.cyan, 0.07)
-                                strokeColor: _intervalSlot._dirty ? CP.alpha(CP.yellow, 0.7) : CP.alpha(CP.cyan, 0.25)
+                                fillColor: CP.alpha(Theme.cyan, 0.07)
+                                strokeColor: _intervalSlot._dirty ? CP.alpha(Theme.yellow, 0.7) : CP.alpha(Theme.cyan, 0.25)
                                 strokeWidth: 1; inset: 0.5
                                 cutBottomRight: 9; showLeft: _intervalSlot._dirty ? true : false
                                 Behavior on strokeColor { ColorAnimation { duration: 150 } }
@@ -586,8 +586,8 @@ Item {
 
                             CutShape {
                                 anchors.fill: parent
-                                fillColor: PlaylistState.shuffle ? CP.alpha(CP.yellow, 0.12) : "transparent"
-                                strokeColor: PlaylistState.shuffle ? Colours.accentPrimary : CP.alpha(CP.yellow, 0.2)
+                                fillColor: PlaylistState.shuffle ? CP.alpha(Theme.yellow, 0.12) : "transparent"
+                                strokeColor: PlaylistState.shuffle ? Colours.accentPrimary : CP.alpha(Theme.yellow, 0.2)
                                 strokeWidth: 1; inset: 0.5
                                 //cutBottomRight: 9
                                 cutTopLeft: 9
@@ -617,7 +617,7 @@ Item {
                             CutShape {
                                 anchors.fill: parent
                                 fillColor: "transparent"
-                                strokeColor: CP.alpha(CP.cyan, 0.2)
+                                strokeColor: CP.alpha(Theme.cyan, 0.2)
                                 strokeWidth: 1; inset: 0.5
                             }
                             Text {
@@ -660,7 +660,7 @@ Item {
                             CutShape {
                                 anchors.fill: parent
                                 fillColor: "transparent"
-                                strokeColor: CP.alpha(CP.cyan, _screenSel._dropdownOpen ? 0.4 : 0.2)
+                                strokeColor: CP.alpha(Theme.cyan, _screenSel._dropdownOpen ? 0.4 : 0.2)
                                 strokeWidth: 1; inset: 0.5
                                 //cutTopLeft: 9
                                 cutBottomRight: 9
@@ -696,7 +696,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: CP.alpha(CP.void2, 0.5)
-                    strokeColor: CP.alpha(CP.cyan, 0.15)
+                    strokeColor: CP.alpha(Theme.cyan, 0.15)
                     strokeWidth: 1; inset: 0.5
                     cutTopLeft: 6; cutBottomRight: 6
                 }
@@ -726,8 +726,8 @@ Item {
                     
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.alpha(CP.cyan, 0.06)
-                        strokeColor: CP.alpha(CP.cyan, 0.25)
+                        fillColor: CP.alpha(Theme.cyan, 0.06)
+                        strokeColor: CP.alpha(Theme.cyan, 0.25)
                         strokeWidth: 1; inset: 0.5
                         cutTopLeft: 3; cutBottomRight: 3
                     }
@@ -790,15 +790,15 @@ Item {
                         id: _playBtnShape
                         anchors.fill: parent
                         fillColor: PlaylistState.isPlaying && !_playBtn._wouldSwitch
-                                ? CP.alpha(CP.cyan, 0.2)
+                                ? CP.alpha(Theme.cyan, 0.2)
                                 : _playBtn._wouldSwitch
-                                ? CP.alpha(CP.yellow, 0.12)
+                                ? CP.alpha(Theme.yellow, 0.12)
                                 : "transparent"
                         strokeColor: PlaylistState.isPlaying && !_playBtn._wouldSwitch
                                     ? Colours.accentSecondary
                                     : _playBtn._wouldSwitch
                                     ? Colours.accentPrimary
-                                    : CP.alpha(CP.cyan, 0.3)
+                                    : CP.alpha(Theme.cyan, 0.3)
                         strokeWidth: _playBtn._wouldSwitch ? 1.5 : 1
                         inset: 0.5
                         cutTopLeft: 5; cutBottomRight: 5
@@ -965,14 +965,14 @@ Item {
 
                                 CutShape {
                                     anchors.fill: parent
-                                    fillColor: playing       ? CP.alpha(CP.yellow, 0.18)
-                                            : selected      ? CP.alpha(CP.cyan, 0.10)
-                                            : highlighted   ? CP.alpha(CP.magenta, 0.18)
+                                    fillColor: playing       ? CP.alpha(Theme.yellow, 0.18)
+                                            : selected      ? CP.alpha(Theme.cyan, 0.10)
+                                            : highlighted   ? CP.alpha(Theme.magenta, 0.18)
                                                             : "transparent"
                                     strokeColor: playing     ? Colours.accentPrimary
                                             : selected      ? Colours.accentSecondary
-                                            : highlighted   ? CP.alpha(CP.magenta, 0.65)
-                                                            : CP.alpha(CP.cyan, 0.2)
+                                            : highlighted   ? CP.alpha(Theme.magenta, 0.65)
+                                                            : CP.alpha(Theme.cyan, 0.2)
                                     strokeWidth: playing ? 1.5 : 1
                                     inset: 0.5
                                     cutTopLeft: 9; cutBottomRight: 9
@@ -1007,7 +1007,7 @@ Item {
                                     font.letterSpacing: 1
                                     color: playing       ? Colours.accentPrimary
                                         : selected      ? Colours.accentSecondary
-                                        :  highlighted  ? CP.magenta
+                                        :  highlighted  ? Theme.magenta
                                                         : Colours.textMuted
                                 }
 
@@ -1036,8 +1036,8 @@ Item {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: CP.alpha(CP.red, 0.12)
-                        strokeColor: CP.alpha(CP.red, 0.55)
+                        fillColor: CP.alpha(Theme.red, 0.12)
+                        strokeColor: CP.alpha(Theme.red, 0.55)
                         strokeWidth: 1; inset: 0.5
                         cutTopLeft: 3; cutBottomRight: 3
                     }
@@ -1065,7 +1065,7 @@ Item {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 1
-            color: CP.alpha(CP.yellow, 0.15)
+            color: CP.alpha(Theme.yellow, 0.15)
         }
     }
 
@@ -1144,7 +1144,7 @@ Item {
                     border.width: 2
                     border.color: _scrollArea._dropIdx === _del.index
                                 && _scrollArea._dragIdx >= 0
-                                ? CP.alpha(CP.cyan, 0.7) : "transparent"
+                                ? CP.alpha(Theme.cyan, 0.7) : "transparent"
                     z: 2
                 }
 
@@ -1279,7 +1279,7 @@ Item {
                 y: _scrollBar._range > 0
                     ? (entryGrid.contentY / _scrollBar._range) * (_scrollBar.height - height)
                     : 0
-                color: _sbMa.pressed ? CP.cyan : CP.alpha(CP.cyan, 0.7)
+                color: _sbMa.pressed ? Theme.cyan : CP.alpha(Theme.cyan, 0.7)
                 Behavior on color { ColorAnimation { duration: 100 } }
             }
 
@@ -1365,7 +1365,7 @@ Item {
         CutShape {
             anchors.fill: parent
             fillColor: CP.void2
-            strokeColor: CP.alpha(CP.cyan, 0.4)
+            strokeColor: CP.alpha(Theme.cyan, 0.4)
             strokeWidth: 1; inset: 0.5
             cutTopLeft: 4; cutBottomRight: 4
         }
@@ -1388,8 +1388,8 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         color: _active
-                            ? CP.alpha(CP.cyan, 0.18)
-                            : (_optMa.containsMouse ? CP.alpha(CP.cyan, 0.06) : "transparent")
+                            ? CP.alpha(Theme.cyan, 0.18)
+                            : (_optMa.containsMouse ? CP.alpha(Theme.cyan, 0.06) : "transparent")
                     }
                     Text {
                         anchors.centerIn: parent
@@ -1437,7 +1437,7 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: CP.void2
-                strokeColor: CP.alpha(CP.red, 0.6)
+                strokeColor: CP.alpha(Theme.red, 0.6)
                 strokeWidth: 2; inset: 1
                 cutTopLeft: 12; cutBottomRight: 12
             }
@@ -1478,7 +1478,7 @@ Item {
                         
                         CutShape {
                             anchors.fill: parent
-                            fillColor: CP.alpha(CP.red, 0.2)
+                            fillColor: CP.alpha(Theme.red, 0.2)
                             strokeColor: Colours.accentDanger
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 4; cutBottomRight: 4
@@ -1506,7 +1506,7 @@ Item {
                         CutShape {
                             anchors.fill: parent
                             fillColor:"transparent"
-                            strokeColor: CP.alpha(CP.cyan, 0.3)
+                            strokeColor: CP.alpha(Theme.cyan, 0.3)
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 4; cutBottomRight: 4
                         }

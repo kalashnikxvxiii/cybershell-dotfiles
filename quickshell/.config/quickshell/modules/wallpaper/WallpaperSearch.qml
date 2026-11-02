@@ -179,8 +179,8 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: root.expanded ? CP.alpha(CP.cyan, 0.08) : "transparent"
-        strokeColor: root.expanded ? CP.alpha(CP.cyan, 0.4) : "transparent"
+        fillColor: root.expanded ? CP.alpha(Theme.cyan, 0.08) : "transparent"
+        strokeColor: root.expanded ? CP.alpha(Theme.cyan, 0.4) : "transparent"
         strokeWidth: 1
         inset: 0.5
         cutTopLeft: 4
@@ -228,8 +228,8 @@ Item {
                     height: 20
                     cutTopRight: 3
                     width: chipMeasure.implicitWidth + 10
-                    fillColor: CP.alpha(WC.prefixColors[modelData] || CP.cyan, 0.15)
-                    strokeColor: CP.alpha(WC.prefixColors[modelData] || CP.cyan, 0.6)
+                    fillColor: CP.alpha(WC.prefixColors[modelData] || Theme.cyan, 0.15)
+                    strokeColor: CP.alpha(WC.prefixColors[modelData] || Theme.cyan, 0.6)
                     strokeWidth: 1
                     inset: 0.5
 
@@ -239,7 +239,7 @@ Item {
                         font.family: "Oxanium"
                         font.pixelSize: 12
                         font.letterSpacing: 1
-                        color: WC.prefixColors[modelData] || CP.cyan
+                        color: WC.prefixColors[modelData] || Theme.cyan
                     }
 
                     Text {
@@ -333,7 +333,7 @@ Item {
             font.family: "Oxanium"
             font.pixelSize: 12
             color: Colours.textPrimary
-            selectionColor: CP.alpha(CP.cyan, 0.3)
+            selectionColor: CP.alpha(Theme.cyan, 0.3)
 
             Behavior on x { NumberAnimation { duration: 150 } }
 

@@ -117,7 +117,7 @@ Item {
             visible: flick.interactive
             y: flick.visibleArea.yPosition * flick.height
             height: Math.max(18, flick.visibleArea.heightRatio * flick.height)
-            color: CP.alpha(CP.cyan, flick.moving ? 0.55 : 0.25)
+            color: CP.alpha(Theme.cyan, flick.moving ? 0.55 : 0.25)
             Behavior on color { ColorAnimation { duration: 200 } }
         }
 
@@ -136,7 +136,7 @@ Item {
         // The card's own frame is cut off with it: drawn again at this size
         CutShape {
             anchors.fill: parent
-            strokeColor: CP.alpha(CP.cyan, hover.hovered ? 0.5 : 0.28)
+            strokeColor: CP.alpha(Theme.cyan, hover.hovered ? 0.5 : 0.28)
             strokeWidth: 1
             inset: 0.5
             cutTopLeft: 5
@@ -159,7 +159,7 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: CP.alpha(CP.void2, 0.95)
-                strokeColor: CP.alpha(CP.cyan, moreMa.containsMouse ? 0.8 : 0.45)
+                strokeColor: CP.alpha(Theme.cyan, moreMa.containsMouse ? 0.8 : 0.45)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopLeft: 4
@@ -174,7 +174,7 @@ Item {
                 font.pixelSize: 8
                 font.letterSpacing: 1.5
                 font.bold: true
-                color: moreMa.containsMouse ? CP.cyan : CP.alpha(CP.cyan, 0.75)
+                color: moreMa.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.75)
                 Behavior on color { ColorAnimation { duration: 100 } }
             }
 

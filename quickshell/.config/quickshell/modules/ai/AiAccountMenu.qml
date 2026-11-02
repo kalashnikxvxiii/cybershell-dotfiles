@@ -25,7 +25,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutBottomLeft: 14
@@ -52,7 +52,7 @@ Item {
                 font.pixelSize: 10
                 font.letterSpacing: 2
                 font.bold: true
-                color: CP.magenta
+                color: Theme.magenta
             }
 
             Text {
@@ -63,7 +63,7 @@ Item {
                 font.pixelSize: 9
                 font.letterSpacing: 1
                 font.underline: details.containsMouse
-                color: details.containsMouse ? CP.cyan : CP.alpha(CP.cyan, 0.60)
+                color: details.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.60)
                 Behavior on color { ColorAnimation { duration: 100 } }
 
                 MouseArea {
@@ -147,7 +147,7 @@ Item {
         Rectangle {
             width: parent.width
             height: 1
-            color: CP.alpha(CP.magenta, 0.22)
+            color: CP.alpha(Theme.magenta, 0.22)
         }
 
         Text {
@@ -156,7 +156,7 @@ Item {
             font.pixelSize: 9
             font.letterSpacing: 1
             font.underline: out.containsMouse
-            color: out.containsMouse ? CP.red : CP.alpha(CP.red, 0.65)
+            color: out.containsMouse ? Theme.red : CP.alpha(Theme.red, 0.65)
             Behavior on color { ColorAnimation { duration: 100 } }
 
             MouseArea {

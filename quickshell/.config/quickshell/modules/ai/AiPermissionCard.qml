@@ -35,8 +35,8 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.alpha(CP.yellow, 0.07)
-        strokeColor: CP.yellow
+        fillColor: CP.alpha(Theme.yellow, 0.07)
+        strokeColor: Theme.yellow
         strokeWidth: 1.5
         inset: 0.75
         cutTopLeft: 6
@@ -61,7 +61,7 @@ Item {
             font.pixelSize: 10
             font.letterSpacing: 2
             font.bold: true
-            color: CP.yellow
+            color: Theme.yellow
         }
 
         Text {
@@ -91,13 +91,13 @@ Item {
 
             AiHeaderButton {
                 label: "AUTHORIZE"
-                accent: CP.neon
+                accent: Theme.neon
                 onTriggered: root.allow(false)
             }
 
             AiHeaderButton {
                 label: "ALWAYS"
-                accent: CP.yellow
+                accent: Theme.yellow
                 // Only offered when the CLI itself suggests a broader scope.
                 visible: root.pending && (root.request.suggestions?.length ?? 0) > 0
                 onTriggered: root.allow(true)
@@ -105,7 +105,7 @@ Item {
 
             AiHeaderButton {
                 label: "DENY"
-                accent: CP.red
+                accent: Theme.red
                 onTriggered: root.refuse()
             }
         }

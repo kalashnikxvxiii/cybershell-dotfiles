@@ -41,7 +41,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.moduleBg
-        strokeColor: CP.alpha(CP.cyan, 0.6)
+        strokeColor: CP.alpha(Theme.cyan, 0.6)
         strokeWidth: 2
         inset: 10
         cutTopLeft: 16
@@ -81,8 +81,8 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.cyan, 0.05)
-                strokeColor: CP.alpha(CP.cyan, 0.3)
+                fillColor: CP.alpha(Theme.cyan, 0.05)
+                strokeColor: CP.alpha(Theme.cyan, 0.3)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopLeft: 4

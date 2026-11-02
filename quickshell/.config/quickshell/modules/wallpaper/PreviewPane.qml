@@ -92,7 +92,7 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: CP.alpha(CP.void2, 0.7)
-                strokeColor: CP.alpha(CP.neon, 0.55)
+                strokeColor: CP.alpha(Theme.neon, 0.55)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopLeft: 12
@@ -202,10 +202,10 @@ Item {
                         gradient: Gradient {
                             orientation: Gradient.Vertical
                             GradientStop { position: 0.0; color: "transparent" }
-                            GradientStop { position: 0.25; color: CP.alpha(CP.magenta, 0.35) }
-                            GradientStop { position: 0.5; color: CP.alpha(CP.magenta, 0.55) }
-                            GradientStop { position: 0.51; color: CP.alpha(CP.cyan, 0.55) }
-                            GradientStop { position: 0.75; color: CP.alpha(CP.cyan, 0.35) }
+                            GradientStop { position: 0.25; color: CP.alpha(Theme.magenta, 0.35) }
+                            GradientStop { position: 0.5; color: CP.alpha(Theme.magenta, 0.55) }
+                            GradientStop { position: 0.51; color: CP.alpha(Theme.cyan, 0.55) }
+                            GradientStop { position: 0.75; color: CP.alpha(Theme.cyan, 0.35) }
                             GradientStop { position: 1.0; color: "transparent" }
                         }
                     }
@@ -250,7 +250,7 @@ Item {
                 spacing: 4
                 Rectangle {
                     width: 6; height: 6
-                    color: CP.neon
+                    color: Theme.neon
                     anchors.verticalCenter: parent.verticalCenter
                     opacity: liveDot.k
                     Pulse { id: liveDot; running: cycleTimer.running; from: 1; to: 0.3; halfMs: 600 }
@@ -309,7 +309,7 @@ Item {
                 font.family: "Oxanium"
                 font.pixelSize: 7
                 font.letterSpacing: 0.5
-                color: CP.alpha(CP.neon, 0.5)
+                color: CP.alpha(Theme.neon, 0.5)
             }
         }
 
@@ -326,9 +326,9 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: replayMa.containsMouse
-                        ? CP.alpha(CP.neon, 0.25)
-                        : CP.alpha(CP.neon, 0.10)
-                    strokeColor: CP.alpha(CP.neon, 0.6)
+                        ? CP.alpha(Theme.neon, 0.25)
+                        : CP.alpha(Theme.neon, 0.10)
+                    strokeColor: CP.alpha(Theme.neon, 0.6)
                     strokeWidth: 1
                     inset: 0.5
                     cutTopLeft: 3
@@ -371,9 +371,9 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: pauseMa.containsMouse
-                            ? CP.alpha(root._paused ? CP.amber : CP.cyan, 0.25)
-                            : CP.alpha(root._paused ? CP.amber : CP.cyan, 0.10)
-                            strokeColor: CP.alpha(root._paused ? CP.amber : CP.cyan, 0.6)
+                            ? CP.alpha(root._paused ? Theme.amber : Theme.cyan, 0.25)
+                            : CP.alpha(root._paused ? Theme.amber : Theme.cyan, 0.10)
+                            strokeColor: CP.alpha(root._paused ? Theme.amber : Theme.cyan, 0.6)
                             strokeWidth: 1; inset: 0.5; cutTopLeft: 3; cutBottomRight: 3
                             Behavior on fillColor { ColorAnimation { duration: 120 } }
                             Behavior on strokeColor { ColorAnimation { duration: 120 } }
@@ -405,9 +405,9 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: shuffleMa.containsMouse
-                            ? CP.alpha(CP.magenta, 0.25)
-                            : CP.alpha(CP.magenta, 0.10)
-                    strokeColor: CP.alpha(CP.magenta, 0.6)
+                            ? CP.alpha(Theme.magenta, 0.25)
+                            : CP.alpha(Theme.magenta, 0.10)
+                    strokeColor: CP.alpha(Theme.magenta, 0.6)
                     strokeWidth: 1; inset: 0.5; cutTopLeft: 3; cutBottomRight: 3
                     Behavior on fillColor { ColorAnimation { duration: 120 } }
                 }

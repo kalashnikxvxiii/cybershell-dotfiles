@@ -79,7 +79,7 @@ Column {
                         height: 1
                         gradient: Gradient {
                             orientation: Gradient.Horizontal
-                            GradientStop { position: 0; color: CP.alpha(CP.magenta, 0.55) }
+                            GradientStop { position: 0; color: CP.alpha(Theme.magenta, 0.55) }
                             GradientStop { position: 1; color: "transparent" }
                         }
                     }
@@ -106,7 +106,7 @@ Column {
                         font.family: "Oxanium"
                         font.pixelSize: 11
                         font.bold: true
-                        color: CP.cyan
+                        color: Theme.cyan
                         y: 1
                     }
                     Rectangle {
@@ -116,9 +116,9 @@ Column {
                         y: kind === 2 ? 8 : 6
                         width: kind === 2 ? 6 : 5
                         height: kind === 2 ? 1 : 5
-                        color: kind === 1 ? "transparent" : CP.cyan
+                        color: kind === 1 ? "transparent" : Theme.cyan
                         border.width: kind === 1 ? 1 : 0
-                        border.color: CP.cyan
+                        border.color: Theme.cyan
                     }
                     Rectangle {
                         visible: blk.b.task >= 0
@@ -128,13 +128,13 @@ Column {
                         height: 10
                         color: "transparent"
                         border.width: 1
-                        border.color: blk.b.task === 1 ? CP.neon : CP.alpha(CP.cyan, 0.6)
+                        border.color: blk.b.task === 1 ? Theme.neon : CP.alpha(Theme.cyan, 0.6)
                         Rectangle {
                             visible: blk.b.task === 1
                             anchors.centerIn: parent
                             width: 4
                             height: 4
-                            color: CP.neon
+                            color: Theme.neon
                         }
                     }
 
@@ -166,7 +166,7 @@ Column {
                         gradient: Gradient {
                             orientation: Gradient.Horizontal
                             GradientStop { position: 0; color: "transparent" }
-                            GradientStop { position: 0.5; color: CP.alpha(CP.cyan, 0.45) }
+                            GradientStop { position: 0.5; color: CP.alpha(Theme.cyan, 0.45) }
                             GradientStop { position: 1; color: "transparent" }
                         }
                     }
@@ -197,7 +197,7 @@ Column {
                         x: 4
                         width: 1
                         height: parent.height
-                        color: CP.alpha(CP.cyan, 0.4)
+                        color: CP.alpha(Theme.cyan, 0.4)
                     }
                     AiRichText {
                         id: defText
@@ -217,8 +217,8 @@ Column {
 
                     // GitHub alerts: > [!NOTE] and friends
                     readonly property color tone: ({
-                        note: CP.cyan2, tip: CP.neon, important: CP.magenta, warning: CP.yellow, caution: CP.red
-                    })[blk.b.kind] ?? CP.magenta
+                        note: CP.cyan2, tip: Theme.neon, important: Theme.magenta, warning: Theme.yellow, caution: Theme.red
+                    })[blk.b.kind] ?? Theme.magenta
 
                     implicitHeight: quoteBody.y + quoteBody.height
 
@@ -269,8 +269,8 @@ Column {
 
                         CutShape {
                             anchors.fill: parent
-                            fillColor: CP.alpha(CP.cyan, summaryMa.containsMouse ? 0.10 : 0.05)
-                            strokeColor: CP.alpha(CP.cyan, det.open ? 0.45 : 0.25)
+                            fillColor: CP.alpha(Theme.cyan, summaryMa.containsMouse ? 0.10 : 0.05)
+                            strokeColor: CP.alpha(Theme.cyan, det.open ? 0.45 : 0.25)
                             strokeWidth: 1
                             inset: 0.5
                             cutTopLeft: 5
@@ -281,7 +281,7 @@ Column {
                             anchors.verticalCenter: parent.verticalCenter
                             text: det.open ? "\u25be" : "\u25b8"
                             font.pixelSize: 11
-                            color: CP.cyan
+                            color: Theme.cyan
                         }
                         AiRichText {
                             id: summary
@@ -320,7 +320,7 @@ Column {
                     Rectangle {
                         width: Math.min(parent.width, 120)
                         height: 1
-                        color: CP.alpha(CP.cyan, 0.35)
+                        color: CP.alpha(Theme.cyan, 0.35)
                     }
                     Item { width: 1; height: 2 }
                     Repeater {
@@ -328,7 +328,7 @@ Column {
                         AiRichText {
                             required property var modelData
                             width: parent.width
-                            html: '<span style="color:' + CP.cyan + '">[' + modelData.n + ']</span>&nbsp;' + modelData.html
+                            html: '<span style="color:' + Theme.cyan + '">[' + modelData.n + ']</span>&nbsp;' + modelData.html
                             font.pixelSize: 10
                             color: root.fg
                             opacity: 0.75

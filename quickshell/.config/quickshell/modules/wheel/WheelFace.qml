@@ -18,7 +18,7 @@ Item {
     // [{ key: "P", label: "Picker" }, ...]
     property var items: []
     property string title: ""
-    property color accent: CP.cyan
+    property color accent: Theme.cyan
     property string selectedKey: ""
 
     readonly property int cardWidth: 172
@@ -48,7 +48,7 @@ Item {
     property real glowPower: 0
     property real glowAngle: 0
     property int mutation: 0
-    readonly property color glowColor: selected >= 0 ? CP.yellow : accent
+    readonly property color glowColor: selected >= 0 ? Theme.yellow : accent
     // On a pick the glow stutters, one value per mutation
     readonly property real glowOpacity: glowPower
         * (selected >= 0 ? 0.55 + core.noise(mutation * 3.1) * 0.6 : 1)
@@ -432,10 +432,10 @@ Item {
                     anchors.fill: parent
                     cutBottomRight: 14
                     inset: 0.5
-                    fillColor: slot.isSelected ? CP.yellow
+                    fillColor: slot.isSelected ? Theme.yellow
                         : slot.isHovered ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.24)
                         : "#080b14"
-                    strokeColor: slot.isSelected ? CP.yellow
+                    strokeColor: slot.isSelected ? Theme.yellow
                         : Qt.rgba(root.accent.r, root.accent.g, root.accent.b, slot.isHovered ? 1 : 0.35)
 
                     Behavior on fillColor { ColorAnimation { duration: 100 } }
@@ -458,7 +458,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: 24
                     font.bold: true
-                    color: slot.isSelected ? "#00060e" : CP.yellow
+                    color: slot.isSelected ? "#00060e" : Theme.yellow
                 }
 
                 Text {

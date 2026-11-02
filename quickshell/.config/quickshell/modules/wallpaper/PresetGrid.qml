@@ -55,13 +55,13 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: chip.selectedActive
-                        ? CP.alpha(chip._isUser ? CP.neon : CP.cyan, 0.20)
+                        ? CP.alpha(chip._isUser ? Theme.neon : Theme.cyan, 0.20)
                         : (ma.containsMouse
-                            ? CP.alpha(chip._isUser ? CP.neon : CP.cyan, 0.10)
+                            ? CP.alpha(chip._isUser ? Theme.neon : Theme.cyan, 0.10)
                             : CP.alpha(CP.void2, 0.55))
                     strokeColor: chip.selectedActive
-                        ? (chip._isUser ? CP.neon : CP.cyan)
-                        : CP.alpha(chip._isUser ? CP.neon : CP.cyan, 0.30)
+                        ? (chip._isUser ? Theme.neon : Theme.cyan)
+                        : CP.alpha(chip._isUser ? Theme.neon : Theme.cyan, 0.30)
                     strokeWidth: chip.selectedActive ? 1.5 : 1
                     inset: 0.5
                     cutTopLeft: 2
@@ -77,7 +77,7 @@ Item {
                     anchors.left: parent.left
                     anchors.top: parent.top
                     anchors.margins: 3
-                    color: CP.neon
+                    color: Theme.neon
                 }
 
                 // Pulsing red overlay when in delete-confirm state
@@ -85,8 +85,8 @@ Item {
                     id: pulseOverlay
                     anchors.fill: parent
                     visible: chip.pendingDelete
-                    fillColor: CP.alpha(CP.red, 0.15)
-                    strokeColor: CP.red
+                    fillColor: CP.alpha(Theme.red, 0.15)
+                    strokeColor: Theme.red
                     strokeWidth: 2
                     inset: 0.5
                     cutTopLeft: 2
@@ -104,8 +104,8 @@ Item {
                     height: 22
                     property color curveColor:
                         chip.selectedActive
-                            ? (chip._isUser ? CP.neon : CP.cyan)
-                            : CP.alpha(CP.yellow, 0.85)
+                            ? (chip._isUser ? Theme.neon : Theme.cyan)
+                            : CP.alpha(Theme.yellow, 0.85)
                     onCurveColorChanged: requestPaint()
 
                     onPaint: {
@@ -149,7 +149,7 @@ Item {
                     font.pixelSize: 8
                     font.letterSpacing: 0.3
                     color: chip.selectedActive
-                        ? (chip._isUser ? CP.neon : CP.cyan)
+                        ? (chip._isUser ? Theme.neon : Theme.cyan)
                         : Colours.textMuted
                 }
 
@@ -183,7 +183,7 @@ Item {
 
                     CutShape {
                         anchors.fill: parent
-                        fillColor: delMa.containsMouse ? CP.red : CP.alpha(CP.red, 0.75)
+                        fillColor: delMa.containsMouse ? Theme.red : CP.alpha(Theme.red, 0.75)
                         strokeColor: "white"
                         strokeWidth: 1
                         inset: 0.5

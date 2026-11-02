@@ -7,6 +7,7 @@
 import QtQuick
 import "../../common/effects"
 import "../../common/Colors.js" as CP
+import "../../common"
 import "AiHighlight.js" as Hl
 
 Item {
@@ -48,7 +49,7 @@ Item {
                     text: root.expanded ? "\u25be" : "\u25b8"
                     font.family: "Oxanium"
                     font.pixelSize: 9
-                    color: CP.magenta
+                    color: Theme.magenta
                 }
 
                 Text {
@@ -61,7 +62,7 @@ Item {
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     opacity: root.streaming ? pulse.k : 1
-                    color: ma.containsMouse ? CP.magenta : CP.alpha(CP.magenta, 0.72)
+                    color: ma.containsMouse ? Theme.magenta : CP.alpha(Theme.magenta, 0.72)
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
             }
@@ -88,7 +89,7 @@ Item {
                 x: 3
                 width: 1
                 height: parent.height
-                color: CP.alpha(CP.magenta, 0.3)
+                color: CP.alpha(Theme.magenta, 0.3)
             }
 
             AiRichText {

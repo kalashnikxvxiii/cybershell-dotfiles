@@ -8,7 +8,7 @@ Item {
     id: root
 
     required property string label
-    property color accent: CP.cyan
+    property color accent: Theme.cyan
     property bool enabled: true
     signal triggered()
 

@@ -235,5 +235,5 @@ Row {
 
     Resource { icon: "CPU"; value: root.cpuPerc; colour: Colours.accentSecondary }
     Resource { icon: "RAM"; value: root.memPerc; colour: Colours.accentPrimary }
-    Resource { icon: "DSK"; value: root.diskPerc; colour: CP.magenta }
+    Resource { icon: "DSK"; value: root.diskPerc; colour: Theme.magenta }
 }

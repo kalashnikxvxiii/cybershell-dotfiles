@@ -111,7 +111,7 @@ FocusScope {
         font.pixelSize: 14
         font.letterSpacing: 3
         font.bold: true
-        color: MangaService.pagesError ? CP.red : CP.alpha(Colours.accentSecondary, 0.8)
+        color: MangaService.pagesError ? Theme.red : CP.alpha(Colours.accentSecondary, 0.8)
     }
 
     ListView {

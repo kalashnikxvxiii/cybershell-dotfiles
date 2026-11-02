@@ -50,7 +50,7 @@ Item {
         CutShape {
             anchors.fill: parent
             fillColor: CP.alpha(CP.void2, 0.55)
-            strokeColor: CP.alpha(CP.magenta, 0.45)
+            strokeColor: CP.alpha(Theme.magenta, 0.45)
             strokeWidth: 1
             inset: 0.5
             cutTopLeft: 3
@@ -155,9 +155,9 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: resetPosMa.containsMouse
-                        ? CP.alpha(CP.magenta, 0.25)
-                        : CP.alpha(CP.magenta, 0.10)
-                strokeColor: CP.alpha(CP.magenta, 0.6)
+                        ? CP.alpha(Theme.magenta, 0.25)
+                        : CP.alpha(Theme.magenta, 0.10)
+                strokeColor: CP.alpha(Theme.magenta, 0.6)
                 strokeWidth: 1
                 inset: 0.5
                 cutTopLeft: 2

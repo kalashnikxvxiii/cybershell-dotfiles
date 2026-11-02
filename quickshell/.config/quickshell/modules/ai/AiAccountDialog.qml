@@ -148,7 +148,7 @@ Item {
         CutShape {
             anchors.fill: parent
             fillColor: CP.alpha(CP.void2, 0.98)
-            strokeColor: CP.alpha(CP.magenta, 0.50)
+            strokeColor: CP.alpha(Theme.magenta, 0.50)
             strokeWidth: 1
             inset: 0.5
             cutTopRight: 18
@@ -168,7 +168,7 @@ Item {
                 id: bar
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
                 width: 4
-                color: CP.magenta
+                color: Theme.magenta
             }
 
             Text {
@@ -180,7 +180,7 @@ Item {
                 font.pixelSize: 13
                 font.letterSpacing: 3
                 font.bold: true
-                color: CP.magenta
+                color: Theme.magenta
             }
 
             AiIconButton {
@@ -189,7 +189,7 @@ Item {
                 frame: false
                 glyph: "\uf00d"
                 glyphSize: 11
-                accent: CP.magenta
+                accent: Theme.magenta
                 onTriggered: root.closed()
             }
         }
@@ -247,7 +247,7 @@ Item {
                     font.pixelSize: 9
                     font.letterSpacing: 2
                     font.bold: true
-                    color: retry.containsMouse ? CP.cyan : CP.alpha(CP.cyan, 0.60)
+                    color: retry.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.60)
 
                     MouseArea {
                         id: retry
@@ -277,7 +277,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: 11
                     font.underline: manage.containsMouse
-                    color: manage.containsMouse ? CP.cyan : CP.alpha(root.fg, 0.55)
+                    color: manage.containsMouse ? Theme.cyan : CP.alpha(root.fg, 0.55)
                     Behavior on color { ColorAnimation { duration: 100 } }
 
                     MouseArea {
@@ -312,9 +312,9 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: parent.on ? CP.alpha(CP.magenta, 0.18) : "transparent"
+                                    color: parent.on ? CP.alpha(Theme.magenta, 0.18) : "transparent"
                                     border.width: 1
-                                    border.color: CP.alpha(CP.magenta, parent.on ? 0.70 : 0.25)
+                                    border.color: CP.alpha(Theme.magenta, parent.on ? 0.70 : 0.25)
                                 }
 
                                 Text {
@@ -324,7 +324,7 @@ Item {
                                     font.pixelSize: 9
                                     font.letterSpacing: 2
                                     font.bold: true
-                                    color: parent.on ? CP.magenta : CP.alpha(root.fg, 0.45)
+                                    color: parent.on ? Theme.magenta : CP.alpha(root.fg, 0.45)
                                 }
 
                                 MouseArea {
@@ -437,7 +437,7 @@ Item {
             visible: flick.contentHeight > flick.height
             y: flick.y + flick.visibleArea.yPosition * flick.height
             height: Math.max(18, flick.visibleArea.heightRatio * flick.height)
-            color: CP.alpha(CP.magenta, flick.moving ? 0.55 : 0.25)
+            color: CP.alpha(Theme.magenta, flick.moving ? 0.55 : 0.25)
         }
     }
 

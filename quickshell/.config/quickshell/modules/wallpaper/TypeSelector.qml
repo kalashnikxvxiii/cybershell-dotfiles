@@ -10,10 +10,10 @@ Item {
     signal typeSelected(string type)
 
     readonly property var groups: [
-        { name: "BASIC",   accent: CP.yellow,  types: ["none", "fade"] },
-        { name: "WIPE",    accent: CP.cyan,    types: ["left", "right", "top", "bottom", "wipe"] },
-        { name: "RADIAL",  accent: CP.magenta, types: ["grow", "outer"] },
-        { name: "SPECIAL", accent: CP.neon,    types: ["wave", "rand-wipe", "random"] }
+        { name: "BASIC",   accent: Theme.yellow,  types: ["none", "fade"] },
+        { name: "WIPE",    accent: Theme.cyan,    types: ["left", "right", "top", "bottom", "wipe"] },
+        { name: "RADIAL",  accent: Theme.magenta, types: ["grow", "outer"] },
+        { name: "SPECIAL", accent: Theme.neon,    types: ["wave", "rand-wipe", "random"] }
     ]
 
     implicitHeight: column.implicitHeight

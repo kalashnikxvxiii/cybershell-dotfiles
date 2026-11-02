@@ -9,7 +9,7 @@ Item {
     id: root
 
     property string glyph: ""
-    property color accent: CP.magenta
+    property color accent: Theme.magenta
     property bool on: false         // latched, e.g. while the mic is recording
     property bool busy: false       // working, e.g. while transcribing
     // Bare mode: no frame, no fill, just the glyph. For a button that sits
@@ -26,11 +26,11 @@ Item {
     opacity: root.enabled ? 1 : 0.3
     Behavior on opacity { NumberAnimation { duration: 120 } }
 
-    readonly property color live: root.on ? CP.red : root.accent
+    readonly property color live: root.on ? Theme.red : root.accent
 
     CutShape {
         anchors.fill: parent
-        fillColor: root.on ? CP.alpha(CP.red, 0.18)
+        fillColor: root.on ? CP.alpha(Theme.red, 0.18)
             : (ma.containsMouse ? CP.alpha(root.accent, 0.12) : "transparent")
         strokeColor: root.frame
             ? CP.alpha(root.live, (root.on || ma.containsMouse) ? 0.70 : 0.30)

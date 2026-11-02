@@ -89,7 +89,7 @@ Item {
             var vals = Audio.cava.values
             var n = vals.length
             if (n === 0) return
-            ctx.fillStyle = CP.alpha(CP.neon, 0.18).toString()
+            ctx.fillStyle = CP.alpha(Theme.neon, 0.18).toString()
             var barW = Math.max(1, width / n - 1)
             var midY = height / 2
             for (var i = 0; i < n; i++) {
@@ -122,7 +122,7 @@ Item {
             if (w <= 0 || h <= 0) return
 
             // ── Grid: 10 vertical band lines
-            ctx.strokeStyle = CP.alpha(CP.neon, 0.08).toString()
+            ctx.strokeStyle = CP.alpha(Theme.neon, 0.08).toString()
             ctx.lineWidth = 0.5
             for (var i = 0; i < 10; i++) {
                 var x = root._xForBand(i)
@@ -133,7 +133,7 @@ Item {
             }
 
             // ── Horizontal grid: ±6 dashed
-            ctx.strokeStyle = CP.alpha(CP.neon, 0.10).toString()
+            ctx.strokeStyle = CP.alpha(Theme.neon, 0.10).toString()
             ctx.setLineDash([2, 2])
             ctx.beginPath()
             ctx.moveTo(0, h * 0.25); ctx.lineTo(w, h * 0.25)
@@ -142,7 +142,7 @@ Item {
             ctx.setLineDash([])
 
             // ── Zero reference (mid)
-            ctx.strokeStyle = CP.alpha(CP.neon, 0.5).toString()
+            ctx.strokeStyle = CP.alpha(Theme.neon, 0.5).toString()
             ctx.lineWidth = 0.8
             ctx.beginPath()
             ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2)
@@ -177,8 +177,8 @@ Item {
             ctx.lineTo(pts[0].x, h)
             ctx.closePath()
             var grad = ctx.createLinearGradient(0, 0, 0, h)
-            grad.addColorStop(0, CP.alpha(CP.neon, 0.25).toString())
-            grad.addColorStop(1, CP.alpha(CP.neon, 0.0).toString())
+            grad.addColorStop(0, CP.alpha(Theme.neon, 0.25).toString())
+            grad.addColorStop(1, CP.alpha(Theme.neon, 0.0).toString())
             ctx.fillStyle = grad
             ctx.fill()
 
@@ -196,7 +196,7 @@ Item {
                 var cp2yb = p2b.y - (p3b.y - p1b.y) / 6
                 ctx.bezierCurveTo(cp1xb, cp1yb, cp2xb, cp2yb, p2b.x, p2b.y)
             }
-            ctx.strokeStyle = CP.neon.toString()
+            ctx.strokeStyle = Theme.neon.toString()
             ctx.lineWidth = 2
             ctx.stroke()
 
@@ -204,7 +204,7 @@ Item {
             for (var c = 0; c < 10; c++) {
                 ctx.beginPath()
                 ctx.arc(pts[c].x, pts[c].y, c === AudioControlState.eqSelectedBand ? 6 : 4, 0, Math.PI * 2)
-                ctx.fillStyle = CP.neon.toString()
+                ctx.fillStyle = Theme.neon.toString()
                 ctx.fill()
                 ctx.strokeStyle = "white"
                 ctx.lineWidth = 1

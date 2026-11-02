@@ -536,10 +536,10 @@ Item {
                 // RamShape states: active = solid cyan, with windows = faint
                 // cyan, empty = red outline
                 readonly property color stateColor:
-                    isUrgent ? CP.red :
-                    isActive ? CP.cyan :
-                    !isEmpty ? (hoverHandler.hovered ? CP.alpha(CP.cyan, 0.5) : HudState.track(CP.cyan)) :
-                               CP.alpha(CP.red, 0.75)
+                    isUrgent ? Theme.red :
+                    isActive ? Theme.cyan :
+                    !isEmpty ? (hoverHandler.hovered ? CP.alpha(Theme.cyan, 0.5) : HudState.track(Theme.cyan)) :
+                               CP.alpha(Theme.red, 0.75)
                 // Written by the hover glitch instead of stateColor, so the
                 // state binding survives it; transparent = no glitch
                 property color _glitchTint: "transparent"
@@ -627,11 +627,11 @@ Item {
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 0 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: CP.magenta }
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: Theme.magenta }
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 0.55 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 4 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: CP.yellow }
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: Theme.yellow }
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: -3 }
                     PauseAnimation { duration: 42 }
@@ -639,7 +639,7 @@ Item {
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 0.7 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: 2 }
                     PauseAnimation { duration: 42 }
-                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: CP.magenta }                    
+                    PropertyAction { target: wsBtn;      property: "_glitchTint"; value: Theme.magenta }                    
                     PropertyAction { target: wsBtn;      property: "opacity"; value: 1.0 }
                     PropertyAction { target: wsBtnShift; property: "x";     value: -1 }
                     PauseAnimation { duration: 42 }

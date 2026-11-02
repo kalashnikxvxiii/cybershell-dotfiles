@@ -25,7 +25,7 @@ Item {
     signal activated()
 
     // Active panels go yellow, matching WallpaperBarModule's convention.
-    readonly property color liveAccent: root.active ? CP.yellow : root.accent
+    readonly property color liveAccent: root.active ? Theme.yellow : root.accent
 
     property bool _greeted: false
 
@@ -93,7 +93,7 @@ Item {
             anchors.topMargin: 4
             width: root.active ? 16 : 0
             height: 2
-            color: CP.yellow
+            color: Theme.yellow
             Behavior on width { Anim { duration: 140 } }
         }
 

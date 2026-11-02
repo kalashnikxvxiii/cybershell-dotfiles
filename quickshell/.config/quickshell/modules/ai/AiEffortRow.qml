@@ -71,7 +71,7 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: lit ? CP.alpha(CP.cyan, ma.containsMouse ? 0.95 : 0.75)
+                    color: lit ? CP.alpha(Theme.cyan, ma.containsMouse ? 0.95 : 0.75)
                         : CP.alpha(root.fg, ma.containsMouse ? 0.30 : 0.15)
                     Behavior on color { ColorAnimation { duration : 110 } }
                 }

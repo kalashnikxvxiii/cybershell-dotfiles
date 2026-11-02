@@ -22,7 +22,7 @@ Item {
     Rectangle {
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
         height: 1
-        color: CP.alpha(CP.magenta, 0.22)
+        color: CP.alpha(Theme.magenta, 0.22)
     }
 
     Flickable {
@@ -69,7 +69,7 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         anchors.bottomMargin: 1
-                        color: CP.alpha(CP.magenta, tab.front ? 0.06 : hover.hovered ? 0.05 : 0)
+                        color: CP.alpha(Theme.magenta, tab.front ? 0.06 : hover.hovered ? 0.05 : 0)
                         Behavior on color { ColorAnimation { duration: 100 } }
                     }
 
@@ -77,7 +77,7 @@ Item {
                         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                         height: 2
                         visible: tab.front
-                        color: CP.magenta
+                        color: Theme.magenta
                     }
 
                     // Red: a permission waits. Yellow, pulsing: a reply is
@@ -89,7 +89,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 5
                         height: 5
-                        color: tab.asking ? CP.red : tab.busy ? CP.yellow
+                        color: tab.asking ? Theme.red : tab.busy ? Theme.yellow
                             : CP.alpha(root.claude, tab.front ? 1 : 0.40)
                         opacity: lightPulse.k
 
@@ -145,7 +145,7 @@ Item {
                         frame: false
                         glyph: "\uf00d"
                         glyphSize: 9
-                        accent: CP.magenta
+                        accent: Theme.magenta
                         visible: tab.front || hover.hovered
                         onTriggered: AiState.closeChat(tab.modelData)
                     }
@@ -158,7 +158,7 @@ Item {
                 height: 22
                 glyph: "\uf067"
                 glyphSize: 10
-                accent: CP.cyan
+                accent: Theme.cyan
                 frame: false
                 onTriggered: AiState.newChat()
             }

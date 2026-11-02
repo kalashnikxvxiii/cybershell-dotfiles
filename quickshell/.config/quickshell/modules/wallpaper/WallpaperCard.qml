@@ -22,7 +22,7 @@ Item {
     property string searchPreviewThumb: ""
     property string searchPreviewUrl:   ""
     property string resolution:         ""
-    property color  _borderColor:       CP.cyan
+    property color  _borderColor:       Theme.cyan
     property bool   videoPlaying:       false
     property bool   animEnabled:        false
     property bool   _glitching:         false
@@ -143,7 +143,7 @@ Item {
 
         // Burst 1: magenta flash
         PropertyAction { target: root; property: "_glitching"; value: true }
-        PropertyAction { target: root; property: "_borderColor"; value: CP.magenta }
+        PropertyAction { target: root; property: "_borderColor"; value: Theme.magenta }
         PropertyAction { target: root; property: "opacity"; value: 0.6 }
         PropertyAction { target: revealShift; property: "x"; value: 4 }
 
@@ -155,11 +155,11 @@ Item {
                 easing.type: Easing.InCubic
             }
             SequentialAnimation {
-                PropertyAction { target: root; property: "_borderColor"; value: CP.yellow }
+                PropertyAction { target: root; property: "_borderColor"; value: Theme.yellow }
                 PropertyAction { target: revealShift; property: "x"; value: -4 }
                 PauseAnimation { duration: 55 }
                 PropertyAction { target: root; property: "opacity"; value: 0 }
-                PropertyAction { target: root; property: "_borderColor"; value: CP.cyan }
+                PropertyAction { target: root; property: "_borderColor"; value: Theme.cyan }
                 PropertyAction { target: revealShift; property: "x"; value: 3 }
                 PauseAnimation { duration: 55 }
                 PropertyAction { target: root; property: "opacity"; value: 0.8 }
@@ -177,7 +177,7 @@ Item {
                 easing.type: Easing.OutCubic
             }
             SequentialAnimation {
-                PropertyAction { target: root; property: "_borderColor"; value: CP.magenta }
+                PropertyAction { target: root; property: "_borderColor"; value: Theme.magenta }
                 PropertyAction { target: root; property: "opacity"; value: 0.9 }
                 PropertyAction { target: revealShift; property: "x"; value: 1 }
                 PauseAnimation { duration: 55 }
@@ -189,7 +189,7 @@ Item {
 
         // Glitch OFF
         PropertyAction { target: root; property: "_glitching"; value: false }
-        PropertyAction { target: root; property: "_borderColor"; value: CP.cyan }
+        PropertyAction { target: root; property: "_borderColor"; value: Theme.cyan }
         PropertyAction { target: root; property: "_glitchITime"; value: 0 }
     }
 
@@ -233,7 +233,7 @@ Item {
             layer.enabled: root.isCurrent && !root._glitching
             layer.effect: MultiEffect {
                 shadowEnabled: true
-                shadowColor: CP.cyan
+                shadowColor: Theme.cyan
                 shadowBlur: 0.6
                 shadowOpacity: 0.45
                 shadowHorizontalOffset: 0
@@ -441,7 +441,7 @@ Item {
                             ? root._borderColor
                             : (root.isCurrent
                                 ? Colours.neonBorder(0.8)
-                                : CP.alpha(CP.cyan, 0.25))
+                                : CP.alpha(Theme.cyan, 0.25))
                 strokeWidth: root.isCurrent ? 2 : 1
                 inset: root.isCurrent ? 1 : 0.5
                 cutTopLeft: 32
@@ -538,7 +538,7 @@ Item {
                 CutShape {
                     anchors.fill: parent
                     fillColor: CP.alpha("#000000", 0.75)
-                    strokeColor: CP.alpha(CP.red, 0.8)
+                    strokeColor: CP.alpha(Theme.red, 0.8)
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomLeft: playlistBadge.visible ? 0 : 8
@@ -552,7 +552,7 @@ Item {
                     text: "\uf004"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 11 * favBadge._scale
-                    color: CP.red
+                    color: Theme.red
 
                     transform: Matrix4x4 {
                         matrix: Qt.matrix4x4(
@@ -566,7 +566,7 @@ Item {
                     layer.enabled: true
                     layer.effect: MultiEffect {
                         shadowEnabled: true
-                        shadowColor: CP.red
+                        shadowColor: Theme.red
                         shadowBlur: 0.8
                         shadowOpacity: 0.6
                         shadowHorizontalOffset: 0
@@ -644,8 +644,8 @@ Item {
                     anchors.fill: parent
                     fillColor: CP.alpha(CP.void2, 0.85)
                     strokeColor: playlistBadge._hovered
-                                ? CP.alpha(CP.yellow, 0.9)
-                                : CP.alpha(CP.yellow, 0.6)
+                                ? CP.alpha(Theme.yellow, 0.9)
+                                : CP.alpha(Theme.yellow, 0.6)
                     strokeWidth: 1; inset: 0.5
                     cutBottomLeft: 8
                     showTop: false
@@ -658,7 +658,7 @@ Item {
                     text: playlistBadge._plPos.toString()
                     font.family: "Oxanium"
                     font.pixelSize: 16 * playlistBadge._plScale
-                    color: CP.yellow
+                    color: Theme.yellow
 
                     transform: Matrix4x4 {
                         matrix: Qt.matrix4x4(

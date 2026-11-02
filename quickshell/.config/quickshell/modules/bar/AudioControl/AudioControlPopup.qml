@@ -100,9 +100,9 @@ FocusScope {
         if (!AudioControlState.expanded) return Colours.accentSecondary   // cyan in compact
         switch (AudioControlState.activeTab) {
         case "outputs": return Colours.accentSecondary    // cyan
-        case "inputs":  return CP.magenta
+        case "inputs":  return Theme.magenta
         case "apps":    return Colours.accentPrimary       // yellow
-        case "eq":      return CP.neon
+        case "eq":      return Theme.neon
         }
         return Colours.accentSecondary
     }

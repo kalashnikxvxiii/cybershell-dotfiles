@@ -12,7 +12,7 @@ RowLayout {
 
     required property MprisPlayer activePlayer
     // Glow colour; driven by the cover accent from DashMediaMini.
-    property color accent: CP.yellow
+    property color accent: Theme.yellow
     required property real buttonSize
     required property real fontSize
     required property bool coverHovered
@@ -76,7 +76,7 @@ RowLayout {
             id: prevGlitch
             labelTarget: prevLabel
             shiftTarget: labelShift
-            baseColor: CP.cyan
+            baseColor: Theme.cyan
             onFinished: if (prevHover.hovered) pausePrevTimer.start()
         }
         Timer {
@@ -133,7 +133,7 @@ RowLayout {
             anchors.centerIn: parent
             text: playBtnMini.icon
             font.pixelSize: root.fontSize * 2
-            color: CP.cyan
+            color: Theme.cyan
             font.family: "JetBrains Mono NF"
             transform: Translate { id: labelShift2; x: 0 }
         }
@@ -149,7 +149,7 @@ RowLayout {
             id: playGlitch
             labelTarget: playLabel
             shiftTarget: labelShift2
-            baseColor: CP.cyan
+            baseColor: Theme.cyan
             onFinished: if (playHover.hovered) pausePlayTimer.start()
         }
         Timer {
@@ -221,7 +221,7 @@ RowLayout {
             id: nextGlitch
             labelTarget: nextLabel
             shiftTarget: labelShift3
-            baseColor: CP.cyan
+            baseColor: Theme.cyan
             onFinished: if (nextHover.hovered) pauseNextTimer.start()
         }
         Timer {

@@ -519,8 +519,8 @@ Item {
             shiftTarget: keyShift
             aberrationTarget: card
             baseColor: Colours.accentPrimary
-            c1: CP.magenta
-            c3: CP.cyan
+            c1: Theme.magenta
+            c3: Theme.cyan
         }
 
         // Repeat, revealed on hover once the test is over.

@@ -31,7 +31,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.moduleBg
-        strokeColor: CP.alpha(CP.cyan, 0.2)
+        strokeColor: CP.alpha(Theme.cyan, 0.2)
         strokeWidth: 1
         inset: 0.5
         cutTopLeft: 24
@@ -174,14 +174,14 @@ Item {
                     font.letterSpacing: parent.parent.source === "r" || parent.parent.source === "rg" ? 0 : 1
                     color: {
                         switch (parent.parent.source) {
-                            case "wh":  return CP.cyan
-                            case "a":   return CP.yellow
-                            case "ag":  return CP.yellow
+                            case "wh":  return Theme.cyan
+                            case "a":   return Theme.yellow
+                            case "ag":  return Theme.yellow
                             case "r":   return CP.orange
                             case "rg":  return CP.orange
                             case "wpe": return CP.teal
-                            case "wc":  return CP.neon
-                            default:    return CP.cyan
+                            case "wc":  return Theme.neon
+                            default:    return Theme.cyan
                         }
                     }
                 }
@@ -299,7 +299,7 @@ Item {
                     text: "\uf019"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 16
-                    color: CP.cyan
+                    color: Theme.cyan
                     PulseAnim on opacity { running: true; minOpacity: 0.3; duration: 400 }
                 }
 
@@ -312,7 +312,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: CP.alpha(CP.cyan, 0.15)
+                        color: CP.alpha(Theme.cyan, 0.15)
                     }
 
                     Rectangle {
@@ -325,10 +325,10 @@ Item {
                         // 60ms each through magenta and yellow back to cyan. On the
                         // shared clock, not a looping ColorAnimation
                         color: {
-                            if (!searchResultsPanel.downloading) return CP.cyan
+                            if (!searchResultsPanel.downloading) return Theme.cyan
                             const t = flickerTick.elapsed % 680
-                            if (t < 500) return CP.cyan
-                            const stops = [Qt.color(CP.cyan), Qt.color(CP.magenta), Qt.color(CP.yellow), Qt.color(CP.cyan)]
+                            if (t < 500) return Theme.cyan
+                            const stops = [Qt.color(Theme.cyan), Qt.color(Theme.magenta), Qt.color(Theme.yellow), Qt.color(Theme.cyan)]
                             const k = Math.floor((t - 500) / 60)
                             const u = ((t - 500) % 60) / 60
                             const a = stops[k], b = stops[k + 1]
@@ -345,7 +345,7 @@ Item {
                 fillColor: "transparent"
                 strokeColor: searchResultsPanel.selectedSearchIdx === parent.index
                             ? Colours.accentSecondary
-                            : CP.alpha(CP.cyan, 0.15)
+                            : CP.alpha(Theme.cyan, 0.15)
                 strokeWidth: searchResultsPanel.selectedSearchIdx === parent.index ? 2 : 1
                 inset: 0.5
                 cutTopLeft: 12

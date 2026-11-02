@@ -18,7 +18,7 @@ Item {
     id: face
 
     property var    entries: []       // see above
-    property string accent: CP.cyan
+    property string accent: Theme.cyan
     property string hoveredKey: ""
     property string selectedKey: ""
     // Set while the source is actually scanning: the sweep stops when it is not.
@@ -212,7 +212,7 @@ Item {
                 var hov = en.key === face.hoveredKey
                 var base = en.connected ? 0.55 : 0.2
                 var alpha = Math.min(1, base + lit * 0.6 + (sel || hov ? 0.3 : 0))
-                var col = en.connected ? Qt.color(CP.neon) : c
+                var col = en.connected ? Qt.color(Theme.neon) : c
 
                 if (lit > 0.05 || en.connected) {
                     var glow = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 11)

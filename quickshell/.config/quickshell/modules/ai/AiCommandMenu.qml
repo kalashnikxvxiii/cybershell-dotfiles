@@ -27,23 +27,23 @@ Item {
     // catches a whole namespace ("plugin:command"); the leftovers fall through
     // to the last section, so a command is never silently lost
     readonly property var groups: [
-        { title: "CONTEXT", accent: CP.cyan, ns: "",
+        { title: "CONTEXT", accent: Theme.cyan, ns: "",
         keys: ["resume", "clear", "compact", "autocompact", "context", "recap",
             "rename", "import", "init", "goal"] },
-        { title: "MODEL", accent: CP.magenta, ns: "",
+        { title: "MODEL", accent: Theme.magenta, ns: "",
         keys: ["model", "effort", "fast", "output-style", "loop", "schedule"] },
-        { title: "REVIEW", accent: CP.yellow, ns: "",
+        { title: "REVIEW", accent: Theme.yellow, ns: "",
         keys: ["code-review", "security-review", "ultrareview", "verify",
             "simplify", "debug", "skill-doctor", "batch"] },
-        { title: "SKILLS", accent: CP.neon, ns: "*",
+        { title: "SKILLS", accent: Theme.neon, ns: "*",
         keys: ["run", "run-skill-generator", "reload-skills", "advisor"] },
-        { title: "CUSTOMIZE", accent: CP.cyan, ns: "",
+        { title: "CUSTOMIZE", accent: Theme.cyan, ns: "",
         keys: ["focus", "ctrl-enter", "config", "update-config", "mcp", "agents", "list-agents",
             "workflow-launch-exec", "auto-mode-setup",
             "fewer-permission-prompts", "reload-plugins", "team-onboarding"] },
-        { title: "USAGE", accent: CP.yellow, ns: "",
+        { title: "USAGE", accent: Theme.yellow, ns: "",
         keys: ["usage", "usage-credits", "extra-usage", "insights"] },
-        { title: "OTHER", accent: CP.cyan, ns: "", keys: [] }
+        { title: "OTHER", accent: Theme.cyan, ns: "", keys: [] }
     ]
 
     // Flat list of rows: headers travel in the same model as the entries, which
@@ -161,7 +161,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 12
@@ -183,7 +183,7 @@ Item {
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 11
             color: root.fg
-            selectionColor: CP.alpha(CP.magenta, 0.4)
+            selectionColor: CP.alpha(Theme.magenta, 0.4)
             selectByMouse: true
             enabled: root.ownFilter
             clip: true
@@ -197,7 +197,7 @@ Item {
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 11
                 color: root.ownFilter ? CP.alpha(root.fg, 0.30)
-                    : CP.alpha(CP.magenta, 0.70)
+                    : CP.alpha(Theme.magenta, 0.70)
             }
 
             Keys.onPressed: event => {
@@ -222,7 +222,7 @@ Item {
         anchors.leftMargin: 6
         anchors.rightMargin: 6
         height: 1
-        color: CP.alpha(CP.magenta, 0.22)
+        color: CP.alpha(Theme.magenta, 0.22)
     }
 
     // ── Entries ───────────────────────────────────────────────────────────
@@ -359,7 +359,7 @@ Item {
             y: view.contentHeight > 0
                ? view.visibleArea.yPosition * view.height : 0
             height: Math.max(18, view.visibleArea.heightRatio * view.height)
-            color: CP.alpha(CP.magenta, view.moving ? 0.55 : 0.25)
+            color: CP.alpha(Theme.magenta, view.moving ? 0.55 : 0.25)
             Behavior on color { ColorAnimation { duration: 200 } }
         }
     }

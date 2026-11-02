@@ -129,7 +129,7 @@ Item {
             text: String.fromCodePoint(0xF0156)   // nf-md-close
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 14
-            color: clearMa.containsMouse ? CP.red : CP.alpha(Colours.textMuted, 0.7)
+            color: clearMa.containsMouse ? Theme.red : CP.alpha(Colours.textMuted, 0.7)
             Behavior on color { CAnim {} }
 
             MouseArea {
@@ -199,7 +199,7 @@ Item {
         font.pixelSize: 9
         font.letterSpacing: 2
         font.bold: true
-        color: MangaService.error ? CP.red : CP.alpha(Colours.accentSecondary, 0.8)
+        color: MangaService.error ? Theme.red : CP.alpha(Colours.accentSecondary, 0.8)
     }
 
     // -- NSFW toggle ------------------------------
@@ -213,8 +213,8 @@ Item {
         anchors.right: parent.right
         width: nsfwLabel.implicitWidth + 14
         height: 16
-        fillColor: MangaState.nsfwEnabled ? CP.alpha(CP.red, 0.85) : "transparent"
-        strokeColor: CP.alpha(CP.red, MangaState.nsfwEnabled ? 1.0 : 0.4)
+        fillColor: MangaState.nsfwEnabled ? CP.alpha(Theme.red, 0.85) : "transparent"
+        strokeColor: CP.alpha(Theme.red, MangaState.nsfwEnabled ? 1.0 : 0.4)
         strokeWidth: 1
         inset: 0.5
         cutBottomRight: 5
@@ -229,7 +229,7 @@ Item {
             font.pixelSize: 10
             font.letterSpacing: 1.5
             font.bold: true
-            color: MangaState.nsfwEnabled ? "white" : CP.alpha(CP.red, 0.75)
+            color: MangaState.nsfwEnabled ? "white" : CP.alpha(Theme.red, 0.75)
         }
 
         MouseArea {
@@ -254,8 +254,8 @@ Item {
         anchors.right: genresBtn.visible ? genresBtn.left : parent.right
         anchors.rightMargin: genresBtn.visible ? 6 : 0
         readonly property string mode: MangaState.source
-        readonly property color tint: mode === "all" ? CP.yellow
-                                    : mode === "mangaworld" ? CP.neon
+        readonly property color tint: mode === "all" ? Theme.yellow
+                                    : mode === "mangaworld" ? Theme.neon
                                     : Colours.accentSecondary
         width: srcLabel.implicitWidth + 14
         height: 16
@@ -547,7 +547,7 @@ Item {
                         font.pixelSize: 12
                         font.letterSpacing: 1.5
                         font.bold: true
-                        color: CP.alpha(CP.red, 0.9)
+                        color: CP.alpha(Theme.red, 0.9)
                     }
                 }
 
@@ -560,8 +560,8 @@ Item {
                     anchors.bottom: parent.bottom
                     anchors.margins: 3
                     readonly property bool both: card.msrc.indexOf("+") >= 0
-                    readonly property color tint: both ? CP.yellow
-                                                : card.msrc === "mangaworld" ? CP.neon
+                    readonly property color tint: both ? Theme.yellow
+                                                : card.msrc === "mangaworld" ? Theme.neon
                                                 : Colours.accentSecondary
                     width: srcTag.implicitWidth + 8
                     height: 13

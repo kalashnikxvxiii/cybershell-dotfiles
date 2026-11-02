@@ -13,7 +13,7 @@ Item {
     property string label: ""
     property string glyph: ""       // optional leading mark
     property int    glyphSize: 9
-    property color  accent: CP.cyan
+    property color  accent: Theme.cyan
     property bool   interactive: true
     property bool   enabled: true
     property bool   filled: false   // solid, for the primary action

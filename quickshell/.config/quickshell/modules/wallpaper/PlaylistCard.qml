@@ -52,8 +52,8 @@ Item {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.9)
         strokeColor: PlaylistState.entryHighlightPath === root.path
-                    ? CP.alpha(CP.cyan, 0.9)
-                    : CP.alpha(CP.yellow, 0.2)
+                    ? CP.alpha(Theme.cyan, 0.9)
+                    : CP.alpha(Theme.yellow, 0.2)
         strokeWidth: PlaylistState.entryHighlightPath === root.path ? 3 : 2
         //inset: 0.5
         cutTopLeft: 4; cutBottomRight: 4
@@ -65,7 +65,7 @@ Item {
         visible: PlaylistState.entryHighlightPath === root.path
                 || PlaylistState.selectedEntryPath === root.path
         fillColor: "transparent"
-        strokeColor: _flashing ? CP.red : CP.cyan
+        strokeColor: _flashing ? Theme.red : Theme.cyan
         strokeWidth: 3
         inset: 0.5
         cutTopLeft: 4; cutBottomRight: 4
@@ -176,7 +176,7 @@ Item {
             width: 22
             height: 16
             fillColor: CP.alpha(CP.void2, 0.85)
-            strokeColor: CP.alpha(CP.yellow, 0.5)
+            strokeColor: CP.alpha(Theme.yellow, 0.5)
             strokeWidth: 1; inset: 0.5
             cutTopLeft: 3; cutBottomRight: 3
             opacity: _hover.hovered ? 1.0 : 0.65
@@ -207,7 +207,7 @@ Item {
             CutShape {
                 anchors.fill: parent
                 fillColor: CP.alpha(CP.void2, 0.85)
-                strokeColor: CP.alpha(CP.red, 0.5)
+                strokeColor: CP.alpha(Theme.red, 0.5)
                 strokeWidth: 1; inset: 0.5
                 cutTopLeft: 3; cutBottomRight: 3
             }
@@ -243,7 +243,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: CP.alpha(CP.yellow, 0.12)
+            color: CP.alpha(Theme.yellow, 0.12)
         }
 
         Text {
@@ -277,8 +277,8 @@ Item {
                 visible: root.source !== ""
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(root.source === "wpe" ? CP.yellow : CP.cyan, 0.12)
-                    strokeColor: CP.alpha(root.source === "wpe" ? CP.yellow : CP.cyan, 0.55)
+                    fillColor: CP.alpha(root.source === "wpe" ? Theme.yellow : Theme.cyan, 0.12)
+                    strokeColor: CP.alpha(root.source === "wpe" ? Theme.yellow : Theme.cyan, 0.55)
                     strokeWidth: 1; inset: 0.5
                     cutTopLeft: 2; cutBottomRight: 2
                 }
@@ -330,8 +330,8 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: CP.alpha(CP.cyan, 0.07)
-                strokeColor: _intervalBox._dirty ? CP.alpha(CP.yellow, 0.7) : CP.alpha(CP.cyan, 0.25)
+                fillColor: CP.alpha(Theme.cyan, 0.07)
+                strokeColor: _intervalBox._dirty ? CP.alpha(Theme.yellow, 0.7) : CP.alpha(Theme.cyan, 0.25)
                 strokeWidth: 1; inset: 0.5
                 cutTopLeft: 3; cutBottomRight: 3
                 Behavior on strokeColor { ColorAnimation { duration: 150 } }

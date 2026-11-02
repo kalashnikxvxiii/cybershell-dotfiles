@@ -21,14 +21,14 @@ Singleton {
 
     // -- Palette ---------------------------------
     readonly property color danger: Colours.accentDanger
-    readonly property color dangerSoft: CP.lighten(CP.red, 0.25)
+    readonly property color dangerSoft: CP.lighten(Theme.red, 0.25)
     readonly property color tech: Colours.accentSecondary
     readonly property color power: Colours.accentPrimary
     readonly property color ok: Colours.accentOk
     readonly property color mem: Colours.accentMem
     readonly property color paper: CP.white
     // Follows the wallpaper: the sonar and the corner buttons only
-    readonly property color wallust: CP.neonize(Colours.glow, CP.cyan)
+    readonly property color wallust: CP.neonize(Colours.glow, Theme.cyan)
 
     readonly property string font: Qt.fontFamilies().indexOf("Quantico") >= 0 ? "Quantico" : "Oxanium"
     readonly property string icons: "JetBrainsMono Nerd Font"

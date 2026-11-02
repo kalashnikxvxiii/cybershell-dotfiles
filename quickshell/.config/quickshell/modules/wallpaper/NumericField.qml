@@ -36,10 +36,10 @@ Item {
         anchors.right: parent.right
         height: 24
         anchors.verticalCenter: parent.verticalCenter
-        fillColor: CP.alpha(CP.cyan, 0.06)
+        fillColor: CP.alpha(Theme.cyan, 0.06)
         strokeColor: input.activeFocus
-            ? CP.alpha(CP.cyan, 0.85)
-            : CP.alpha(CP.cyan, 0.35)
+            ? CP.alpha(Theme.cyan, 0.85)
+            : CP.alpha(Theme.cyan, 0.35)
         strokeWidth: 1
         inset: 0.5
         cutTopLeft: 3

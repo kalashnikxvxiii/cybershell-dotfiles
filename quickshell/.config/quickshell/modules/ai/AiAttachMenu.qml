@@ -34,7 +34,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 12
@@ -67,7 +67,7 @@ Item {
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true
-            color: clearMa.containsMouse ? CP.red : CP.alpha(root.fg, 0.38)
+            color: clearMa.containsMouse ? Theme.red : CP.alpha(root.fg, 0.38)
             Behavior on color { ColorAnimation { duration: 120 } }
 
             MouseArea {
@@ -109,7 +109,7 @@ Item {
                 anchors.fill: parent
                 anchors.leftMargin: 4
                 anchors.rightMargin: 4
-                color: CP.alpha(CP.cyan, rowHover.hovered ? 0.09 : 0)
+                color: CP.alpha(Theme.cyan, rowHover.hovered ? 0.09 : 0)
                 Behavior on color { ColorAnimation { duration: 120 } }
             }
 
@@ -121,7 +121,7 @@ Item {
                 text: row.isDir ? "\uf07b" : "\uf0f6"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 11
-                color: row.isDir ? CP.yellow : CP.cyan
+                color: row.isDir ? Theme.yellow : Theme.cyan
             }
 
             Text {
@@ -149,7 +149,7 @@ Item {
                 frame: false
                 glyph: "\uf00d"
                 glyphSize: 10
-                accent: CP.red
+                accent: Theme.red
                 onTriggered: root.removed(row.modelData)
             }
         }
@@ -161,7 +161,7 @@ Item {
             visible: view.contentHeight > view.height
             y: view.visibleArea.yPosition * view.height
             height: Math.max(18, view.visibleArea.heightRatio * view.height)
-            color: CP.alpha(CP.magenta, view.moving ? 0.55 : 0.25)
+            color: CP.alpha(Theme.magenta, view.moving ? 0.55 : 0.25)
             Behavior on color { ColorAnimation { duration: 200 } }
         }
     }

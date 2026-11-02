@@ -81,7 +81,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 10
@@ -110,7 +110,7 @@ Item {
                     anchors.fill: parent
                     anchors.leftMargin: 4
                     anchors.rightMargin: 4
-                    color: CP.alpha(CP.cyan, item.picked ? 0.08
+                    color: CP.alpha(Theme.cyan, item.picked ? 0.08
                         : ma.containsMouse && item.on ? 0.1 : 0)
                     Behavior on color { ColorAnimation { duration: 100 } }
                 }
@@ -124,9 +124,9 @@ Item {
                     text: item.modelData.glyph
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 11
-                    color: item.picked ? CP.cyan
+                    color: item.picked ? Theme.cyan
                         : !item.on ? CP.alpha(root.fg, 0.2)
-                        : ma.containsMouse ? CP.cyan : CP.alpha(CP.magenta, 0.8)
+                        : ma.containsMouse ? Theme.cyan : CP.alpha(Theme.magenta, 0.8)
                 }
 
                 Text {
@@ -138,9 +138,9 @@ Item {
                     font.pixelSize: 10
                     font.letterSpacing: 1.6
                     font.bold: true
-                    color: item.picked ? CP.cyan
+                    color: item.picked ? Theme.cyan
                         : !item.on ? CP.alpha(root.fg, 0.25)
-                        : ma.containsMouse ? CP.cyan : CP.alpha(root.fg, 0.85)
+                        : ma.containsMouse ? Theme.cyan : CP.alpha(root.fg, 0.85)
                 }
 
                 MouseArea {
@@ -168,7 +168,7 @@ Item {
                 y: 4
                 width: parent.width - 20
                 height: 1
-                color: CP.alpha(CP.magenta, 0.2)
+                color: CP.alpha(Theme.magenta, 0.2)
             }
 
             Text {
@@ -186,8 +186,8 @@ Item {
                 font.pixelSize: 9
                 font.bold: true
                 font.letterSpacing: 1.4
-                color: confirmBox.p.pending ? CP.yellow
-                    : !confirmBox.p.ok ? CP.red : CP.cyan
+                color: confirmBox.p.pending ? Theme.yellow
+                    : !confirmBox.p.ok ? Theme.red : Theme.cyan
             }
 
             Row {
@@ -203,13 +203,13 @@ Item {
                     visible: confirmBox.p.ok === true
                         && (!confirmBox.nothing || confirmBox.p.action === "fork-rewind")
                     label: confirmBox.p.action === "fork-rewind" ? "FORK + REWIND" : "REWIND"
-                    accent: CP.yellow
+                    accent: Theme.yellow
                     onTriggered: root.confirm()
                 }
 
                 AiHeaderButton {
                     label: confirmBox.p.pending || confirmBox.p.ok ? "CANCEL" : "CLOSE"
-                    accent: CP.magenta
+                    accent: Theme.magenta
                     onTriggered: root.chat.cancelRewind()
                 }
             }

@@ -120,7 +120,7 @@ Item {
             font.pixelSize: 12
             font.italic: true
             font.letterSpacing: 2
-            color: CP.cyan
+            color: Theme.cyan
             style: Text.Raised
             styleColor: Colours.neonBorder(0.3)
             transform: Translate { id: labelShift; x: 0 }
@@ -169,7 +169,7 @@ Item {
                 top: parent.top
                 bottom: parent.bottom
             }
-            color: CP.alpha(CP.yellow, 1)
+            color: CP.alpha(Theme.yellow, 1)
         }
     }
 

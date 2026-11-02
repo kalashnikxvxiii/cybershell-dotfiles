@@ -295,7 +295,7 @@ Item {
             anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
             anchors.leftMargin: 12
             width: 4
-            color: CP.magenta
+            color: Theme.magenta
         }
 
         Text {
@@ -308,7 +308,7 @@ Item {
             font.pixelSize: 14
             font.letterSpacing: 4
             font.bold: true
-            color: CP.magenta
+            color: Theme.magenta
         }
 
         Row {
@@ -321,7 +321,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: AiState.turnLabel !== ""
                 label: AiState.turnLabel
-                accent: CP.cyan
+                accent: Theme.cyan
                 interactive: false
                 frame: false
             }
@@ -334,7 +334,7 @@ Item {
                 height: 22
                 glyph: "\uf2bd"
                 glyphSize: 14
-                accent: CP.magenta
+                accent: Theme.magenta
                 frame: root.accountOpen
                 onTriggered: {
                     root.accountOpen = !root.accountOpen
@@ -359,7 +359,7 @@ Item {
             font.pixelSize: 12
             font.letterSpacing: 2
             opacity: statePulse.k
-            color: CP.alpha(AiState.session.busy ? CP.yellow : CP.magenta, 0.65)
+            color: CP.alpha(AiState.session.busy ? Theme.yellow : Theme.magenta, 0.65)
         }
 
         // Pending states pulse, idle ones hold still
@@ -371,7 +371,7 @@ Item {
         anchors { top: header.bottom; left: parent.left; right: parent.right }
         anchors.topMargin: 6
         height: 1
-        color: CP.alpha(CP.magenta, 0.22)
+        color: CP.alpha(Theme.magenta, 0.22)
     }
 
     // -- Tabs ------------------------------
@@ -598,8 +598,8 @@ Item {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: CP.alpha(CP.yellow, 0.05)
-                    strokeColor: CP.alpha(CP.yellow, 0.35)
+                    fillColor: CP.alpha(Theme.yellow, 0.05)
+                    strokeColor: CP.alpha(Theme.yellow, 0.35)
                     strokeWidth: 1
                     inset: 0.5
                     cutTopLeft: 5
@@ -613,7 +613,7 @@ Item {
                     font.pixelSize: 8
                     font.bold: true
                     font.letterSpacing: 1.6
-                    color: CP.yellow
+                    color: Theme.yellow
                 }
                 Text {
                     anchors.left: qtag.right
@@ -635,7 +635,7 @@ Item {
                     frame: false
                     glyph: "\uf00d"
                     glyphSize: 10
-                    accent: CP.yellow
+                    accent: Theme.yellow
                     onTriggered: AiState.chat.unqueue(qrow.index)
                 }
             }
@@ -693,8 +693,8 @@ Item {
         CutShape {
             anchors.fill: parent
             fillColor: CP.alpha(CP.void2, 0.75)
-            strokeColor: input.activeFocus ? CP.alpha(CP.magenta, 0.75)
-                        : CP.alpha(CP.magenta, 0.30)
+            strokeColor: input.activeFocus ? CP.alpha(Theme.magenta, 0.75)
+                        : CP.alpha(Theme.magenta, 0.30)
             strokeWidth: input.activeFocus ? 1.5 : 1
             inset: 0.5
             cutTopRight: 15
@@ -740,7 +740,7 @@ Item {
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 13
                     color: root.fg
-                    selectionColor: CP.alpha(CP.magenta, 0.4)
+                    selectionColor: CP.alpha(Theme.magenta, 0.4)
                     selectByMouse: true
                     // The mic floats over the bottom-right corner: keep the text
                     // out from under it instead of letting the two overlap
@@ -777,7 +777,7 @@ Item {
                         font.family: ghost ? input.font.family : "Oxanium"
                         font.pixelSize: ghost ? input.font.pixelSize : 11
                         color: ghost ? CP.alpha(root.fg, 0.32)
-                            : CP.alpha(root.recording ? CP.red : CP.magenta, 0.32)
+                            : CP.alpha(root.recording ? Theme.red : Theme.magenta, 0.32)
                     }
 
                     // Enter sends, Shift+Enter breaks the line: the shell convention
@@ -844,7 +844,7 @@ Item {
                 frame: false
                 glyphSize: 13
                 glyph: "\uf130"
-                accent: CP.magenta
+                accent: Theme.magenta
                 on: root.recording
                 busy: root.transcribing
                 enabled: !AiState.session.busy && !root.transcribing
@@ -867,7 +867,7 @@ Item {
 
                 AiIconButton {
                     glyph: "\uf067"
-                    accent: CP.cyan
+                    accent: Theme.cyan
                     frame: false
                     glyphSize: 12
                     enabled: !AiState.session.busy
@@ -876,7 +876,7 @@ Item {
 
                 AiIconButton {
                     glyph: "/"
-                    accent: CP.cyan
+                    accent: Theme.cyan
                     frame: false
                     glyphSize: 12
                     onTriggered: {
@@ -888,7 +888,7 @@ Item {
                 AiChip {
                     glyph: "\u25c6"
                     label: AiState.modelInfo.displayName
-                    accent: CP.magenta
+                    accent: Theme.magenta
                     enabled: !AiState.session.busy
                     onTriggered: {
                         root.modelOpen = !root.modelOpen
@@ -902,7 +902,7 @@ Item {
                     visible: AiState.cacheLabel !== ""
                     glyph: "\u25a0"
                     label: AiState.cacheLabel
-                    accent: CP.neon
+                    accent: Theme.neon
                     interactive: false
                     frame: false
                 }
@@ -932,7 +932,7 @@ Item {
                         && input.text.trim() === "" && root.attachments.length === 0
                     glyph: stops ? "\uf04d" : "\uf062"
                     glyphSize: 10
-                    accent: stops ? CP.red : CP.magenta
+                    accent: stops ? Theme.red : Theme.magenta
                     filled: true
                     enabled: stops || input.text.trim() !== "" || root.attachments.length > 0
                     onTriggered: stops ? AiState.session.interrupt() : root.send()
@@ -999,8 +999,8 @@ Item {
         CutShape {
             anchors.fill: parent
             visible: dropZone.containsDrag
-            fillColor: CP.alpha(CP.magenta, 0.08)
-            strokeColor: CP.alpha(CP.magenta, 0.70)
+            fillColor: CP.alpha(Theme.magenta, 0.08)
+            strokeColor: CP.alpha(Theme.magenta, 0.70)
             strokeWidth: 1.5
             inset: 0.5
             cutTopLeft: 15
@@ -1013,7 +1013,7 @@ Item {
                 font.pixelSize: 12
                 font.letterSpacing: 3
                 font.bold: true
-                color: CP.magenta
+                color: Theme.magenta
             }
         }
     }

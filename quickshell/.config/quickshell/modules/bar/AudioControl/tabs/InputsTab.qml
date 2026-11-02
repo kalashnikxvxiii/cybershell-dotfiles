@@ -10,7 +10,7 @@ Item {
     implicitHeight: scroll.contentHeight
 
     // Palette, for hosts with one of their own
-    property color accent: CP.magenta
+    property color accent: Theme.magenta
     property color frame: accent
     property color meter: Colours.accentPrimary
     property color heading: accent

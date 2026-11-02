@@ -5,6 +5,7 @@ import Quickshell
 import QtQuick
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Item {
     id: root
     implicitHeight: 24
@@ -88,7 +89,7 @@ Item {
         font.pixelSize:     14
         font.bold:          true
         font.letterSpacing: 3
-        color:              CP.yellow
+        color:              Theme.yellow
         z: 2
         transform: Translate { id: labelShift; x: 0 }
     }
@@ -101,38 +102,38 @@ Item {
         running: root.visible; loops: Animation.Infinite
 
         PropertyAction  { target: root;       property: "_aberrating"; value: false }
-        PropertyAction  { target: label;      property: "color";       value: CP.yellow }
+        PropertyAction  { target: label;      property: "color";       value: Theme.yellow }
         PropertyAction  { target: labelShift; property: "x";           value: 0 }
         PauseAnimation  { duration: 1400 }
 
         // Burst 1: aberration ON + magenta color
         PropertyAction  { target: root;       property: "_aberrating"; value: true }
-        PropertyAction  { target: label;      property: "color";       value: CP.magenta }
+        PropertyAction  { target: label;      property: "color";       value: Theme.magenta }
         PropertyAction  { target: labelShift; property: "x";           value: 3 }
         PauseAnimation  { duration: 55 }
 
-        PropertyAction  { target: label;      property: "color";       value: CP.yellow }
+        PropertyAction  { target: label;      property: "color";       value: Theme.yellow }
         PropertyAction  { target: labelShift; property: "x";           value: -3 }
         PauseAnimation  { duration: 55 }
 
-        PropertyAction  { target: label;      property: "color";       value: CP.cyan }
+        PropertyAction  { target: label;      property: "color";       value: Theme.cyan }
         PropertyAction  { target: labelShift; property: "x";           value: 2 }
         PauseAnimation  { duration: 55 }
 
         // Burst 1 end — aberration OFF
         PropertyAction  { target: root;       property: "_aberrating"; value: false }
-        PropertyAction  { target: label;      property: "color";       value: CP.yellow }
+        PropertyAction  { target: label;      property: "color";       value: Theme.yellow }
         PropertyAction  { target: labelShift; property: "x";           value: 0 }
         PauseAnimation  { duration: 120 }
 
         // Burst 2: quick micro glitch
         PropertyAction  { target: root;       property: "_aberrating"; value: true }
-        PropertyAction  { target: label;      property: "color";       value: CP.magenta }
+        PropertyAction  { target: label;      property: "color";       value: Theme.magenta }
         PropertyAction  { target: labelShift; property: "x";           value: -1 }
         PauseAnimation  { duration: 40 }
 
         PropertyAction  { target: root;       property: "_aberrating"; value: false }
-        PropertyAction  { target: label;      property: "color";       value: CP.yellow }
+        PropertyAction  { target: label;      property: "color";       value: Theme.yellow }
         PropertyAction  { target: labelShift; property: "x";           value: 0 }
         PauseAnimation  { duration: 230 }
     }

@@ -266,7 +266,7 @@ Item {
                 font.pixelSize: 11
                 font.letterSpacing: 1
                 font.bold: true
-                color: CP.alpha(CP.red, 0.9)
+                color: CP.alpha(Theme.red, 0.9)
                 wrapMode: Text.WordWrap
             }
 
@@ -617,8 +617,8 @@ Item {
                     readonly property bool mw: row.only.source === "mangaworld"
                     width: srcTagLabel.implicitWidth + 8
                     height: 13
-                    fillColor: CP.alpha(mw ? CP.neon : Colours.accentSecondary, 0.85)
-                    strokeColor: mw ? CP.neon : Colours.accentSecondary
+                    fillColor: CP.alpha(mw ? Theme.neon : Colours.accentSecondary, 0.85)
+                    strokeColor: mw ? Theme.neon : Colours.accentSecondary
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomRight: 4
@@ -717,8 +717,8 @@ Item {
                                 readonly property bool mw: v.modelData.source === "mangaworld"
                                 width: vSrcLabel.implicitWidth + 8
                                 height: 13
-                                fillColor: CP.alpha(mw ? CP.neon : Colours.accentSecondary, 0.85)
-                                strokeColor: mw ? CP.neon : Colours.accentSecondary
+                                fillColor: CP.alpha(mw ? Theme.neon : Colours.accentSecondary, 0.85)
+                                strokeColor: mw ? Theme.neon : Colours.accentSecondary
                                 strokeWidth: 1
                                 inset: 0.5
                                 cutBottomRight: 4

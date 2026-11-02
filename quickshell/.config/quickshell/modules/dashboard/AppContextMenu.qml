@@ -33,7 +33,7 @@ Item {
         height: menuCol.implicitHeight + 8
         fillColor: Colours.moduleBg
         strokeWidth: 1
-        strokeColor: CP.alpha(CP.cyan, 0.45)
+        strokeColor: CP.alpha(Theme.cyan, 0.45)
         inset: 0.5
         cutTopRight: 12
 
@@ -57,7 +57,7 @@ Item {
             CutShape {
                 width: parent.width; height: 26
                 cutTopRight: 3
-                fillColor: pinHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                fillColor: pinHover.containsMouse ? CP.alpha(Theme.cyan, 0.15) : "transparent"
                 
                 Behavior on fillColor { CAnim {} }
 
@@ -65,7 +65,7 @@ Item {
                     anchors.centerIn: parent
                     text: menu.targetPinned ? "Unpin" : "Pin"
                     font.family: "Oxanium"; font.pixelSize: 11
-                    color: CP.cyan
+                    color: Theme.cyan
                 }
                 MouseArea {
                     id: pinHover
@@ -82,7 +82,7 @@ Item {
             // Change Icon
             CutShape {
                 width: parent.width; height: 26
-                fillColor: changeIconHover.containsMouse ? CP.alpha(CP.cyan, 0.15) : "transparent"
+                fillColor: changeIconHover.containsMouse ? CP.alpha(Theme.cyan, 0.15) : "transparent"
 
                 Behavior on fillColor { CAnim {} }
 
@@ -90,7 +90,7 @@ Item {
                     anchors.centerIn: parent
                     text: "Change Icon"
                     font.family: "Oxanium"; font.pixelSize: 11
-                    color: CP.cyan
+                    color: Theme.cyan
                 }
                 MouseArea {
                     id: changeIconHover
@@ -107,7 +107,7 @@ Item {
             // Remove
             CutShape {
                 width: parent.width; height: 26
-                fillColor: removeHover.containsMouse ? CP.alpha(CP.red, 0.12) : "transparent"
+                fillColor: removeHover.containsMouse ? CP.alpha(Theme.red, 0.12) : "transparent"
 
                 Behavior on fillColor { CAnim {} }
 
@@ -115,7 +115,7 @@ Item {
                     anchors.centerIn: parent
                     text: "Remove"
                     font.family: "Oxanium"; font.pixelSize: 11
-                    color: CP.red
+                    color: Theme.red
                 }
                 MouseArea {
                     id: removeHover

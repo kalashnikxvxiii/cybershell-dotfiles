@@ -1458,8 +1458,8 @@ Scope {
                             anchors.centerIn: parent
                             width: active ? 12 : 5
                             height: active ? 12 : 5
-                            fillColor: active ? CP.cyan : CP.alpha(CP.cyan, 0.3)
-                            strokeColor: active ? CP.alpha(CP.cyan, 0.9) : "transparent"
+                            fillColor: active ? Theme.cyan : CP.alpha(Theme.cyan, 0.3)
+                            strokeColor: active ? CP.alpha(Theme.cyan, 0.9) : "transparent"
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 2; cutBottomRight: 2
 
@@ -2231,7 +2231,7 @@ Scope {
                             text: "\uf019"
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 28
-                            color: CP.cyan
+                            color: Theme.cyan
                             PulseAnim on opacity { running: previewDownloadOverlay._active; minOpacity: 0.3; duration: 400 }
                         }
 
@@ -2241,7 +2241,7 @@ Scope {
                             font.family: "Oxanium"
                             font.pixelSize: 10
                             font.letterSpacing: 3
-                            color: CP.cyan
+                            color: Theme.cyan
                         }
 
                         Text {
@@ -2249,7 +2249,7 @@ Scope {
                             text: Math.floor(previewDownloadOverlay._progress * 100) + "%"
                             font.family: "Oxanium"
                             font.pixelSize: 14
-                            color: CP.yellow
+                            color: Theme.yellow
                         }
                     }
 
@@ -2262,7 +2262,7 @@ Scope {
 
                         Rectangle {
                             anchors.fill: parent
-                            color: CP.alpha(CP.cyan, 0.15)
+                            color: CP.alpha(Theme.cyan, 0.15)
                         }
 
                         Rectangle {
@@ -2271,15 +2271,15 @@ Scope {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             width: parent.width * previewDownloadOverlay._progress
-                            color: CP.cyan
+                            color: Theme.cyan
 
                             SequentialAnimation on color {
                                 loops: Animation.Infinite
                                 running: previewDownloadOverlay._active
-                                ColorAnimation { to: CP.cyan; duration: 500 }
-                                ColorAnimation { to: CP.magenta; duration: 60 }
-                                ColorAnimation { to: CP.yellow; duration: 60 }
-                                ColorAnimation { to: CP.cyan; duration: 60 }
+                                ColorAnimation { to: Theme.cyan; duration: 500 }
+                                ColorAnimation { to: Theme.magenta; duration: 60 }
+                                ColorAnimation { to: Theme.yellow; duration: 60 }
+                                ColorAnimation { to: Theme.cyan; duration: 60 }
                             }
                         }
                     }
@@ -2289,15 +2289,15 @@ Scope {
                 Rectangle {
                     id: completionFlash
                     anchors.fill: parent
-                    color: CP.magenta
+                    color: Theme.magenta
                     opacity: 0
                     z: 11
 
                     SequentialAnimation {
                         id: completionGlitch
-                        PropertyAction { target: completionFlash; property: "color"; value: CP.magenta }
+                        PropertyAction { target: completionFlash; property: "color"; value: Theme.magenta }
                         NumberAnimation { target: completionFlash; property: "opacity"; to: 0.4; duration: 60 }
-                        PropertyAction { target: completionFlash; property: "color"; value: CP.cyan }
+                        PropertyAction { target: completionFlash; property: "color"; value: Theme.cyan }
                         NumberAnimation { target: completionFlash; property: "opacity"; to: 0.2; duration: 60 }
                         NumberAnimation { target: completionFlash; property: "opacity"; to: 0; duration: 180 }
                     }
@@ -2336,7 +2336,7 @@ Scope {
                             CutShape {
                                 anchors.fill: parent
                                 fillColor: "transparent"
-                                strokeColor: CP.alpha(CP.magenta, 0.22)
+                                strokeColor: CP.alpha(Theme.magenta, 0.22)
                                 strokeWidth: 1
                                 inset: 0.5
                                 cutTopLeft: 18; cutTopRight: 18
@@ -2348,7 +2348,7 @@ Scope {
                                 anchors.fill: parent
                                 anchors.margins: 8
                                 fillColor: "transparent"
-                                strokeColor: CP.magenta
+                                strokeColor: Theme.magenta
                                 strokeWidth: 2
                                 inset: 1
                                 cutTopLeft: 10; cutTopRight: 10
@@ -2381,7 +2381,7 @@ Scope {
                                 text: "\uf06e"
                                 font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 22
-                                color: CP.magenta
+                                color: Theme.magenta
                                 PulseAnim on opacity {
                                     running: root.searchPreviewLoading
                                     minOpacity: 0.2
@@ -2409,7 +2409,7 @@ Scope {
                             font.family: "Oxanium"
                             font.pixelSize: 10
                             font.letterSpacing: 2
-                            color: CP.magenta
+                            color: Theme.magenta
 
                             SequentialAnimation {
                                 id: msgCycleAnim
@@ -2443,7 +2443,7 @@ Scope {
                     CutShape {
                         anchors.fill: parent
                         fillColor: CP.alpha(CP.void2, 0.94)
-                        strokeColor: CP.alpha(CP.red, 0.9)
+                        strokeColor: CP.alpha(Theme.red, 0.9)
                         strokeWidth: 1
                         inset: 0.5
                         cutTopLeft: 8
@@ -2459,7 +2459,7 @@ Scope {
                             text: "\uf071"
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 13
-                            color: CP.red
+                            color: Theme.red
                         }
 
                         Text {
@@ -2501,7 +2501,7 @@ Scope {
                 CutShape {
                     anchors.fill: parent
                     fillColor: CP.moduleBg
-                    strokeColor: CP.alpha(CP.cyan, 0.25)
+                    strokeColor: CP.alpha(Theme.cyan, 0.25)
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomLeft: 6
@@ -2546,8 +2546,8 @@ Scope {
 
                         CutShape {
                             anchors.fill: parent
-                            fillColor: CP.alpha(parent._src === "wpe" ? CP.yellow : CP.cyan, 0.12)
-                            strokeColor: CP.alpha(parent._src === "wpe" ? CP.yellow : CP.cyan, 0.55)
+                            fillColor: CP.alpha(parent._src === "wpe" ? Theme.yellow : Theme.cyan, 0.12)
+                            strokeColor: CP.alpha(parent._src === "wpe" ? Theme.yellow : Theme.cyan, 0.55)
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 3; cutBottomRight: 3
                         }
@@ -2649,7 +2649,7 @@ Scope {
                 CutShape {
                     anchors.fill: parent
                     fillColor: CP.alpha(CP.void2, 0.85)
-                    strokeColor: CP.alpha(CP.cyan, 0.35)
+                    strokeColor: CP.alpha(Theme.cyan, 0.35)
                     strokeWidth: 1
                     inset: 0.5
                     cutTopLeft: 8
@@ -2679,7 +2679,7 @@ Scope {
                                 width: 1
                                 height: sortBar.height - 10
                                 anchors.verticalCenter: parent.verticalCenter
-                                color: CP.alpha(CP.cyan, 0.3)
+                                color: CP.alpha(Theme.cyan, 0.3)
                             }
 
                             Item {
@@ -2692,8 +2692,8 @@ Scope {
                                 Rectangle {
                                     anchors.fill: parent
                                     anchors.margins: 2
-                                    color: _btnItem._active              ? CP.alpha(CP.cyan, 0.2)
-                                        : _btnMa.containsMouse  ? CP.alpha(CP.yellow, 0.12)
+                                    color: _btnItem._active              ? CP.alpha(Theme.cyan, 0.2)
+                                        : _btnMa.containsMouse  ? CP.alpha(Theme.yellow, 0.12)
                                                                 : "transparent"
                                     Behavior on color { ColorAnimation { duration: 120 } }
                                 }
@@ -2767,7 +2767,7 @@ Scope {
                 CutShape {
                     anchors.fill: parent
                     fillColor: CP.moduleBg
-                    strokeColor: CP.alpha(CP.red, 0.6)
+                    strokeColor: CP.alpha(Theme.red, 0.6)
                     strokeWidth: 2
                     inset: 1
                     cutTopLeft: 16
@@ -2814,7 +2814,7 @@ Scope {
 
                             CutShape {
                                 anchors.fill: parent
-                                fillColor: CP.alpha(CP.red, 0.2)
+                                fillColor: CP.alpha(Theme.red, 0.2)
                                 strokeColor: Colours.accentDanger
                                 strokeWidth: 1
                                 inset: 0.5
@@ -2847,7 +2847,7 @@ Scope {
                             CutShape {
                                 anchors.fill: parent
                                 fillColor: "transparent"
-                                strokeColor: CP.alpha(CP.cyan, 0.3)
+                                strokeColor: CP.alpha(Theme.cyan, 0.3)
                                 strokeWidth: 1
                                 inset: 0.5
                                 cutTopLeft: 4

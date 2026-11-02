@@ -32,8 +32,8 @@ Item {
         for (const c of root.calls) if (c.state === "running") return c.name
         return ""
     }
-    readonly property color accent: root.anyError ? CP.red
-        : root.anyRunning ? CP.yellow : CP.cyan
+    readonly property color accent: root.anyError ? Theme.red
+        : root.anyRunning ? Theme.yellow : Theme.cyan
 
     implicitHeight: col.implicitHeight
     height: implicitHeight

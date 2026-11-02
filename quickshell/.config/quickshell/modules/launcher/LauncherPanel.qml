@@ -199,7 +199,7 @@ Scope {
 
                         Text {
                             text: root.title
-                            color: CP.cyan
+                            color: Theme.cyan
                             font.bold: true
                             font.pixelSize: 20
                             font.family: "Oxanium"
@@ -242,7 +242,7 @@ Scope {
                             Text {
                                 visible: search.text === ""
                                 text: "› SEARCH…"
-                                color: CP.alpha(CP.cyan, 0.5)
+                                color: CP.alpha(Theme.cyan, 0.5)
                                 font: search.font
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -253,7 +253,7 @@ Scope {
                     Rectangle {
                         Layout.fillWidth: true
                         height: 1
-                        color: CP.alpha(CP.cyan, 0.4)
+                        color: CP.alpha(Theme.cyan, 0.4)
                     }
 
                     // ---------- Results ----------
@@ -321,7 +321,7 @@ Scope {
                     Text {
                         visible: list.count === 0 && root.bindDraft === null
                         text: "// NO MATCH"
-                        color: CP.alpha(CP.cyan, 0.5)
+                        color: CP.alpha(Theme.cyan, 0.5)
                         font.pixelSize: 12
                         font.family: "Oxanium"
                         Layout.alignment: Qt.AlignHCenter

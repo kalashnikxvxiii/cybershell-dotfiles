@@ -8,10 +8,10 @@
 //   shiftTarget   — Translate that receives x offsets
 //
 // Colors (with cyberpunk defaults):
-//   baseColor     — base color (start and end)      default: CP.cyan
-//   c1            — first glitch color              default: CP.magenta
-//   c2            — second glitch color             default: CP.yellow
-//   c3            — third color (6-step only)       default: CP.cyan
+//   baseColor     — base color (start and end)      default: Theme.cyan
+//   c1            — first glitch color              default: Theme.magenta
+//   c2            — second glitch color             default: Theme.yellow
+//   c3            — third color (6-step only)       default: Theme.cyan
 //
 // Offsets:
 //   x1 / x2 / x3 / x4   — x offset per step 1..4  default: 4,-4,3,-2
@@ -59,10 +59,10 @@ SequentialAnimation {
     property var shiftTarget
 
     // ── Colors ────────────────────────────────────────────────────────────
-    property color baseColor: CP.cyan
-    property color c1:        CP.magenta
-    property color c2:        CP.yellow
-    property color c3:        CP.cyan
+    property color baseColor: Theme.cyan
+    property color c1:        Theme.magenta
+    property color c2:        Theme.yellow
+    property color c3:        Theme.cyan
 
     // ── Offsets ───────────────────────────────────────────────────────────
     property int x1:  4

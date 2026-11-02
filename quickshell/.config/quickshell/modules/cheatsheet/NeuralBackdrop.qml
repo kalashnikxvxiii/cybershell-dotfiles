@@ -9,6 +9,7 @@ import QtQuick
 import "../../common/effects"
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Item {
     id: root
 
@@ -66,7 +67,7 @@ Item {
     component Mesh: Canvas {
         id: layer
         property var lines: []
-        property color tone: CP.cyan
+        property color tone: Theme.cyan
 
         anchors.fill: parent
         onLinesChanged: requestPaint()
@@ -101,13 +102,13 @@ Item {
 
     Mesh {
         lines: root.mesh.a
-        tone: CP.cyan
+        tone: Theme.cyan
         opacity: 0.05 + 0.16 * breath.k
     }
 
     Mesh {
         lines: root.mesh.b
-        tone: CP.magenta
+        tone: Theme.magenta
         opacity: 0.05 + 0.16 * (1 - breath.k)
     }
 
@@ -123,7 +124,7 @@ Item {
             width: 4
             height: 4
             visible: path !== null
-            color: index % 2 === 0 ? CP.cyan : CP.magenta
+            color: index % 2 === 0 ? Theme.cyan : Theme.magenta
             opacity: 0.8
         }
     }

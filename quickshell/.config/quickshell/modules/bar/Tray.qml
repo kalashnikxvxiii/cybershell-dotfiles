@@ -210,7 +210,7 @@ Item {
                 text: root.expanded ? ">" : "<"
                 font.family: "Oxanium"
                 font.pixelSize: root.iconSize - 4
-                color: CP.cyan
+                color: Theme.cyan
             }
 
             MouseArea {

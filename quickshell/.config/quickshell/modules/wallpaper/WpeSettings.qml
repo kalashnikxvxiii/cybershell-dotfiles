@@ -183,7 +183,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.moduleBg
-        strokeColor: CP.alpha(CP.yellow, root.open ? 0.45 : 0.3)
+        strokeColor: CP.alpha(Theme.yellow, root.open ? 0.45 : 0.3)
         strokeWidth: 1; inset: 0.5
         cutTopLeft: root.open ? 16 : 8
     }
@@ -242,7 +242,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: CP.alpha(CP.yellow, 0.25)
+            color: CP.alpha(Theme.yellow, 0.25)
         }
 
         ListView {
@@ -313,8 +313,8 @@ Item {
                             width: 54; height: 18
                             CutShape {
                                 anchors.fill: parent
-                                fillColor: parent.parent.on ? CP.alpha(CP.cyan, 0.2)
-                                         : boolMa.containsMouse ? CP.alpha(CP.yellow, 0.12) : "transparent"
+                                fillColor: parent.parent.on ? CP.alpha(Theme.cyan, 0.2)
+                                         : boolMa.containsMouse ? CP.alpha(Theme.yellow, 0.12) : "transparent"
                                 strokeColor: parent.parent.on ? Colours.accentSecondary : CP.alpha(Colours.textMuted, 0.5)
                                 strokeWidth: 1; inset: 0.5
                                 cutTopLeft: 3; cutBottomRight: 3
@@ -350,8 +350,8 @@ Item {
 
                         CutShape {
                             anchors.fill: parent
-                            fillColor: CP.alpha(CP.yellow, 0.06)
-                            strokeColor: CP.alpha(CP.yellow, 0.35)
+                            fillColor: CP.alpha(Theme.yellow, 0.06)
+                            strokeColor: CP.alpha(Theme.yellow, 0.35)
                             strokeWidth: 1; inset: 0.5
                             cutTopLeft: 3; cutBottomRight: 3
                         }
@@ -363,7 +363,7 @@ Item {
                                 x: modelData < 0 ? 6 : combo.width - width - 6
                                 text: modelData < 0 ? "◂" : "▸"
                                 font.pixelSize: 11
-                                color: arrowMa.containsMouse ? Colours.accentPrimary : CP.alpha(CP.yellow, 0.55)
+                                color: arrowMa.containsMouse ? Colours.accentPrimary : CP.alpha(Theme.yellow, 0.55)
                                 Behavior on color { ColorAnimation { duration: 120 } }
                                 MouseArea {
                                     id: arrowMa
@@ -398,7 +398,7 @@ Item {
                             anchors.rightMargin: 6
                             width: 18; height: 18
                             color: parent.c
-                            border.color: CP.alpha(CP.cyan, 0.5)
+                            border.color: CP.alpha(Theme.cyan, 0.5)
                         }
                         Field {
                             id: hexField
@@ -446,7 +446,7 @@ Item {
                         required property var modelData
                         width: btnLbl.implicitWidth + 24; height: 22
                         opacity: btn.modelData.danger ? 1 : dirtyPulse.k
-                        readonly property color accent: btn.modelData.danger ? CP.red : CP.yellow
+                        readonly property color accent: btn.modelData.danger ? Theme.red : Theme.yellow
 
                         CutShape {
                             anchors.fill: parent
@@ -480,7 +480,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.dirty ? "· UNSAVED" : "· SAVED"
                 font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 2
-                color: root.dirty ? CP.alpha(CP.yellow, 0.65) : Colours.textMuted
+                color: root.dirty ? CP.alpha(Theme.yellow, 0.65) : Colours.textMuted
                 visible: root.wpePath !== ""
             }
         }
@@ -497,7 +497,7 @@ Item {
             text: "\uf013"
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 18
-            color: gearMa.containsMouse || root.open ? Colours.accentPrimary : CP.alpha(CP.yellow, 0.6)
+            color: gearMa.containsMouse || root.open ? Colours.accentPrimary : CP.alpha(Theme.yellow, 0.6)
             rotation: root.open ? 90 : 0
             Behavior on rotation { NumberAnimation { duration: 260; easing.type: Easing.OutQuart } }
             Behavior on color { ColorAnimation { duration: 120 } }
@@ -519,8 +519,8 @@ Item {
 
         CutShape {
             anchors.fill: parent
-            fillColor: CP.alpha(CP.cyan, 0.06)
-            strokeColor: input.activeFocus ? Colours.accentSecondary : CP.alpha(CP.cyan, 0.3)
+            fillColor: CP.alpha(Theme.cyan, 0.06)
+            strokeColor: input.activeFocus ? Colours.accentSecondary : CP.alpha(Theme.cyan, 0.3)
             strokeWidth: 1; inset: 0.5
             cutTopLeft: 3; cutBottomRight: 3
         }
@@ -534,7 +534,7 @@ Item {
             text: field.text
             font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
             color: Colours.accentSecondary
-            selectionColor: CP.alpha(CP.cyan, 0.35)
+            selectionColor: CP.alpha(Theme.cyan, 0.35)
             onTextEdited: field.edited(text.replace(/\n/g, " "))
             onAccepted: root.focusReturn()
             // Unhandled keys must not reach the carousel shortcuts behind

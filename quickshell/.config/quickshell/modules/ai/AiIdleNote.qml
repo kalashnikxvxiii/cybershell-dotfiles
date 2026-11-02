@@ -84,7 +84,7 @@ Item {
             height: 1
             gradient: Gradient {
                 orientation: Gradient.Horizontal
-                GradientStop { position: 0; color: CP.alpha(CP.yellow, 0.45) }
+                GradientStop { position: 0; color: CP.alpha(Theme.yellow, 0.45) }
                 GradientStop { position: 1; color: "transparent" }
             }
         }
@@ -97,7 +97,7 @@ Item {
             font.pixelSize: 9
             font.letterSpacing: 1.4
             lineHeight: 1.3
-            color: CP.alpha(CP.yellow, 0.7)
+            color: CP.alpha(Theme.yellow, 0.7)
         }
 
         Text {
@@ -107,7 +107,7 @@ Item {
             font.family: "Oxanium"
             font.pixelSize: 9
             font.letterSpacing: 1.4
-            color: CP.magenta
+            color: Theme.magenta
             opacity: pulse.k
 
             Pulse { id: pulse; running: writing.visible; from: 1.0; to: 0.5; halfMs: 600 }
@@ -123,12 +123,12 @@ Item {
                 text: "\u203b"
                 font.family: "Oxanium"
                 font.pixelSize: 12
-                color: CP.magenta
+                color: Theme.magenta
             }
 
             AiRichText {
                 width: parent.width - mark.width - parent.spacing
-                html: '<span style="color:' + CP.magenta + '">RECAP</span>&nbsp; '
+                html: '<span style="color:' + Theme.magenta + '">RECAP</span>&nbsp; '
                     + Hl.esc(root.chat?.recap ?? "")
                 font.pixelSize: 11
                 font.italic: true

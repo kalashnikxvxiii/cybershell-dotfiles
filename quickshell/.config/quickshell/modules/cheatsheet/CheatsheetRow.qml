@@ -5,13 +5,14 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Item {
     id: root
 
     required property var row
     property bool matched: true
     property bool searching: false
-    property color accent: CP.cyan
+    property color accent: Theme.cyan
     // The bind already on the combination being captured
     property bool conflicted: false
     property bool clickable: false
@@ -21,7 +22,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: root.conflicted ? CP.alpha(CP.red, 0.28)
+        color: root.conflicted ? CP.alpha(Theme.red, 0.28)
             : hover.containsMouse ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.12)
             : root.searching && root.matched ? Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.07)
             : "transparent"
@@ -32,7 +33,7 @@ Item {
     Rectangle {
         width: 2
         height: parent.height
-        color: root.conflicted ? CP.red : root.accent
+        color: root.conflicted ? Theme.red : root.accent
         opacity: root.conflicted || hover.containsMouse ? 1 : root.searching && root.matched ? 0.6 : 0
     }
 

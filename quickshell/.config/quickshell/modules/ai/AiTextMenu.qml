@@ -77,7 +77,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopRight: 10
@@ -108,7 +108,7 @@ Item {
                     x: 10
                     width: parent.width - 20
                     height: 1
-                    color: CP.alpha(CP.magenta, 0.2)
+                    color: CP.alpha(Theme.magenta, 0.2)
                 }
 
                 Rectangle {
@@ -116,7 +116,7 @@ Item {
                     anchors.fill: parent
                     anchors.leftMargin: 4
                     anchors.rightMargin: 4
-                    color: CP.alpha(CP.cyan, ma.containsMouse && row.on ? 0.1 : 0)
+                    color: CP.alpha(Theme.cyan, ma.containsMouse && row.on ? 0.1 : 0)
                     Behavior on color { ColorAnimation { duration: 100 } }
                 }
 
@@ -131,7 +131,7 @@ Item {
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 11
                     color: !row.on ? CP.alpha(root.fg, 0.2)
-                        : ma.containsMouse ? CP.cyan : CP.alpha(CP.magenta, 0.8)
+                        : ma.containsMouse ? Theme.cyan : CP.alpha(Theme.magenta, 0.8)
                 }
 
                 Text {
@@ -145,7 +145,7 @@ Item {
                     font.letterSpacing: 1.6
                     font.bold: true
                     color: !row.on ? CP.alpha(root.fg, 0.25)
-                        : ma.containsMouse ? CP.cyan : CP.alpha(root.fg, 0.85)
+                        : ma.containsMouse ? Theme.cyan : CP.alpha(root.fg, 0.85)
                 }
 
                 Text {

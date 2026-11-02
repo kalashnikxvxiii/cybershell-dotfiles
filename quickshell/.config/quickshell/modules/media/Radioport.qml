@@ -21,8 +21,8 @@ FocusScope {
     readonly property MprisPlayer player: Players.active
     readonly property var players: Mpris.players.values
     readonly property real progress: player && player.length > 0 ? player.position / player.length : 0
-    readonly property color danger: CP.red
-    readonly property color tech: CP.cyan
+    readonly property color danger: Theme.red
+    readonly property color tech: Theme.cyan
     readonly property string font: "Oxanium"
     property bool isLiked: Players.isLiked
 
@@ -124,7 +124,7 @@ FocusScope {
             anchors.verticalCenter: parent.verticalCenter
             visible: !!root.player
             text: Players.isSpotifyActive ? "\uf1bc" : "\uf269"
-            color: badgeArea.containsMouse ? CP.neon : root.tech
+            color: badgeArea.containsMouse ? Theme.neon : root.tech
             font { family: "JetBrainsMono Nerd Font"; pixelSize: 18 }
             MouseArea {
                 id: badgeArea
@@ -333,7 +333,7 @@ FocusScope {
                 text: root.player
                     ? (root.player.trackArtist || "Unknown Artist") + " - " + (root.player.trackTitle || "Unknown Title")
                     : "NOT PLAYING ANY AUDIO"
-                color: CP.lighten(CP.red, 0.25)
+                color: CP.lighten(Theme.red, 0.25)
                 font { family: root.font; pixelSize: 14 }
                 MouseArea {
                     anchors.fill: parent
@@ -346,7 +346,7 @@ FocusScope {
                 visible: text !== ""
                 elide: Text.ElideRight
                 text: root.player?.trackAlbum ?? ""
-                color: CP.alpha(CP.lighten(CP.red, 0.25), 0.7)
+                color: CP.alpha(CP.lighten(Theme.red, 0.25), 0.7)
                 font { family: root.font; pixelSize: 11 }
             }
         }
@@ -472,9 +472,9 @@ FocusScope {
                     layer.effect: MultiEffect {
                         colorization: 1.0
                         colorizationColor: {
-                            if (root.isLiked && likeHover.hovered) return CP.red
-                            if (root.isLiked) return CP.magenta
-                            if (likeHover.hovered) return CP.cyan
+                            if (root.isLiked && likeHover.hovered) return Theme.red
+                            if (root.isLiked) return Theme.magenta
+                            if (likeHover.hovered) return Theme.cyan
                             return CP.alpha(CP.white, 0.6)
                         }
                     }
@@ -774,13 +774,13 @@ FocusScope {
         onStopped: { tagGlitch.tint = "transparent"; header.titleShift.x = 0 }
 
         PauseAnimation { duration: 1600 }
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.magenta }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.magenta }
         PropertyAction { target: header.titleShift; property: "x"; value: 3 }
         PauseAnimation { duration: 55 }
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.yellow }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.yellow }
         PropertyAction { target: header.titleShift; property: "x"; value: -3 }
         PauseAnimation { duration: 55 }
-        PropertyAction { target: tagGlitch; property: "tint"; value: CP.cyan }
+        PropertyAction { target: tagGlitch; property: "tint"; value: Theme.cyan }
         PropertyAction { target: header.titleShift; property: "x"; value: 2 }
         PauseAnimation { duration: 55 }
         PropertyAction { target: tagGlitch; property: "tint"; value: "transparent" }

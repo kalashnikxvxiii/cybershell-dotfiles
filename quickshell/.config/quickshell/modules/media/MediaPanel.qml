@@ -127,7 +127,7 @@ Scope {
                         text: "\uf060"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 18
-                        color: backArea.containsMouse ? CP.neon : CP.cyan
+                        color: backArea.containsMouse ? Theme.neon : Theme.cyan
 
                         MouseArea {
                             id: backArea

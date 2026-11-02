@@ -131,7 +131,7 @@ Item {
             text: root.loading ? "Loading weather..." : "Could not load weather data"
             font.family: "Oxanium"
             font.pixelSize: 12
-            color: root.hasError ? CP.red : Colours.textSecondary
+            color: root.hasError ? Theme.red : Colours.textSecondary
         }
 
         // Header: city + date + sunrise/sunset
@@ -214,7 +214,7 @@ Item {
 
             DetailCard { icon: "💧"; label: "Humidity";   value: root.humidity;  colour: Colours.accentSecondary }
             DetailCard { icon: "🌡";  label: "Feels Like"; value: root.feelsLike; colour: Colours.accentPrimary }
-            DetailCard { icon: "💨"; label: "Wind";       value: root.windSpeed; colour: CP.magenta }
+            DetailCard { icon: "💨"; label: "Wind";       value: root.windSpeed; colour: Theme.magenta }
         }
 
         // Forecast title

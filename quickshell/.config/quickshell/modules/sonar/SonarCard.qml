@@ -411,9 +411,9 @@ FocusScope {
 
                 CutShape {
                     anchors.fill: parent
-                    fillColor: actionMa.containsMouse ? CP.alpha(modelData.danger ? CP.red : root.accent, 0.2)
+                    fillColor: actionMa.containsMouse ? CP.alpha(modelData.danger ? Theme.red : root.accent, 0.2)
                                                       : "transparent"
-                    strokeColor: CP.alpha(modelData.danger ? CP.red : root.accent, 0.7)
+                    strokeColor: CP.alpha(modelData.danger ? Theme.red : root.accent, 0.7)
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomLeft: 6
@@ -427,7 +427,7 @@ FocusScope {
                     font.pixelSize: 9
                     font.bold: true
                     font.letterSpacing: 1.5
-                    color: modelData.danger ? CP.red : root.accent
+                    color: modelData.danger ? Theme.red : root.accent
                 }
 
                 MouseArea {
@@ -499,8 +499,8 @@ FocusScope {
         shiftTarget: titleShift
         labelTarget: subLabel
         baseColor: root.accent
-        c1: CP.magenta
-        c3: CP.cyan
+        c1: Theme.magenta
+        c3: Theme.cyan
     }
 
     // ── Entries ──────────────────────────────────────────────────────────

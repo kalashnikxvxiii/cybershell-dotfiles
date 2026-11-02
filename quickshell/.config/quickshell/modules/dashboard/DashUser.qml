@@ -96,7 +96,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: root.avatarSize * 0.4
                     font.weight: Font.Bold
-                    color: CP.cyan
+                    color: Theme.cyan
                     visible: face.status !== Image.Ready
                 }
 
@@ -156,7 +156,7 @@ Item {
                 font.family: "Oxanium"
                 font.pixelSize: root.fontSize * 1.8
                 font.weight: Font.Bold
-                color: CP.yellow
+                color: Theme.yellow
                 glitching: root._glitchingUser
                 aberrationOpacity: 0.65
                 restOpacity: 0.28
@@ -185,7 +185,7 @@ Item {
                 Layout.fillWidth: true
                 prefix: "UP"
                 value: root.uptimeStr || "..."
-                accent: CP.magenta
+                accent: Theme.magenta
             }
         }
     }
@@ -223,38 +223,38 @@ Item {
         running: root.visible; loops: Animation.Infinite
 
         PropertyAction  { target: root;          property: "_glitchingUser"; value: false }
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.yellow }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.yellow }
         PropertyAction  { target: labelShift;    property: "x";              value: 0 }
         PauseAnimation  { duration: 1400 }
 
         // Burst 1: aberration ON
         PropertyAction  { target: root;          property: "_glitchingUser"; value: true }
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.magenta }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.magenta }
         PropertyAction  { target: labelShift;    property: "x";              value: 3 }
         PauseAnimation  { duration: 60 }
 
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.yellow }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.yellow }
         PropertyAction  { target: labelShift;    property: "x";              value: -3 }
         PauseAnimation  { duration: 60 }
 
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.cyan }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.cyan }
         PropertyAction  { target: labelShift;    property: "x";              value: 2 }
         PauseAnimation  { duration: 60 }
 
         // End burst 1: aberration OFF
         PropertyAction  { target: root;          property: "_glitchingUser"; value: false }
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.yellow }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.yellow }
         PropertyAction  { target: labelShift;    property: "x";              value: 0 }
         PauseAnimation  { duration: 100 }
 
         // Burst 2: micro
         PropertyAction  { target: root;          property: "_glitchingUser"; value: true }
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.magenta }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.magenta }
         PropertyAction  { target: labelShift;    property: "x";              value: -1 }
         PauseAnimation  { duration: 40 }
 
         PropertyAction  { target: root;          property: "_glitchingUser"; value: false }
-        PropertyAction  { target: usernameLabel; property: "color";          value: CP.yellow }
+        PropertyAction  { target: usernameLabel; property: "color";          value: Theme.yellow }
         PropertyAction  { target: labelShift; property: "x";     value: 0 }
         PauseAnimation  { duration: 230 }
     }

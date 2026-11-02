@@ -53,21 +53,21 @@ Item {
     Text {
         y: 62
         text: "STATION"
-        color: CP.alpha(CP.red, 0.9)
+        color: CP.alpha(Theme.red, 0.9)
         font { family: "Oxanium"; pixelSize: 10; letterSpacing: 1 }
     }
     Rectangle {
         y: 76
         width: parent.width
         height: 1
-        color: CP.alpha(CP.red, 0.7)
+        color: CP.alpha(Theme.red, 0.7)
     }
     Text {
         y: 82
         width: parent.width
         elide: Text.ElideRight
         text: root.station
-        color: CP.red
+        color: Theme.red
         font { family: "Oxanium"; pixelSize: 18; bold: true }
     }
 
@@ -75,7 +75,7 @@ Item {
         anchors.centerIn: bandsRow
         visible: !AudioControlState.eqAvailable
         text: "EASYEFFECTS REQUIRED"
-        color: CP.red
+        color: Theme.red
         font { family: "Oxanium"; pixelSize: 14; bold: true; letterSpacing: 2 }
     }
 
@@ -92,7 +92,7 @@ Item {
         height: 32
         verticalAlignment: Text.AlignVCenter
         text: "Preset"
-        color: CP.alpha(CP.red, 0.9)
+        color: CP.alpha(Theme.red, 0.9)
         font { family: "Oxanium"; pixelSize: 15 }
     }
     Item {
@@ -106,7 +106,7 @@ Item {
             anchors.fill: parent
             cutBottomRight: 8
             fillColor: Qt.rgba(0.07, 0.02, 0.05, 0.75)
-            strokeColor: CP.alpha(CP.red, 0.8)
+            strokeColor: CP.alpha(Theme.red, 0.8)
             inset: 0.5
         }
         Arrow {
@@ -120,7 +120,7 @@ Item {
         Text {
             anchors.centerIn: parent
             text: AudioControlState.eqPreset
-            color: CP.cyan
+            color: Theme.cyan
             font { family: "Oxanium"; pixelSize: 15 }
         }
         Arrow {
@@ -159,7 +159,7 @@ Item {
                         anchors.fill: parent
                         cutBottomRight: 9
                         fillColor: Qt.rgba(0.07, 0.02, 0.05, 0.75)
-                        strokeColor: CP.alpha(CP.red, 0.8)
+                        strokeColor: CP.alpha(Theme.red, 0.8)
                         inset: 0.5
                     }
                     Arrow {
@@ -192,7 +192,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             width: 2
                             height: parent.height
-                            color: CP.alpha(CP.red, 0.35)
+                            color: CP.alpha(Theme.red, 0.35)
                         }
                         CutShape {
                             x: 2
@@ -201,13 +201,13 @@ Item {
                             height: 26
                             cutBottomRight: 6
                             fillColor: Qt.rgba(0.28, 0.06, 0.11, 1)
-                            strokeColor: CP.alpha(CP.red, 0.9)
+                            strokeColor: CP.alpha(Theme.red, 0.9)
                             inset: 0.5
 
                             Text {
                                 anchors.centerIn: parent
                                 text: (band.value > 0 ? "+" : "") + band.value
-                                color: CP.cyan
+                                color: Theme.cyan
                                 font { family: "Oxanium"; pixelSize: 13 }
                             }
                         }
@@ -230,7 +230,7 @@ Item {
                     width: 35
                     horizontalAlignment: Text.AlignHCenter
                     text: root.labels[band.index]
-                    color: CP.alpha(CP.red, 0.9)
+                    color: CP.alpha(Theme.red, 0.9)
                     font { family: "Oxanium"; pixelSize: 9 }
                 }
             }
@@ -269,7 +269,7 @@ Item {
                 height: parent.height
                 verticalAlignment: Text.AlignVCenter
                 text: "Volume boost"
-                color: CP.alpha(CP.red, 0.9)
+                color: CP.alpha(Theme.red, 0.9)
                 font { family: "Oxanium"; pixelSize: 15 }
             }
             Item {
@@ -281,7 +281,7 @@ Item {
                     anchors.fill: parent
                     cutBottomRight: 8
                     fillColor: Qt.rgba(0.07, 0.02, 0.05, 0.75)
-                    strokeColor: CP.alpha(CP.red, 0.8)
+                    strokeColor: CP.alpha(Theme.red, 0.8)
                     inset: 0.5
                 }
                 Arrow {
@@ -297,7 +297,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - 64
                     height: 2
-                    color: CP.alpha(CP.red, 0.35)
+                    color: CP.alpha(Theme.red, 0.35)
                 }
                 CutShape {
                     x: 32 + (parent.width - 64 - width) * AudioControlState.eqBoost / 12
@@ -306,12 +306,12 @@ Item {
                     height: 24
                     cutBottomRight: 6
                     fillColor: Qt.rgba(0.28, 0.06, 0.11, 1)
-                    strokeColor: CP.alpha(CP.red, 0.9)
+                    strokeColor: CP.alpha(Theme.red, 0.9)
                     inset: 0.5
                     Text {
                         anchors.centerIn: parent
                         text: "+" + AudioControlState.eqBoost + " dB"
-                        color: CP.cyan
+                        color: Theme.cyan
                         font { family: "Oxanium"; pixelSize: 12 }
                     }
                 }
@@ -343,7 +343,7 @@ Item {
             height: parent.height
             verticalAlignment: Text.AlignVCenter
             text: option.label
-            color: CP.alpha(CP.red, 0.9)
+            color: CP.alpha(Theme.red, 0.9)
             font { family: "Oxanium"; pixelSize: 15 }
         }
         Text {
@@ -352,7 +352,7 @@ Item {
             height: parent.height
             verticalAlignment: Text.AlignVCenter
             text: option.on ? "ON" : "OFF"
-            color: option.on ? CP.cyan : CP.red
+            color: option.on ? Theme.cyan : Theme.red
             font { family: "Oxanium"; pixelSize: 14 }
         }
         Item {
@@ -365,7 +365,7 @@ Item {
                 anchors.fill: parent
                 cutBottomRight: 8
                 fillColor: Qt.rgba(0.07, 0.02, 0.05, 0.75)
-                strokeColor: CP.alpha(CP.red, 0.8)
+                strokeColor: CP.alpha(Theme.red, 0.8)
                 inset: 0.5
             }
             CutShape {
@@ -374,7 +374,7 @@ Item {
                 width: 52
                 height: parent.height - 6
                 cutBottomRight: 6
-                fillColor: option.on ? CP.alpha(CP.cyan, 0.8) : CP.alpha(CP.red, 0.55)
+                fillColor: option.on ? CP.alpha(Theme.cyan, 0.8) : CP.alpha(Theme.red, 0.55)
             }
             MouseArea {
                 anchors.fill: parent
@@ -394,7 +394,7 @@ Item {
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
             ShapePath {
-                strokeColor: hit.containsMouse ? CP.white : CP.cyan
+                strokeColor: hit.containsMouse ? CP.white : Theme.cyan
                 strokeWidth: 1.5
                 fillColor: "transparent"
                 joinStyle: ShapePath.MiterJoin

@@ -64,7 +64,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.weatherIcon
             font.pixelSize: 64
-            color: CP.cyan
+            color: Theme.cyan
         }
 
         // Temperature

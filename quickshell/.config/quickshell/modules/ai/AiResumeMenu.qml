@@ -83,7 +83,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.97)
-        strokeColor: CP.alpha(CP.magenta, 0.45)
+        strokeColor: CP.alpha(Theme.magenta, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopLeft: 12
@@ -105,7 +105,7 @@ Item {
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 11
             color: root.fg
-            selectionColor: CP.alpha(CP.magenta, 0.4)
+            selectionColor: CP.alpha(Theme.magenta, 0.4)
             selectByMouse: true
             clip: true
 
@@ -140,7 +140,7 @@ Item {
         anchors.leftMargin: 6
         anchors.rightMargin: 6
         height: 1
-        color: CP.alpha(CP.magenta, 0.22)
+        color: CP.alpha(Theme.magenta, 0.22)
     }
 
     // ── Sessions ──────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ Item {
 
             Rectangle {
                 anchors.fill: parent
-                color: CP.alpha(CP.magenta, entry.index === root.current ? 0.13 : 0)
+                color: CP.alpha(Theme.magenta, entry.index === root.current ? 0.13 : 0)
                 Behavior on color { ColorAnimation { duration: 90 } }
             }
 
@@ -177,7 +177,7 @@ Item {
                 visible: entry.index === root.current
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
                 width: 2
-                color: CP.magenta
+                color: Theme.magenta
             }
 
             Text {
@@ -209,7 +209,7 @@ Item {
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 10
                     font.bold: true
-                    color: CP.alpha(CP.yellow, 0.7)
+                    color: CP.alpha(Theme.yellow, 0.7)
                 }
 
                 Text {
@@ -219,7 +219,7 @@ Item {
                     font.pixelSize: 8
                     font.letterSpacing: 2
                     font.bold: true
-                    color: CP.alpha(CP.magenta, 0.75)
+                    color: CP.alpha(Theme.magenta, 0.75)
                 }
 
                 Text {
@@ -227,7 +227,7 @@ Item {
                     font.family: "Oxanium"
                     font.pixelSize: 9
                     font.letterSpacing: 1
-                    color: CP.alpha(CP.cyan, 0.55)
+                    color: CP.alpha(Theme.cyan, 0.55)
                 }
             }
 
@@ -257,7 +257,7 @@ Item {
             visible: view.contentHeight > view.height
             y: view.visibleArea.yPosition * view.height
             height: Math.max(18, view.visibleArea.heightRatio * view.height)
-            color: CP.alpha(CP.magenta, view.moving ? 0.55 : 0.25)
+            color: CP.alpha(Theme.magenta, view.moving ? 0.55 : 0.25)
             Behavior on color { ColorAnimation { duration: 200 } }
         }
     }

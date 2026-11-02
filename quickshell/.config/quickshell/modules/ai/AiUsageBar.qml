@@ -5,13 +5,14 @@
 import QtQuick
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Item {
     id: root
 
     property string label: ""
     property real utilization: 0
     property string resetsAt: ""
-    property color accent: CP.magenta
+    property color accent: Theme.magenta
 
     readonly property color fg: "#d8e0e8"
     readonly property bool high: root.utilization >= 80
@@ -49,7 +50,7 @@ Item {
         font.family: "Oxanium"
         font.pixelSize: 11
         font.bold: true
-        color: root.high ? CP.red : CP.alpha(root.fg, 0.85)
+        color: root.high ? Theme.red : CP.alpha(root.fg, 0.85)
     }
 
     Rectangle {
@@ -62,7 +63,7 @@ Item {
         Rectangle {
             anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
             width: parent.width * Math.max(0, Math.min(100, root.utilization)) / 100
-            color: root.high ? CP.red : root.accent
+            color: root.high ? Theme.red : root.accent
         }
     }
 

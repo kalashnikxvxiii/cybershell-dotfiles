@@ -37,7 +37,7 @@ Item {
         : ["qml", "js", "py", "sh", "fish", "lua", "c", "cpp", "h", "hpp", "rs", "go",
             "ts", "json", "toml", "yaml", "yml", "css", "html"].indexOf(root.ext) >= 0 ? "\uf1c9"
         : "\uf0f6"
-    readonly property color accent: root.isDir ? CP.yellow : CP.cyan
+    readonly property color accent: root.isDir ? Theme.yellow : Theme.cyan
     readonly property color fg: "#d8e0e8"
 
     implicitWidth: Math.min(root.maxWidth, row.implicitWidth + 14)

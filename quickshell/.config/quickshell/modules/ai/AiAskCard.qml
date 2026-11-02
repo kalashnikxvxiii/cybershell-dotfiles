@@ -71,8 +71,8 @@ Item {
 
     CutShape {
         anchors.fill: parent
-        fillColor: CP.alpha(CP.cyan, 0.06)
-        strokeColor: CP.cyan
+        fillColor: CP.alpha(Theme.cyan, 0.06)
+        strokeColor: Theme.cyan
         strokeWidth: 1.5
         inset: 0.75
         cutTopLeft: 6
@@ -98,7 +98,7 @@ Item {
                 font.pixelSize: 10
                 font.letterSpacing: 2
                 font.bold: true
-                color: CP.cyan
+                color: Theme.cyan
             }
 
             Repeater {
@@ -122,7 +122,7 @@ Item {
                         font.pixelSize: 8
                         font.letterSpacing: 2
                         font.bold: true
-                        color: CP.magenta
+                        color: Theme.magenta
                     }
 
                     Text {
@@ -148,10 +148,10 @@ Item {
 
                             Rectangle {
                                 anchors.fill: parent
-                                color: opt.on ? CP.alpha(CP.cyan, 0.14)
-                                    : (om.containsMouse ? CP.alpha(CP.cyan, 0.07) : "transparent")
+                                color: opt.on ? CP.alpha(Theme.cyan, 0.14)
+                                    : (om.containsMouse ? CP.alpha(Theme.cyan, 0.07) : "transparent")
                                 border.width: 1
-                                border.color: CP.alpha(CP.cyan, opt.on ? 0.70 : 0.22)
+                                border.color: CP.alpha(Theme.cyan, opt.on ? 0.70 : 0.22)
                             }
 
                             // Square for "any of these", diamond for "one of these"
@@ -161,9 +161,9 @@ Item {
                                 width: 7
                                 height: 7
                                 rotation: q.multi ? 0 : 45
-                                color: opt.on ? CP.cyan : "transparent"
+                                color: opt.on ? Theme.cyan : "transparent"
                                 border.width: 1
-                                border.color: CP.alpha(CP.cyan, 0.75)
+                                border.color: CP.alpha(Theme.cyan, 0.75)
                             }
 
                             Column {
@@ -180,7 +180,7 @@ Item {
                                     font.family: "Oxanium"
                                     font.pixelSize: 11
                                     font.bold: true
-                                    color: opt.on ? CP.cyan : "#d8e0e8"
+                                    color: opt.on ? Theme.cyan : "#d8e0e8"
                                 }
 
                                 Text {
@@ -216,7 +216,7 @@ Item {
                             anchors.fill: parent
                             color: "transparent"
                             border.width: 1
-                            border.color: CP.alpha(CP.cyan, other.activeFocus ? 0.70 : 0.22)
+                            border.color: CP.alpha(Theme.cyan, other.activeFocus ? 0.70 : 0.22)
                         }
 
                         TextInput {
@@ -230,7 +230,7 @@ Item {
                             font.family: "Oxanium"
                             font.pixelSize: 11
                             color: "#d8e0e8"
-                            selectionColor: CP.alpha(CP.cyan, 0.35)
+                            selectionColor: CP.alpha(Theme.cyan, 0.35)
                             onTextEdited: root.setOther(q.index, other.text)
                             onAccepted: root.submit()
 
@@ -251,14 +251,14 @@ Item {
 
                 AiHeaderButton {
                     label: "SUBMIT"
-                    accent: CP.neon
+                    accent: Theme.neon
                     enabled: root.complete
                     onTriggered: root.submit()
                 }
 
                 AiHeaderButton {
                     label: "DISMISS"
-                    accent: CP.red
+                    accent: Theme.red
                     onTriggered: root.cancelled()
                 }
             }

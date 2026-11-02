@@ -27,9 +27,9 @@ Scope {
     property bool shown: false
 
     readonly property var accents: ({
-        "wallpaper": CP.cyan,
-        "look": CP.magenta,
-        "system": CP.red
+        "wallpaper": Theme.cyan,
+        "look": Theme.magenta,
+        "system": Theme.red
     })
 
     function dismiss() {
@@ -146,7 +146,7 @@ Scope {
                 anchors.fill: parent
                 items: root.items
                 title: root.menu
-                accent: root.accents[root.menu] || CP.cyan
+                accent: root.accents[root.menu] || Theme.cyan
                 selectedKey: root.selectedKey
                 onPicked: key => root.pick(key)
                 onCancelled: root.cancel()

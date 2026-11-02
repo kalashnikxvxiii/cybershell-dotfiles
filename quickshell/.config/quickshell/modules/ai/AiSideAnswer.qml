@@ -26,7 +26,7 @@ Item {
     CutShape {
         anchors.fill: parent
         fillColor: CP.alpha(CP.void2, 0.92)
-        strokeColor: CP.alpha(CP.cyan, 0.45)
+        strokeColor: CP.alpha(Theme.cyan, 0.45)
         strokeWidth: 1
         inset: 0.5
         cutTopLeft: 8
@@ -47,7 +47,7 @@ Item {
             font.pixelSize: 9
             font.bold: true
             font.letterSpacing: 1.8
-            color: CP.cyan
+            color: Theme.cyan
         }
 
         Text {
@@ -70,7 +70,7 @@ Item {
             frame: false
             glyph: "\uf00d"
             glyphSize: 10
-            accent: CP.cyan
+            accent: Theme.cyan
             onTriggered: root.dismissed()
         }
     }
@@ -101,7 +101,7 @@ Item {
                 text: root.side?.pending ? "Thinking aside\u2026" : (root.side?.error ?? "")
                 font.family: "Oxanium"
                 font.pixelSize: 11
-                color: root.side?.pending ? CP.alpha(CP.cyan, notePulse.k) : CP.red
+                color: root.side?.pending ? CP.alpha(Theme.cyan, notePulse.k) : Theme.red
 
                 Pulse { id: notePulse; running: root.visible && root.side?.pending === true; from: 0.8; to: 0.35; halfMs: 700 }
             }

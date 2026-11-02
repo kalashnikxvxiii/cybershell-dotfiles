@@ -328,7 +328,7 @@ Item {
         width: wsMuteLabel.implicitWidth + 10
         height: 14
         color: root.wsMuted
-            ? CP.alpha(CP.red, wsMuteMa.containsMouse ? 1.0 : 0.8)
+            ? CP.alpha(Theme.red, wsMuteMa.containsMouse ? 1.0 : 0.8)
             : CP.alpha(Colours.accentSecondary, wsMuteMa.containsMouse ? 0.35 : 0.18)
         Behavior on color { CAnim {} }
 
@@ -542,7 +542,7 @@ Item {
                                     text: mediaBtn.glyph
                                     font.family: "JetBrainsMono Nerd Font"
                                     font.pixelSize: mediaBtn.base
-                                    color: CP.cyan
+                                    color: Theme.cyan
                                 }
                             }
 
@@ -550,7 +550,7 @@ Item {
                                 id: mediaGlitch
                                 labelTarget: mediaLabel
                                 shiftTarget: labelShift
-                                baseColor: CP.cyan
+                                baseColor: Theme.cyan
                                 onFinished: if (mediaHover.hovered) pauseGlitchTimer.start()
                             }
 
@@ -595,10 +595,10 @@ Item {
                     width: 24
                     height: 24
                     fillColor: winItem.muted
-                        ? (muteMa.containsMouse ? CP.red : CP.alpha(CP.red, 0.85))
+                        ? (muteMa.containsMouse ? Theme.red : CP.alpha(Theme.red, 0.85))
                         : CP.alpha(CP.void_, muteMa.containsMouse ? 0.9 : 0.7)
                     strokeColor: winItem.muted
-                        ? CP.red
+                        ? Theme.red
                         : CP.alpha(Colours.accentSecondary, muteMa.containsMouse ? 1.0 : 0.6)
                     strokeWidth: 1
                     inset: 0.5
@@ -671,7 +671,7 @@ Item {
                     opacity: volFlash.running && volBtn.visible ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: 120 } }
                     fillColor: CP.alpha(CP.void_, 0.85)
-                    strokeColor: winItem.muted ? CP.red
+                    strokeColor: winItem.muted ? Theme.red
                                                : CP.alpha(Colours.accentSecondary, 0.8)
                     strokeWidth: 1
                     inset: 0.5
@@ -685,7 +685,7 @@ Item {
                         font.pixelSize: 10
                         font.bold: true
                         font.letterSpacing: 1
-                        color: winItem.muted ? CP.red : Colours.accentSecondary
+                        color: winItem.muted ? Theme.red : Colours.accentSecondary
                     }
                 }
 
@@ -697,8 +697,8 @@ Item {
                     anchors.margins: 2
                     width: 24
                     height: 24
-                    fillColor: closeMa.containsMouse ? CP.alpha(CP.red, 0.6) : CP.alpha(CP.red, 0.3)
-                    strokeColor: CP.alpha(CP.red, closeMa.containsMouse ? 1.0 : 0.6)
+                    fillColor: closeMa.containsMouse ? CP.alpha(Theme.red, 0.6) : CP.alpha(Theme.red, 0.3)
+                    strokeColor: CP.alpha(Theme.red, closeMa.containsMouse ? 1.0 : 0.6)
                     strokeWidth: 1
                     inset: 0.5
                     cutBottomLeft: 8
@@ -713,7 +713,7 @@ Item {
                         text: String.fromCodePoint(0xF0156)
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 16
-                        color: closeMa.containsMouse ? "white" : CP.red
+                        color: closeMa.containsMouse ? "white" : Theme.red
                     }
 
                     MouseArea {

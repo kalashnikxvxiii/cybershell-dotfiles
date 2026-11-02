@@ -27,14 +27,14 @@ Item {
     property real playerProgress: 0
 
     readonly property int   rowHeight: 26
-    readonly property color accent1: CP.cyan
-    readonly property color accent2: CP.alpha(CP.red, 0.5)
+    readonly property color accent1: Theme.cyan
+    readonly property color accent2: CP.alpha(Theme.red, 0.5)
     readonly property real  h1: 13
     readonly property real  h2: 10
 
     // Accent taken from the current cover art. Only this player follows it:
     // the rest of the shell stays on the wallust palette.
-    property color coverAccent: CP.neonize(coverAnalyser.dominantColour, CP.yellow)
+    property color coverAccent: CP.neonize(coverAnalyser.dominantColour, Theme.yellow)
     Behavior on coverAccent { CAnim { duration: 320 } }
 
     layer.enabled: true
@@ -194,7 +194,7 @@ Item {
                 text: Players.isSpotifyActive ? "" : ""
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 16
-                color: badgeArea.containsMouse ? CP.neon : root.accent1
+                color: badgeArea.containsMouse ? Theme.neon : root.accent1
                 MouseArea {
                     id: badgeArea
                     anchors.fill: parent
@@ -416,7 +416,7 @@ Item {
                         // Background track
                         ctx.beginPath()
                         ctx.arc(cx, cy, r, -Math.PI / 2, 3 * Math.PI / 2)
-                        ctx.strokeStyle = CP.red
+                        ctx.strokeStyle = Theme.red
                         ctx.lineWidth = 3
                         ctx.stroke()
                         // Progress
@@ -494,7 +494,7 @@ Item {
                   ? (root.activePlayer.trackArtist || "Unknown Artist") + " - "
                     + (root.activePlayer.trackTitle || root.activePlayer.identity || "Unknown Title")
                   : "Nessun player"
-            color: CP.red
+            color: Theme.red
             font.family: "Oxanium"
             font.pixelSize: root.h1
             wrapMode: Text.WordWrap
@@ -516,7 +516,7 @@ Item {
 
             Text {
                 text: "volume"
-                color: CP.red
+                color: Theme.red
                 font.family: "Oxanium"
                 font.pixelSize: root.h1
             }

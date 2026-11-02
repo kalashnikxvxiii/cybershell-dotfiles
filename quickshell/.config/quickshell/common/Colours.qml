@@ -23,12 +23,12 @@ QtObject {
     // Follow the module color convention:
     //   cyan=CPU/Network, magenta=Memory, yellow=Disk/Volume, red=Exit/Alert
 
-    readonly property color accentPrimary:   CP.yellow    // #fcec0c — corpo/warning/money
-    readonly property color accentSecondary: CP.cyan      // #00ffd2 — netrunner/tech
-    readonly property color accentDanger:    CP.red       // #ff003c — danger/critical
-    readonly property color accentOk:        CP.neon      // #39ff14 — ok/connected
-    readonly property color accentWarn:      CP.amber     // #f78b04 — warm warning (not critical yet)
-    readonly property color accentMem:       CP.magenta   // #ea00d9 — memory
+    readonly property color accentPrimary:   Theme.yellow    // #fcec0c — corpo/warning/money
+    readonly property color accentSecondary: Theme.cyan      // #00ffd2 — netrunner/tech
+    readonly property color accentDanger:    Theme.red       // #ff003c — danger/critical
+    readonly property color accentOk:        Theme.neon      // #39ff14 — ok/connected
+    readonly property color accentWarn:      Theme.amber     // #f78b04 — warm warning (not critical yet)
+    readonly property color accentMem:       Theme.magenta   // #ea00d9 — memory
 
     // ── Modular backgrounds ───────────────────────────────────────────────
     readonly property color moduleBg:    layer(colorFromRgba(CP.moduleBg), 0)

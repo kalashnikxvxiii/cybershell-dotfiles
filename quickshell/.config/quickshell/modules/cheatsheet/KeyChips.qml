@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../../common/Colors.js" as CP
 
+import "../../common"
 Row {
     id: root
 
@@ -14,10 +15,10 @@ Row {
     spacing: 3
 
     function modColor(mod) {
-        if (mod === "SUPER") return CP.yellow
-        if (mod === "SHIFT") return CP.cyan
-        if (mod === "CTRL") return CP.magenta
-        if (mod === "ALT") return CP.neon
+        if (mod === "SUPER") return Theme.yellow
+        if (mod === "SHIFT") return Theme.cyan
+        if (mod === "CTRL") return Theme.magenta
+        if (mod === "ALT") return Theme.neon
         return "#d8e6e8"
     }
 

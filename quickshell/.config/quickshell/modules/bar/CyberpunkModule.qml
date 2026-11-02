@@ -10,7 +10,7 @@ import "../../common"
 Item {
     id: root
 
-    property color  accent:       CP.cyan
+    property color  accent:       Theme.cyan
     property string text:         ""
     property bool   hovered:      hoverHandler.hovered
     property bool showBackground: true
@@ -62,7 +62,7 @@ Item {
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 14 }
         text:  root.text
         font:  moduleLabel.font
-        color: CP.red
+        color: Theme.red
         opacity: root._glitching ? 0.55 : 0.0
         z: 0
         Behavior on opacity { NumberAnimation { duration: 20 } }
@@ -74,7 +74,7 @@ Item {
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 10 }
         text:  root.text
         font:  moduleLabel.font
-        color: CP.cyan
+        color: Theme.cyan
         opacity: root._glitching ? 0.55 : 0.0
         z: 0
         Behavior on opacity { NumberAnimation { duration: 20 } }
@@ -122,14 +122,14 @@ Item {
     }
 
     // ── Adaptive glitch colors ────────────────────────────────────────────
-    property color _c1: CP.magenta
-    property color _c2: CP.yellow
+    property color _c1: Theme.magenta
+    property color _c2: Theme.yellow
 
     onAccentChanged: {
-        if (Qt.colorEqual(accent, CP.yellow))       { _c1 = CP.magenta; _c2 = CP.cyan   }
-        else if (Qt.colorEqual(accent, CP.magenta)) { _c1 = CP.cyan;    _c2 = CP.yellow }
-        else if (Qt.colorEqual(accent, CP.red))     { _c1 = CP.magenta; _c2 = CP.yellow }
-        else                                         { _c1 = CP.magenta; _c2 = CP.yellow }
+        if (Qt.colorEqual(accent, Theme.yellow))       { _c1 = Theme.magenta; _c2 = Theme.cyan   }
+        else if (Qt.colorEqual(accent, Theme.magenta)) { _c1 = Theme.cyan;    _c2 = Theme.yellow }
+        else if (Qt.colorEqual(accent, Theme.red))     { _c1 = Theme.magenta; _c2 = Theme.yellow }
+        else                                         { _c1 = Theme.magenta; _c2 = Theme.yellow }
     }
 
     // ── Glitch stepped hover ──────────────────────────────────────────────

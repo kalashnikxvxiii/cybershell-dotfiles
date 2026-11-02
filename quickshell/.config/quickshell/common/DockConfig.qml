@@ -15,10 +15,10 @@ Singleton {
     // Order is top-to-bottom. Glyphs follow the bar's taste: geometric Unicode,
     // not Nerd Font icons (WallpaperBarModule.qml:9 uses the same ▣)
     readonly property var entries: [
-        { id: "ai", glyph: "\u25c8", accent: CP.magenta, label: "NETRUNNER" },
-        { id: "wallpaper", glyph: "\u25a3", accent: CP.cyan, label: "WALLPAPER" },
-        { id: "sonar", glyph: "\u25c9", accent: CP.neon, label: "SONAR" },
-        { id: "manga", glyph: "\u25a4", accent: CP.amber, label: "MANGA" }
+        { id: "ai", glyph: "\u25c8", accent: Theme.magenta, label: "NETRUNNER" },
+        { id: "wallpaper", glyph: "\u25a3", accent: Theme.cyan, label: "WALLPAPER" },
+        { id: "sonar", glyph: "\u25c9", accent: Theme.neon, label: "SONAR" },
+        { id: "manga", glyph: "\u25a4", accent: Theme.amber, label: "MANGA" }
     ]
 
     // Open state per slot. A binding, so slots light up when a panel is opened

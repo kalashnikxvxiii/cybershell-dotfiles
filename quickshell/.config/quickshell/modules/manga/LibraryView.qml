@@ -177,8 +177,8 @@ Item {
                 anchors.topMargin: 6
                 width: 18
                 height: 18
-                fillColor: removeMa.containsMouse ? CP.red : "transparent"
-                strokeColor: CP.alpha(CP.red, removeMa.containsMouse ? 1.0 : 0.4)
+                fillColor: removeMa.containsMouse ? Theme.red : "transparent"
+                strokeColor: CP.alpha(Theme.red, removeMa.containsMouse ? 1.0 : 0.4)
                 strokeWidth: 1
                 inset: 0.5
                 cutBottomLeft: 6
@@ -189,7 +189,7 @@ Item {
                     text: String.fromCodePoint(0xF0156)   // nf-md-close
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 12
-                    color: removeMa.containsMouse ? "white" : CP.alpha(CP.red, 0.8)
+                    color: removeMa.containsMouse ? "white" : CP.alpha(Theme.red, 0.8)
                 }
 
                 MouseArea {

@@ -67,7 +67,7 @@ Item {
             id: track
             anchors.fill: parent
             fillColor: CP.alpha(CP.void2, 0.6)
-            strokeColor: CP.alpha(CP.yellow, 0.30)
+            strokeColor: CP.alpha(Theme.yellow, 0.30)
             strokeWidth: 1
             inset: 0.5
             cutTopLeft: 2
@@ -80,7 +80,7 @@ Item {
             anchors.bottom: track.bottom
             anchors.margins: 2
             width: Math.max(0, (track.width - 4) * root._norm())
-            color: CP.alpha(CP.yellow, 0.35)
+            color: CP.alpha(Theme.yellow, 0.35)
         }
 
         Item {
@@ -92,7 +92,7 @@ Item {
 
             CutShape {
                 anchors.fill: parent
-                fillColor: ma.pressed ? CP.alpha(CP.yellow, 0.95) : CP.yellow
+                fillColor: ma.pressed ? CP.alpha(Theme.yellow, 0.95) : Theme.yellow
                 strokeColor: "white"
                 strokeWidth: 1
                 inset: 0.5

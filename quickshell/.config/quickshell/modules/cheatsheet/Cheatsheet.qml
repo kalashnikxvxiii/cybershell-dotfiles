@@ -181,7 +181,7 @@ Scope {
                     cutBottomLeft: 18
                     inset: 0.5
                     fillColor: Qt.rgba(0.03, 0.045, 0.08, 0.96)
-                    strokeColor: CP.alpha(CP.cyan, 0.55)
+                    strokeColor: CP.alpha(Theme.cyan, 0.55)
                 }
 
                 ScanlineOverlay {
@@ -208,7 +208,7 @@ Scope {
                         anchors.left: parent.left
                         anchors.top: parent.top
                         glyph: root.mini ? "◤" : "◢"
-                        tone: CP.cyan
+                        tone: Theme.cyan
                         onClicked: root.setMini(!root.mini)
                     }
 
@@ -217,7 +217,7 @@ Scope {
                         anchors.right: parent.right
                         anchors.top: parent.top
                         glyph: "✕"
-                        tone: CP.red
+                        tone: Theme.red
                         onClicked: root.close()
                     }
 
@@ -227,7 +227,7 @@ Scope {
                         x: minButton.width + 16
                         width: 5
                         height: parent.height
-                        color: CP.yellow
+                        color: Theme.yellow
                     }
 
                     Column {
@@ -240,7 +240,7 @@ Scope {
                             font.family: "Oxanium"
                             font.pixelSize: 38
                             font.letterSpacing: 8
-                            color: CP.yellow
+                            color: Theme.yellow
                         }
 
                         Text {
@@ -250,7 +250,7 @@ Scope {
                             font.family: "Oxanium"
                             font.pixelSize: 10
                             font.letterSpacing: 2
-                            color: CP.alpha(CP.yellow, 0.65)
+                            color: CP.alpha(Theme.yellow, 0.65)
                         }
                     }
 
@@ -264,7 +264,7 @@ Scope {
                         font.pixelSize: 15
                         font.bold: true
                         font.letterSpacing: 3
-                        color: CP.yellow
+                        color: Theme.yellow
                     }
 
                     BindStrip {
@@ -298,7 +298,7 @@ Scope {
                             cutBottomLeft: 12
                             inset: 0.5
                             fillColor: Qt.rgba(0.03, 0.045, 0.08, 0.9)
-                            strokeColor: CP.alpha(CP.cyan, search.text !== "" ? 1 : 0.45)
+                            strokeColor: CP.alpha(Theme.cyan, search.text !== "" ? 1 : 0.45)
                         }
 
                         TextInput {
@@ -358,8 +358,8 @@ Scope {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: legend.on ? CP.alpha(CP.yellow, 0.14)
-                                        : legendHover.containsMouse ? CP.alpha(CP.cyan, 0.1) : "transparent"
+                                    color: legend.on ? CP.alpha(Theme.yellow, 0.14)
+                                        : legendHover.containsMouse ? CP.alpha(Theme.cyan, 0.1) : "transparent"
                                     Behavior on color { ColorAnimation { duration: 120 } }
                                 }
 
@@ -413,7 +413,7 @@ Scope {
 
                 CornerAccents {
                     visible: !root.mini
-                    accentColor: CP.alpha(CP.yellow, 0.7)
+                    accentColor: CP.alpha(Theme.yellow, 0.7)
                     size: 22
                 }
 
@@ -455,7 +455,7 @@ Scope {
     component HeaderButton: Item {
         id: button
         property string glyph: ""
-        property color tone: CP.cyan
+        property color tone: Theme.cyan
         signal clicked()
 
         width: 28

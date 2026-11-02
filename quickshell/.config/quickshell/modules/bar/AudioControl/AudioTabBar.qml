@@ -9,10 +9,10 @@ Item {
     implicitHeight: 32
 
     readonly property var tabs: [
-        { id: "outputs", label: "OUT",  accent: CP.cyan    },
-        { id: "inputs",  label: "IN",   accent: CP.magenta },
-        { id: "apps",    label: "APPS", accent: CP.yellow  },
-        { id: "eq",      label: "EQ",   accent: CP.neon    }
+        { id: "outputs", label: "OUT",  accent: Theme.cyan    },
+        { id: "inputs",  label: "IN",   accent: Theme.magenta },
+        { id: "apps",    label: "APPS", accent: Theme.yellow  },
+        { id: "eq",      label: "EQ",   accent: Theme.neon    }
     ]
 
     Row {
