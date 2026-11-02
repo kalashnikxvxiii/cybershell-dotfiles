@@ -214,6 +214,50 @@ Singleton {
             draft: { index: i, name: b.name, keys: b.keys, command: b.command }
         })))
 
+    // ---------- Settings ----------
+    readonly property var settings: {
+        const state = on => on ? "on, select to turn off" : "off, select to turn on";
+        const items = [
+            { id: "settings:hud", name: "HUD", on: HudState.enabled, comment: state(HudState.enabled), glyph: "\uf108", keepOpen: true, run: () => HudState.toggle() },
+            { id: "settings:hudtop", name: "HUD above windows", on: HudState.onTop, comment: state(HudState.onTop), glyph: "\uf2d2", keepOpen: true, run: () => HudState.toggleLayer() },
+            { id: "settings:profile", name: "HUD profile", comment: HudState.profile, glyph: "\uf009", children: () => root.hudProfiles },
+            { id: "settings:elements", name: "HUD elements", comment: "Show or hide each part", glyph: "\uf06e", children: () => root.hudElements }
+        ];
+        const sounds = { menu: "Menu sounds", notify: "Notification sounds", capture: "Capture sounds", kill: "Kill mode sounds" };
+        for (const k in sounds)
+            items.push({ id: "settings:sound:" + k, name: sounds[k], on: Sounds.enabled[k] !== false, comment: state(Sounds.enabled[k] !== false), glyph: "\uf028", keepOpen: true, run: () => Sounds.toggle(k) });
+        return items;
+    }
+
+    readonly property var palettes: Theme.names().map(n => ({
+        id: "theme:palette:" + n,
+        name: n.toUpperCase(),
+        on: Theme.current === n ? true : undefined,
+        comment: (Theme.current === n ? "active" : "select to apply") + (Theme.isBuiltin(n) ? "" : "  ·  yours"),
+        glyph: "\uf53f",
+        keepOpen: true,
+        run: () => Theme.use(n)
+    }))
+
+    readonly property var hudProfiles: ["minimal", "balanced", "cinematic"].map(p => ({
+        id: "settings:profile:" + p,
+        name: p.charAt(0).toUpperCase() + p.slice(1),
+        // Only the active one is marked; the others stay plain
+        on: HudState.profile === p ? true : undefined,
+        comment: HudState.profile === p ? "active" : "select to apply",
+        glyph: "\uf009",
+        keepOpen: true,
+        run: () => HudState.setProfile(p)
+    }))
+
+    readonly property var hudElements: {
+        const names = { vitals: "Vitals", status: "Clock, Sonar and network", updates: "Update banner", dock: "Quick slots", launcher: "Apps Launcher hint" };
+        const items = [];
+        for (const k in names)
+            items.push({ id: "settings:element:" + k, name: names[k], on: HudState.show[k], comment: HudState.show[k] ? "shown, select to hide" : "hidden, select to show", glyph: "\uf06e", keepOpen: true, run: () => HudState.toggleElement(k) });
+        return items;
+    }
+
     // ---------- Tree ----------
     readonly property var rootNode: ({
             id: "root",
@@ -226,7 +270,11 @@ Singleton {
                 { id: "media", name: "Media", glyph: "󰝚", comment: "open Radioport", run: () => LauncherState.openMedia() },
                 { id: "terminal", name: "Terminal", glyph: "\uf120", comment: "Open a kitty window", run: sh(["kitty"]) },
                 { id: "keybinds", name: "Keybinds", glyph: "\uf11c", comment: "Cheatsheet and your own binds", children: () => root.keybinds },
-                { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and colors", run: () => WallpaperState.togglePicker(LauncherState.screenName) },
+                { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and palette", children: () => [
+                    { id: "theme:wallpaper", name: "Wallpaper", glyph: "\uf03e", comment: "Open the wallpaper picker", run: () => WallpaperState.togglePicker(LauncherState.screenName) },
+                    { id: "theme:palette", name: "Palette", glyph: "\uf53f", comment: Theme.current.toUpperCase(), children: () => root.palettes }
+                ] },
+                { id: "settings", name: "Settings", glyph: "\uf013", comment: "HUD and sounds", children: () => root.settings },
                 { id: "upgrade", name: "System upgrade", glyph: "\uf0ed", comment: "Pending packages, repos and AUR", onEnter: () => root.checkUpdates(), children: () => root.upgrade },
                 // After the menu's fade: its surface would otherwise take the click
                 { id: "kill", name: "Kill mode", glyph: "\uf05e", comment: "Click a window to kill it, Esc to cancel", keywords: "force quit", run: () => KillState.start() }

@@ -21,6 +21,8 @@ Item {
     // The rows sit flush left; only the selected one sticks out to the right
     readonly property real reserve: 48
     readonly property real shift: current ? 24 : 0
+    // Switches (items with `on`): yellow when on, red when off. Everything else cyan
+    readonly property color tone: modelData.on === undefined ? Theme.cyan : modelData.on ? Theme.yellow : Theme.red
 
     readonly property string subtitle: launcher.armedId === modelData.id ? "Select again to confirm" : (launcher.query !== "" && modelData.path) ? modelData.path : (modelData.comment || "")
 
@@ -74,8 +76,8 @@ Item {
 
                 ShapePath {
                     strokeWidth: item.current ? 2 : 1
-                    strokeColor: item.current ? Theme.cyan : CP.alpha(Theme.cyan, 0.5)
-                    fillColor: item.current ? CP.alpha(Theme.cyan, 0.15) : "transparent"
+                    strokeColor: item.current ? item.tone : CP.alpha(item.tone, 0.5)
+                    fillColor: item.current ? CP.alpha(item.tone, 0.15) : "transparent"
                     joinStyle: ShapePath.MiterJoin
                     PathPolyline {
                         path: {
@@ -109,7 +111,7 @@ Item {
                         anchors.centerIn: parent
                         visible: !!item.modelData.glyph
                         text: item.modelData.glyph || ""
-                        color: Theme.cyan
+                        color: item.tone
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 18
                     }
@@ -131,7 +133,7 @@ Item {
                     Text {
                         visible: text !== ""
                         text: item.subtitle
-                        color: CP.alpha(Theme.cyan, 0.7)
+                        color: CP.alpha(item.tone, 0.7)
                         font.family: "Oxanium"
                         font.pixelSize: 10
                         elide: Text.ElideRight
