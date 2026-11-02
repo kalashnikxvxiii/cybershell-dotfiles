@@ -22,7 +22,10 @@ Singleton {
     property var custom: ({})
     property string current: "netwatch"
 
-    readonly property var active: root.builtin[root.current] || root.custom[root.current] || root.builtin.netwatch
+    // Roles being edited: the whole shell shows them until they are saved or dropped
+    property var preview: null
+
+    readonly property var active: root.preview || root.builtin[root.current] || root.custom[root.current] || root.builtin.netwatch
 
     readonly property color cyan: root.active.cyan
     readonly property color yellow: root.active.yellow
@@ -45,26 +48,35 @@ Singleton {
         root._save()
     }
 
-    // A new palette starts as a copy of an existing one
-    function duplicate(from, name) {
-        const src = root.builtin[from] || root.custom[from]
-        if (!src || !name || root.builtin[name] || root.custom[name])
-            return false
-        const c = Object.assign({}, root.custom)
-        c[name] = Object.assign({}, src)
-        root.custom = c
-        root._save()
-        return true
+    // Why `name` can't be saved, or "" if it can. `previous` is the name it had, when renaming
+    function nameError(name, previous) {
+        if (name === "")
+            return "Give it a name"
+        if (!/^[a-z0-9][a-z0-9 _-]*$/.test(name))
+            return "Lowercase letters, digits, space, - and _ only"
+        if (root.builtin[name])
+            return name.toUpperCase() + " is a fixed palette"
+        if (name !== previous && root.custom[name])
+            return name.toUpperCase() + " already exists"
+        return ""
     }
 
-    function setRole(name, role, color) {
-        if (!root.custom[name] || root.roles.indexOf(role) < 0)
-            return
+    // Saves a user palette (renamed from `previous`, if given) and makes it the active one
+    function store(name, roles, previous) {
+        if (root.nameError(name, previous) !== "" || !root.roles.every(r => roles[r] !== undefined))
+            return false
         const c = Object.assign({}, root.custom)
-        c[name] = Object.assign({}, c[name])
-        c[name][role] = String(color)
+        if (previous && previous !== name)
+            delete c[previous]
+        const r = {}
+        for (const k of root.roles)
+            r[k] = String(roles[k])
+        c[name] = r
         root.custom = c
+        root.current = name
+        root.preview = null
         root._save()
+        return true
     }
 
     // The fixed palettes can't go

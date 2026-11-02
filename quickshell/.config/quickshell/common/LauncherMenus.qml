@@ -237,7 +237,14 @@ Singleton {
         glyph: "\uf53f",
         keepOpen: true,
         run: () => Theme.use(n)
-    }))
+    })).concat([
+        // Rows holding `paletteDraft` open the palette editor
+        { id: "theme:palette:new", name: "New palette", comment: "A copy of " + Theme.current.toUpperCase() + " to change", glyph: "\uf067",
+          paletteDraft: { name: "", roles: Object.assign({}, Theme.active), isNew: true } }
+    ], Theme.isBuiltin(Theme.current) ? [] : [
+        { id: "theme:palette:edit", name: "Edit " + Theme.current.toUpperCase(), comment: "Colors, name, or delete it", glyph: "\uf044",
+          paletteDraft: { name: Theme.current, roles: Object.assign({}, Theme.active), isNew: false } }
+    ])
 
     function fontRows(role) {
         return Theme.fonts.map(f => ({

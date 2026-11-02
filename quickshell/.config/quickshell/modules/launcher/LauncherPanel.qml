@@ -5,6 +5,7 @@
 //   qs ipc call launcher toggle | open | close      (bound to SUPER+SPACE)
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import "../../common/Colors.js" as CP
@@ -26,6 +27,8 @@ Scope {
     property string armedId: ""
     // The keybind being edited; while set, the form takes the list's place
     property var bindDraft: null
+    // The palette being edited, same idea
+    property var paletteDraft: null
 
     readonly property var results: {
         const q = query.trim().toLowerCase();
@@ -50,6 +53,7 @@ Scope {
     function clearQuery() {
         armedId = "";
         bindDraft = null;
+        paletteDraft = null;
         search.text = "";
         query = "";
         list.currentIndex = 0;
@@ -84,6 +88,10 @@ Scope {
         }
         if (item.draft) {
             root.bindDraft = item.draft;
+            return;
+        }
+        if (item.paletteDraft) {
+            root.paletteDraft = item.paletteDraft;
             return;
         }
         if (item.confirm && root.armedId !== item.id) {
@@ -136,7 +144,8 @@ Scope {
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(0, 6/255, 14/255, 0.35)
-            opacity: root.shown ? 1 : 0
+            // Gone while a palette is edited: the desktop shows the preview
+            opacity: root.shown && root.paletteDraft === null ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: 150 } }
 
             Image {
@@ -168,6 +177,8 @@ Scope {
             // ---------- Left-side column ----------
             Item {
                 id: card
+                // The palette editor takes its place, as a window of its own
+                visible: root.paletteDraft === null
                 width: 460
                 implicitHeight: content.implicitHeight + 32
                 height: implicitHeight
@@ -270,7 +281,7 @@ Scope {
 
                     ListView {
                         id: list
-                        visible: root.bindDraft === null
+                        visible: root.bindDraft === null && root.paletteDraft === null
 
                         onCurrentIndexChanged: {
                             root.armedId = "";
@@ -336,6 +347,101 @@ Scope {
                         font.pixelSize: 9
                         font.family: Theme.font
                     }
+                }
+            }
+        }
+
+        // ---------- Palette editor ----------
+        // Floats over the desktop on the phone view's veil; dragged by its header, fixed size
+        Item {
+            id: paletteBox
+            // Also gone with the menu: the content of a hidden window stays `visible`, and the
+            // editor drops its preview only when it stops being visible
+            visible: root.paletteDraft !== null && root.shown
+            width: 488
+            height: editor.y + editor.implicitHeight + 30
+
+            Connections {
+                target: root
+                // Every edit starts where the menu was
+                function onPaletteDraftChanged() {
+                    if (root.paletteDraft) {
+                        paletteBox.x = 46;
+                        paletteBox.y = win.height * 0.18 - 14;
+                    }
+                }
+            }
+
+            // Clicks inside don't reach the backdrop, which would close the menu
+            MouseArea {
+                anchors.fill: parent
+            }
+
+            // The phone's blood-dark veil, fading out on every side
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 14
+                color: Qt.rgba(0.07, 0, 0.012, 0.86)
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    autoPaddingEnabled: true
+                    blurEnabled: true
+                    blur: 1
+                    blurMax: 48
+                }
+            }
+
+            Item {
+                id: header
+                x: 30
+                y: 26
+                width: parent.width - 60
+                height: 30
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.paletteDraft && !root.paletteDraft.isNew ? "EDIT " + root.paletteDraft.name.toUpperCase() : "NEW PALETTE"
+                    color: Theme.cyan
+                    font.bold: true
+                    font.pixelSize: 20
+                    font.family: Theme.font
+                }
+                Text {
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\uf047  DRAG"
+                    color: CP.alpha(Theme.cyan, 0.5)
+                    font.pixelSize: 10
+                    font.family: "JetBrainsMono Nerd Font"
+                }
+                Rectangle {
+                    anchors.top: parent.bottom
+                    width: parent.width
+                    height: 1
+                    color: CP.alpha(Theme.cyan, 0.4)
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                    drag.target: paletteBox
+                    drag.threshold: 0
+                    // Kept whole on screen
+                    drag.minimumX: 0
+                    drag.maximumX: win.width - paletteBox.width
+                    drag.minimumY: 0
+                    drag.maximumY: win.height - paletteBox.height
+                }
+            }
+
+            PaletteEditor {
+                id: editor
+                x: 30
+                y: header.y + header.height + 12
+                width: parent.width - 60
+                draft: root.paletteDraft
+                onClosed: {
+                    root.paletteDraft = null;
+                    search.forceActiveFocus();
                 }
             }
         }
