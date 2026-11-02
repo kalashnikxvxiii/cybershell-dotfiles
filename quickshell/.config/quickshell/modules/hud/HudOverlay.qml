@@ -24,13 +24,14 @@ Scope {
 
         // Only the buttons take the pointer
         mask: Region {
-            Region { item: status.sonar }
-            Region { item: corner.row }
-            Region { item: launcher }
-            Region { item: updates }
+            Region { item: HudState.show.status ? status.sonar : null }
+            Region { item: HudState.show.dock ? corner.row : null }
+            Region { item: HudState.show.launcher ? launcher : null }
+            Region { item: HudState.show.updates ? updates : null }
         }
 
         HudVitals {
+            visible: HudState.show.vitals
             x: 4
             y: 42
             screen: root.screen
@@ -38,6 +39,7 @@ Scope {
 
         HudStatus {
             id: status
+            visible: HudState.show.status
             screen: root.screen
             growth: sonarCard.growth
             growWidth: sonarCard.growWidth
@@ -46,18 +48,21 @@ Scope {
 
         HudUpdates {
             id: updates
+            visible: HudState.show.updates
             x: 20
             y: parent.height * 0.4
         }
 
         HudCornerDock {
             id: corner
+            visible: HudState.show.dock
             screen: root.screen
         }
 
         // Launcher hint, bottom right
         Item {
             id: launcher
+            visible: HudState.show.launcher
             anchors.right: parent.right
             anchors.rightMargin: 8
             anchors.bottom: parent.bottom

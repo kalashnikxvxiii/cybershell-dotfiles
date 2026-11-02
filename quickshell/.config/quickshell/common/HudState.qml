@@ -16,8 +16,53 @@ Singleton {
     // By screen name: how far the Sonar card has grown to the left, in pixels
     property var sonarShift: ({})
 
-    function toggle() { root.enabled = !root.enabled }
-    function toggleLayer() { root.onTop = !root.onTop }
+    // What the HUD shows. A profile is a preset of these; changing one by hand makes it "custom"
+    readonly property var profiles: ({
+        minimal: ["status", "updates"],
+        balanced: ["vitals", "status", "updates", "dock"],
+        cinematic: ["vitals", "status", "updates", "dock", "launcher"]
+    })
+    property string profile: "cinematic"
+    property var show: ({ vitals: true, status: true, updates: true, dock: true, launcher: true })
+
+    function setProfile(name) {
+        const s = {}
+        for (const k in root.show)
+            s[k] = root.profiles[name].indexOf(k) >= 0
+        root.show = s
+        root.profile = name
+        root._save()
+    }
+    function toggleElement(k) {
+        const s = Object.assign({}, root.show)
+        s[k] = !s[k]
+        root.show = s
+        root.profile = "custom"
+        root._save()
+    }
+
+    function toggle() { root.enabled = !root.enabled; root._save() }
+    function toggleLayer() { root.onTop = !root.onTop; root._save() }
+    function _save() { store.setText(JSON.stringify({ enabled: root.enabled, onTop: root.onTop, profile: root.profile, show: root.show })) }
+
+    // The two switches survive a restart. Read blocking at creation: onLoaded comes too late,
+    // and the HUD would flash on before a saved "off"
+    FileView {
+        id: store
+        path: Quickshell.env("HOME") + "/.cache/qs-hud.json"
+        blockLoading: true
+    }
+    Component.onCompleted: {
+        try {
+            const d = JSON.parse(store.text())
+            root.enabled = d.enabled !== false
+            root.onTop = d.onTop === true
+            if (d.show)
+                root.show = Object.assign({}, root.show, d.show)
+            if (d.profile)
+                root.profile = d.profile
+        } catch (e) {}
+    }
 
     // -- Palette ---------------------------------
     readonly property color danger: Colours.accentDanger
