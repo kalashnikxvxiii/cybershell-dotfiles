@@ -313,7 +313,7 @@ Item {
         anchors.topMargin: 4
         text: workspace ? ("◢ WS " + workspace.name + " · "
                         + root.wins.length + " WIN") : ""
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 10
         font.letterSpacing: 2
         font.bold: true
@@ -336,7 +336,7 @@ Item {
             id: wsMuteLabel
             anchors.centerIn: parent
             text: root.wsMuted ? "UNMUTE ALL" : "MUTE ALL"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1
             font.bold: true
@@ -681,7 +681,7 @@ Item {
                         id: volText
                         anchors.centerIn: parent
                         text: Math.round(winItem.volume * 100) + "%"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.bold: true
                         font.letterSpacing: 1
@@ -738,7 +738,7 @@ Item {
             anchors.centerIn: parent
             visible: root.workspace && root.wins.length === 0
             text: "— EMPTY —"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             font.letterSpacing: 3
             color: CP.alpha(Colours.textMuted, 0.5)

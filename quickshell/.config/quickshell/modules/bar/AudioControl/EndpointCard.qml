@@ -108,7 +108,7 @@ Item {
         anchors.left: parent.left
         anchors.margins: 8
         text: "● ACTIVE " + (mode === "source" ? "SOURCE" : "ENDPOINT") + " · DEFAULT"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 2
         font.bold: true
@@ -125,7 +125,7 @@ Item {
         anchors.leftMargin: 8
         anchors.rightMargin: 60
         text: (mode === "source" ? "◀ " : "▶ ") + root.displayName
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 16
         font.letterSpacing: 1
         font.bold: true
@@ -149,7 +149,7 @@ Item {
             parts.push("CH " + root.chCount)
             return parts.join("  ")
         }
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 0.5
         color: Colours.textMuted
@@ -244,7 +244,7 @@ Item {
         Text {
             anchors.centerIn: parent
             text: "L"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1
             font.bold: true
@@ -296,7 +296,7 @@ Item {
         Text {
             anchors.centerIn: parent
             text: "R"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1
             font.bold: true
@@ -340,7 +340,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: 8
         text: muted ? "MUTE" : (root.volPercent + "%")
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 13
         font.bold: true
         color: muted ? Colours.textMuted : root.meter

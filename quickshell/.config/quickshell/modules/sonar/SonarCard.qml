@@ -90,7 +90,7 @@ FocusScope {
 
             Text {
                 text: "SONAR"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 15
                 font.bold: true
                 font.letterSpacing: 3
@@ -100,7 +100,7 @@ FocusScope {
             Text {
                 id: subLabel
                 text: root.netView ? "NETWORK SWEEP" : "BLUETOOTH SWEEP"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 font.letterSpacing: 2
                 color: CP.alpha(root.accent, 0.8)
@@ -146,7 +146,7 @@ FocusScope {
                         id: segLabel
                         anchors.centerIn: parent
                         text: seg.modelData.label
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 9
                         font.bold: true
                         font.letterSpacing: 1.5
@@ -228,7 +228,7 @@ FocusScope {
                 text: powerChip.blocked ? "RF BLOCKED"
                     : root.netView ? (powerChip.on ? "WIFI ON" : "WIFI OFF")
                                    : (powerChip.on ? "BT ON" : "BT OFF")
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 font.bold: true
                 font.letterSpacing: 1.5
@@ -343,7 +343,7 @@ FocusScope {
                 horizontalAlignment: Text.AlignHCenter
                 topPadding: 12
                 text: root.netView ? "NO CONTACTS — SWEEPING" : "NO DEVICES — SWEEPING"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 2
                 color: Colours.textMuted
@@ -423,7 +423,7 @@ FocusScope {
                     id: actionLabel
                     anchors.centerIn: parent
                     text: modelData.label
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.bold: true
                     font.letterSpacing: 1.5
@@ -480,7 +480,7 @@ FocusScope {
                 verticalAlignment: Text.AlignVCenter
                 visible: pskField.text === "" && !pskField.activeFocus
                 text: "PASSWORD"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 color: Colours.textMuted

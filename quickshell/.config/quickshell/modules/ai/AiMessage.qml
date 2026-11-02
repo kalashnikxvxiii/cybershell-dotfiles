@@ -203,7 +203,7 @@ Item {
                 id: stamp
                 anchors.centerIn: parent
                 text: root._stamp()
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1
                 color: CP.alpha(root.fg, 0.55)
@@ -351,7 +351,7 @@ Item {
                         Text {
                             text: block.seg.text
                             wrapMode: Text.Wrap
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 10
                             color: Theme.red
                         }

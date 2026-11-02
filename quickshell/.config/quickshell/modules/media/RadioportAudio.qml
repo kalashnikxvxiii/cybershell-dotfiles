@@ -63,14 +63,14 @@ Item {
                     anchors.margins: 3
                     text: chip.index + 1
                     color: chip.current ? Theme.cyan : CP.alpha(Theme.red, 0.8)
-                    font { family: "Oxanium"; pixelSize: 8 }
+                    font { family: Theme.font; pixelSize: 8 }
                 }
                 Text {
                     anchors.centerIn: parent
                     text: chip.modelData
                     color: Theme.cyan
                     opacity: chip.current ? 1 : 0.75
-                    font { family: "Oxanium"; pixelSize: 16; letterSpacing: 1 }
+                    font { family: Theme.font; pixelSize: 16; letterSpacing: 1 }
                 }
                 MouseArea {
                     id: hit

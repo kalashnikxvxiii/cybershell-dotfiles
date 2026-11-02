@@ -304,7 +304,7 @@ Item {
             anchors.leftMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: "NETRUNNER"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 14
             font.letterSpacing: 4
             font.bold: true
@@ -355,7 +355,7 @@ Item {
                 : AiState.session.busy ? "\u00b7 STREAMING"
                 : AiState.session.alive ? "\u00b7 READY"
                 : "\u00b7 COLD"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             font.letterSpacing: 2
             opacity: statePulse.k
@@ -609,7 +609,7 @@ Item {
                     x: 10
                     anchors.verticalCenter: parent.verticalCenter
                     text: "\u25e2 QUEUED"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     font.bold: true
                     font.letterSpacing: 1.6
@@ -623,7 +623,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qrow.modelData.replace(/\s+/g, " ")
                     elide: Text.ElideRight
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     color: CP.alpha(root.fg, 0.7)
                 }
@@ -774,7 +774,7 @@ Item {
                             : "Plan, search, build anything\u2026"
                         wrapMode: Text.Wrap
                         // A ghost of the input itself: same face, dimmed
-                        font.family: ghost ? input.font.family : "Oxanium"
+                        font.family: ghost ? input.font.family : Theme.font
                         font.pixelSize: ghost ? input.font.pixelSize : 11
                         color: ghost ? CP.alpha(root.fg, 0.32)
                             : CP.alpha(root.recording ? Theme.red : Theme.magenta, 0.32)
@@ -1009,7 +1009,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: "DROP TO ATTACH"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.letterSpacing: 3
                 font.bold: true

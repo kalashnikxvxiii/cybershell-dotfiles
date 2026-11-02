@@ -122,7 +122,7 @@ Item {
                     id: macroLabel
                     anchors.centerIn: parent
                     text: modelData.toUpperCase()
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 11
                     font.letterSpacing: 2
                     font.bold: parent.active
@@ -174,7 +174,7 @@ Item {
                     id: subLabel
                     anchors.centerIn: parent
                     text: modelData.toUpperCase()
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 1
                     color: parent.active ? Colours.accentPrimary : Colours.textMuted

@@ -422,7 +422,7 @@ Item {
             anchors.centerIn: parent
             visible: !root.lyricsReady && !!root.player
             text: root.lyricsBuffer === "" && !root.lyricsReady ? "♪ ..." : "♪ not found"
-            color: Theme.magenta; font.family: "Oxanium"; font.pixelSize: root.fontSize * 1.5
+            color: Theme.magenta; font.family: Theme.font; font.pixelSize: root.fontSize * 1.5
         }
 
         Item {
@@ -475,17 +475,17 @@ Item {
                 y: prevRow.y - height - 16
                 opacity: 0
                 Text { width: parent.width; text: root._prevPrevLyricsTxt === "..." ? root.interlude.join(" ") : root._prevPrevLyricsTxt
-                        font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
+                        font.family: Theme.font; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
                         color: CP.aberrationCyan(0.7); horizontalAlignment: Text.AlignLeft
                         leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap
                         transform: Translate { id: outLeftShift; x: 0 } }
                 Text { width: parent.width; text: root._prevPrevLyricsTxt === "..." ? root.interlude.join(" ") : root._prevPrevLyricsTxt
-                        font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
+                        font.family: Theme.font; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
                         color: CP.aberrationRed(0.7); horizontalAlignment: Text.AlignLeft
                         leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap
                         transform: Translate { id: outRightShift; x: 0 } }
                 Text { id: outgoingCenter; width: parent.width; text: root._prevPrevLyricsTxt === "..." ? root.interlude.join(" ") : root._prevPrevLyricsTxt
-                    font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
+                    font.family: Theme.font; font.pixelSize: root.fontSize * 0.45; font.weight: Font.Medium
                     color: CP.alpha(Theme.magenta, 0.7); horizontalAlignment: Text.AlignLeft
                     leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap }
             }
@@ -511,7 +511,7 @@ Item {
                     width: parent.width; 
                     text: root._prevLyricsTxt
                     opacity: root._prevIsInterlude ? 0 : 1
-                    font.family: "Oxanium"; 
+                    font.family: Theme.font; 
                     font.pixelSize: root.effectiveFontSize * 0.45; font.weight: Font.Medium
                     color: CP.alpha(Theme.magenta, 0.38); horizontalAlignment: Text.AlignLeft
                     leftPadding: 36; topPadding: 12; wrapMode: Text.WordWrap
@@ -550,7 +550,7 @@ Item {
                 Text {
                     id: currTxt; visible: !(root.lyricsLines[root.currentLyricsIdx]?.isInterlude ?? false)
                     width: parent.width; text: root._currLyricsTxt; font.weight: Font.Bold
-                    font.family: "Oxanium"; font.pixelSize: root.effectiveFontSize * 0.8; color: Theme.magenta
+                    font.family: Theme.font; font.pixelSize: root.effectiveFontSize * 0.8; color: Theme.magenta
                     horizontalAlignment: Text.AlignLeft; wrapMode: Text.WordWrap; leftPadding: 16
                     opacity: (root.hasWordSync && (root.lyricsLines[root.currentLyricsIdx]?.words ?? null) !== null) ? 0 : 0.9
                 }
@@ -720,7 +720,7 @@ Item {
                                                 if (sylDel.globalIdx > root.currentWordIdx && !activateAnim.running) return 0
                                                 return -(root.fontSize * 0.6 / 12.0) * Math.sin(sylContent._animProg * Math.PI)
                                             }
-                                            Text { id: baseWord; text: sylDel.modelData.word; font.family: "Oxanium"
+                                            Text { id: baseWord; text: sylDel.modelData.word; font.family: Theme.font
                                                     font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
                                                     color: CP.alpha(Theme.magenta, 0.52); visible: !sylContent.letterMode }
                                             Item {
@@ -741,7 +741,7 @@ Item {
                                                 Text {
                                                     width: parent.width
                                                     text: sylDel.modelData.word
-                                                    font.family: "Oxanium"
+                                                    font.family: Theme.font
                                                     font.pixelSize: root.fontSize * 0.8
                                                     font.weight: Font.Bold
                                                     color: Theme.yellow
@@ -809,7 +809,7 @@ Item {
                                                         Text {
                                                             id: letterBase
                                                             text: letterDel.ch
-                                                            font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
+                                                            font.family: Theme.font; font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
                                                             color: CP.alpha(Theme.magenta, 0.52)
                                                         }
                                                         Item {
@@ -823,7 +823,7 @@ Item {
                                                             }
                                                             Text {
                                                                 width: parent.width; text: letterDel.ch
-                                                                font.family: "Oxanium"; font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
+                                                                font.family: Theme.font; font.pixelSize: root.fontSize * 0.8; font.weight: Font.Bold
                                                                 color: Theme.yellow
                                                             }
                                                             Rectangle {
@@ -855,7 +855,7 @@ Item {
                                 !(root.lyricsLines[root.currentLyricsIdx]?.isInterlude ?? false)
                     width: parent.width; height: root._sweepProgress * currTxt.implicitHeight; clip: true
                     Text {
-                        width: parent.width; text: root._currLyricsTxt; font.family: "Oxanium"; font.weight: Font.Bold
+                        width: parent.width; text: root._currLyricsTxt; font.family: Theme.font; font.weight: Font.Bold
                         font.pixelSize: root.effectiveFontSize * 0.8; color: Theme.yellow; leftPadding: 16
                         horizontalAlignment: Text.AlignLeft; wrapMode: Text.WordWrap
                     }
@@ -888,7 +888,7 @@ Item {
                 width: parent.width
                 text: root._nextLyricsTxt
                 opacity: root._nextIsInterlude ? 0 : 1
-                font.family: "Oxanium"; font.pixelSize: root.effectiveFontSize * 0.45; font.weight: Font.Medium
+                font.family: Theme.font; font.pixelSize: root.effectiveFontSize * 0.45; font.weight: Font.Medium
                 color: CP.alpha(Theme.magenta, 0.38); horizontalAlignment: Text.AlignLeft
                 leftPadding: 36; bottomPadding: 12; wrapMode: Text.WordWrap 
             }

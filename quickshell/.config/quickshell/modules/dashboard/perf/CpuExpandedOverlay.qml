@@ -41,7 +41,7 @@ Item {
 
             Text {
                 text: "CPU CORES"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.letterSpacing: 2
                 color: root.cpuColor
@@ -55,7 +55,7 @@ Item {
             }
             Text {
                 text: "[ESC]"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 color: Colours.textMuted
                 MouseArea {

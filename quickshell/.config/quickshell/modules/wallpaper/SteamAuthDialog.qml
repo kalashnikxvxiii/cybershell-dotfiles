@@ -56,7 +56,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "STEAM LOGIN"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 13
             font.letterSpacing: 3
             color: Colours.accentSecondary
@@ -66,7 +66,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.errorText
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 1
             color: Colours.accentDanger
@@ -94,7 +94,7 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 8
                 verticalAlignment: TextInput.AlignVCenter
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 color: Colours.textPrimary
                 echoMode: TextInput.Password
@@ -112,7 +112,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: "PASSWORD"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 font.letterSpacing: 2
                 color: CP.alpha(Colours.textMuted, 0.3)
@@ -124,7 +124,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "CONFIRM ON STEAM APP"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             font.letterSpacing: 2
             color: Colours.accentPrimary
@@ -136,7 +136,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "AUTHENTICATING..."
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             color: Colours.accentSecondary
@@ -148,7 +148,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "AUTHENTICATED"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             color: Colours.accentOk

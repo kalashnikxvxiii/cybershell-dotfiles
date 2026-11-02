@@ -97,7 +97,7 @@ Item {
                                     height: 20
                                     verticalAlignment: Text.AlignVCenter
                                     text: "◢ " + block.modelData.title
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 15
                                     font.bold: true
                                     font.letterSpacing: 3

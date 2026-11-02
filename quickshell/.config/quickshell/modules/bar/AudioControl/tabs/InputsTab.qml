@@ -39,7 +39,7 @@ Item {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "◢ NO INPUT DEVICES"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.letterSpacing: 2.5
                     font.bold: true
@@ -48,7 +48,7 @@ Item {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "AWAITING SOURCE · MIC OFFLINE?"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     color: CP.alpha(Colours.textMuted, 0.4)
@@ -123,34 +123,34 @@ Item {
             // Row 1
             Row {
                 spacing: 4
-                Text { text: "NOISE FLOOR"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
-                Text { text: "-72.4dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                Text { text: "NOISE FLOOR"; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
+                Text { text: "-72.4dB"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "PEAK"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
-                Text { text: "-12.8dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                Text { text: "PEAK"; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
+                Text { text: "-12.8dB"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "SNR"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
-                Text { text: "59.6dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                Text { text: "SNR"; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
+                Text { text: "59.6dB"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
             }
             // Row 2
             Row {
                 spacing: 4
-                Text { text: "CLIP COUNT"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
-                Text { text: "0"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                Text { text: "CLIP COUNT"; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
+                Text { text: "0"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "RMS"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
-                Text { text: "-28.4dB"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                Text { text: "RMS"; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
+                Text { text: "-28.4dB"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
             }
             Row {
                 spacing: 4
-                Text { text: "CH"; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
-                Text { text: "1.0 MONO"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                Text { text: "CH"; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1; font.bold: true; color: root.accent }
+                Text { text: "1.0 MONO"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
             }
         }
     }

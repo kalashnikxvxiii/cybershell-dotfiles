@@ -55,7 +55,7 @@ Item {
             Rectangle { width: 3; height: 14; color: root.gpuColor }
             Text {
                 text: "GPU DETAILS"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.letterSpacing: 2
                 color: root.gpuColor
@@ -81,7 +81,7 @@ Item {
             }
             Text {
                 text: "[ESC]"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 color: Colours.textMuted
                 MouseArea {
@@ -126,13 +126,13 @@ Item {
                     spacing: 2
 
                     Text {
-                        text: "VRAM"; font.family: "Oxanium"
+                        text: "VRAM"; font.family: Theme.font
                         font.pixelSize: 9; font.letterSpacing: 2
                         color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter
                     }
                     Text {
                         text: root.gpuVramUsedGb.toFixed(1) + " GB"
-                        font.family: "Oxanium"; font.pixelSize: 26
+                        font.family: Theme.font; font.pixelSize: 26
                         font.weight: Font.Bold; color: Colours.accentPrimary
                         Layout.alignment: Qt.AlignHCenter
                     }
@@ -202,7 +202,7 @@ Item {
 
                     Text {
                         text: (root.gpuVramTotalGb > 0 ? (root.gpuVramUsedGb /  root.gpuVramTotalGb * 100).toFixed(0) : "0") + "%"
-                        font.family: "Oxanium"; font.pixelSize: 20; font.weight: Font.Bold
+                        font.family: Theme.font; font.pixelSize: 20; font.weight: Font.Bold
                         color: Colours.accentPrimary; Layout.alignment: Qt.AlignHCenter
                     }
                 }
@@ -236,13 +236,13 @@ Item {
                     spacing: 2
 
                     Text {
-                        text: "POWER"; font.family: "Oxanium"; font.pixelSize: 9
+                        text: "POWER"; font.family: Theme.font; font.pixelSize: 9
                         font.letterSpacing: 2; color: Colours.textMuted
                         Layout.alignment: Qt.AlignHCenter
                     }
                     Text {
                         text: root.gpuPowerDraw.toFixed(1) + " W"
-                        font.family: "Oxanium"; font.pixelSize: 26; font.weight: Font.Bold
+                        font.family: Theme.font; font.pixelSize: 26; font.weight: Font.Bold
                         color: Colours.accentWarn; Layout.alignment: Qt.AlignHCenter
                     }
                     Text {
@@ -311,7 +311,7 @@ Item {
 
                     Text {
                         text: (root.gpuPowerLimit > 0 ? (root.gpuPowerDraw / root.gpuPowerLimit * 100).toFixed(0) : "0") + "%"
-                        font.family: "Oxanium"; font.pixelSize: 20; font.weight: Font.Bold
+                        font.family: Theme.font; font.pixelSize: 20; font.weight: Font.Bold
                         color: Colours.accentWarn; Layout.alignment: Qt.AlignHCenter
                     }
                 }
@@ -342,8 +342,8 @@ Item {
                 CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
                 ColumnLayout {
                     anchors.fill: parent; anchors.margins: 6; spacing: 2
-                    Text { text: "GPU CLOCK"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                    Text { text: root.gpuClockCur + " MHz"; font.family: "Oxanium"; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: "GPU CLOCK"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: root.gpuClockCur + " MHz"; font.family: Theme.font; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
                     Text { text: "MAX " + root.gpuClockMax; font.family: "Chakra Petch"; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
                 }
                 CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
@@ -366,8 +366,8 @@ Item {
                 CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
                 ColumnLayout {
                     anchors.fill: parent; anchors.margins: 6; spacing: 2
-                    Text { text: "MEM CLOCK"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                    Text { text: root.gpuMemClockCur + " MHz"; font.family: "Oxanium"; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: "MEM CLOCK"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: root.gpuMemClockCur + " MHz"; font.family: Theme.font; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
                     Text { text: "MAX " + root.gpuMemClockMax; font.family: "Chakra Petch"; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
                 }
                 CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
@@ -394,8 +394,8 @@ Item {
                 CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
                 ColumnLayout {
                     anchors.fill: parent; anchors.margins: 6; spacing: 2
-                    Text { text: "FAN"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
-                    Text { text: root.gpuFanSpeed + "%"; font.family: "Oxanium"; font.pixelSize: 18; font.weight: Font.Bold; color: gpuExp4.fanColor; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: "FAN"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: root.gpuFanSpeed + "%"; font.family: Theme.font; font.pixelSize: 18; font.weight: Font.Bold; color: gpuExp4.fanColor; Layout.alignment: Qt.AlignHCenter }
                 }
                 CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
             }
@@ -424,39 +424,39 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
-                    Text { text: "ENCODER"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
+                    Text { text: "ENCODER"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
                     Item {
                         Layout.fillWidth: true; Layout.preferredHeight: 12
                         Rectangle { anchors.fill: parent; color: Qt.rgba(Colours.accentMem.r, Colours.accentMem.g, Colours.accentMem.b, 0.08) }
                         Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: parent.width * (root.gpuEncoderUtil / 100); color: Colours.accentMem; Behavior on width { Anim { duration: 400 } } }
                     }
-                    Text { text: root.gpuEncoderUtil + "%"; font.family: "Oxanium"; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentMem; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
+                    Text { text: root.gpuEncoderUtil + "%"; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentMem; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
                 }
 
                 // Decoder bar
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
-                    Text { text: "DECODER"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
+                    Text { text: "DECODER"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
                     Item {
                         Layout.fillWidth: true; Layout.preferredHeight: 12
                         Rectangle { anchors.fill: parent; color: Qt.rgba(Colours.accentMem.r, Colours.accentMem.g, Colours.accentMem.b, 0.08) }
                         Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: parent.width * (root.gpuDecoderUtil / 100); color: Colours.accentMem; Behavior on width { Anim { duration: 400 } } }
                     }
-                    Text { text: root.gpuDecoderUtil + "%"; font.family: "Oxanium"; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentMem; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
+                    Text { text: root.gpuDecoderUtil + "%"; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentMem; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
                 }
 
                 // Mem BW bar
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
-                    Text { text: "MEM BW"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
+                    Text { text: "MEM BW"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 1; color: Colours.textMuted; Layout.preferredWidth: 70 }
                     Item {
                         Layout.fillWidth: true; Layout.preferredHeight: 12
                         Rectangle { anchors.fill: parent; color: Qt.rgba(Colours.accentSecondary.r, Colours.accentSecondary.g, Colours.accentSecondary.b, 0.08) }
                         Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: parent.width * (root.gpuMemBwUtil / 100); color: Colours.accentSecondary; Behavior on width { Anim { duration: 400 } } }
                     }
-                    Text { text: root.gpuMemBwUtil + "%"; font.family: "Oxanium"; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
+                    Text { text: root.gpuMemBwUtil + "%"; font.family: Theme.font; font.pixelSize: 12; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.preferredWidth: 35; horizontalAlignment: Text.AlignRight }
                 }
             }
         }
@@ -491,9 +491,9 @@ Item {
                     CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3); cutBottomLeft: 12 }
                     RowLayout {
                         anchors.fill: parent; anchors.margins: 6
-                        Text { text: "P-STATE"; font.family: "Oxanium"; font.pixelSize: 12; font.letterSpacing: 1; color: Colours.textMuted }
+                        Text { text: "P-STATE"; font.family: Theme.font; font.pixelSize: 12; font.letterSpacing: 1; color: Colours.textMuted }
                         Item { Layout.fillWidth: true }
-                        Text { text: root.gpuPState; font.family: "Oxanium"; font.pixelSize: 11; font.weight: Font.Bold; color: gpuExp6.pstateColor }
+                        Text { text: root.gpuPState; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Bold; color: gpuExp6.pstateColor }
                     }
                     CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5; cutBottomLeft: 12 }
                 }
@@ -505,9 +505,9 @@ Item {
                     CutShape { anchors.fill: parent; fillColor: Qt.rgba(0, 0, 0, 0.3) }
                     RowLayout {
                         anchors.fill: parent; anchors.margins: 6
-                        Text { text: "PCIE"; font.family: "Oxanium"; font.pixelSize: 12; font.letterSpacing: 1; color: Colours.textMuted }
+                        Text { text: "PCIE"; font.family: Theme.font; font.pixelSize: 12; font.letterSpacing: 1; color: Colours.textMuted }
                         Item { Layout.fillWidth: true }
-                        Text { text: "GEN" + root.gpuPcieGen + " x" + root.gpuPcieWidth; font.family: "Oxanium"; font.pixelSize: 11; font.weight: Font.Bold; color: Colours.accentSecondary }
+                        Text { text: "GEN" + root.gpuPcieGen + " x" + root.gpuPcieWidth; font.family: Theme.font; font.pixelSize: 11; font.weight: Font.Bold; color: Colours.accentSecondary }
                     }
                     CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
                 }

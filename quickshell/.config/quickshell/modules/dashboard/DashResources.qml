@@ -226,7 +226,7 @@ Row {
                 anchors.centerIn: parent
                 rotation: 90
                 text: res.icon
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.fontSize
                 color: res.colour
             }

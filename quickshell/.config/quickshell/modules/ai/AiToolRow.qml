@@ -36,7 +36,7 @@ Item {
             id: name
             anchors.verticalCenter: parent.verticalCenter
             text: "\u25e2 " + String(root.call.name).toUpperCase()
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.2
             font.bold: true
@@ -59,7 +59,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: root.call.state === "running" ? "\u00b7\u00b7\u00b7"
                 : root.call.state === "error" ? "FAIL" : "OK"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.2
             color: CP.alpha(root.tone, 0.8)

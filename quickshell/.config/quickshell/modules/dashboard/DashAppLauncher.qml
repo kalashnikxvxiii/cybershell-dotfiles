@@ -506,7 +506,7 @@ Item {
                 anchors.verticalCenterOffset: 3
                 text: "+"
                 font.pixelSize: 15
-                font.family: "Oxanium"
+                font.family: Theme.font
                 color: Theme.cyan
                 transform: Translate { id: addShift; x: 0 }
             }
@@ -560,7 +560,7 @@ Item {
                 Text {
                     width: parent.width
                     text: "ADD APP"
-                    font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3
+                    font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3
                     color: Theme.cyan
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -570,7 +570,7 @@ Item {
                 // Exec
                 Text {
                     text: "exec"
-                    font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
+                    font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(Theme.cyan, 0.6)
                 }
                 CutShape {
@@ -585,7 +585,7 @@ Item {
                         id: execInput
                         focus: true   // default focus item in the FocusScope
                         anchors { fill: parent; margins: 6 }
-                        font.family: "Oxanium"; font.pixelSize: 11
+                        font.family: Theme.font; font.pixelSize: 11
                         color: Colours.textPrimary
                         selectByMouse: true
                         Keys.onReturnPressed: iconInput.forceActiveFocus()
@@ -596,7 +596,7 @@ Item {
                 // Icon
                 Text {
                     text: "icon path  (empty = auto)"
-                    font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
+                    font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(Theme.cyan, 0.6)
                 }
                 CutShape {
@@ -610,7 +610,7 @@ Item {
                     TextInput {
                         id: iconInput
                         anchors { fill: parent; margins: 6 }
-                        font.family: "Oxanium"; font.pixelSize: 11
+                        font.family: Theme.font; font.pixelSize: 11
                         color: Colours.textPrimary
                         selectByMouse: true
                         Keys.onReturnPressed: addForm.confirmAdd()
@@ -633,7 +633,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "CANCEL"
-                            font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
+                            font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2
                             color: Theme.red
                         }
                         MouseArea {
@@ -654,7 +654,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "ADD"
-                            font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
+                            font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2
                             color: Theme.cyan
                         }
                         MouseArea {
@@ -705,7 +705,7 @@ Item {
                 Text {
                     width: parent.width
                     text: "CHANGE ICON"
-                    font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3
+                    font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3
                     color: Theme.cyan
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -714,7 +714,7 @@ Item {
 
                 Text {
                     text: "icon name or path"
-                    font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
+                    font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1
                     color: CP.alpha(Theme.cyan, 0.6)
                 }
                 CutShape {
@@ -729,7 +729,7 @@ Item {
                         id: iconEditInput
                         focus: true
                         anchors { fill: parent; margins: 6 }
-                        font.family: "Oxanium"; font.pixelSize: 11
+                        font.family: Theme.font; font.pixelSize: 11
                         color: Colours.textPrimary
                         selectByMouse: true
                         Keys.onReturnPressed: iconEditForm.confirmChange()
@@ -751,7 +751,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "CANCEL"
-                            font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
+                            font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2
                             color: Theme.red
                         }
                         MouseArea {
@@ -772,7 +772,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "APPLY"
-                            font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2
+                            font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2
                             color: Theme.cyan
                         }
                         MouseArea {

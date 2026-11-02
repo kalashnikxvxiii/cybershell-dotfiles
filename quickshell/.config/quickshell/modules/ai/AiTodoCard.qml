@@ -39,7 +39,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: "\u25e2 TASKS"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             font.bold: true
@@ -50,7 +50,7 @@ Item {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: root.done + "/" + root.todos.length + (root.expanded ? "  \u25b4" : "  \u25be")
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1
             color: CP.alpha(root.fg, 0.5)
@@ -113,7 +113,7 @@ Item {
                         text: active ? (modelData.activeForm || modelData.content)
                             : modelData.content
                         wrapMode: Text.Wrap
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.strikeout: finished
                         color: CP.alpha(root.fg, finished ? 0.35 : active ? 1 : 0.65)

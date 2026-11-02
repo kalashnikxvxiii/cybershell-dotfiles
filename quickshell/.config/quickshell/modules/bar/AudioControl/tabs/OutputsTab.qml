@@ -47,7 +47,7 @@ Item {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "◢ NO OUTPUT DEVICES"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.letterSpacing: 2.5
                     font.bold: true
@@ -56,7 +56,7 @@ Item {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "AWAITING SINK · PIPEWIRE OFFLINE?"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     color: CP.alpha(Colours.textMuted, 0.4)
@@ -147,7 +147,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "SOURCES"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             font.bold: true
@@ -156,7 +156,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: AudioControlState.streamNodes.length + " ACTIVE"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             color: Colours.textMuted
                         }
@@ -206,7 +206,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "EQ:" + AudioControlState.eqPreset.toUpperCase()
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             font.bold: true
@@ -215,7 +215,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: AudioControlState.eqAvailable ? "10-BAND" : "BYPASSED"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             color: Colours.textMuted
                         }
@@ -264,7 +264,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "SINK OUT"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             font.bold: true
@@ -279,7 +279,7 @@ Item {
                                 ? (AudioControlState.defaultSink.description
                                 || AudioControlState.defaultSink.name || "—").substring(0, 8).toUpperCase()
                                 : "—"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             color: Colours.textMuted
                         }

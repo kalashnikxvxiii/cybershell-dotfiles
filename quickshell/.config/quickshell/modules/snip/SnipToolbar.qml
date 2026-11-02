@@ -88,7 +88,7 @@ Item {
                         anchors.leftMargin: 4
                         anchors.topMargin: 2
                         text: chip.index + 1
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 7
                         color: chip.current
                             ? chip.accent
@@ -99,7 +99,7 @@ Item {
                         id: label
                         anchors.centerIn: parent
                         text: chip.modelData.label
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.letterSpacing: 1.2
                         color: chip.current
@@ -130,7 +130,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "TRASCINA PER SELEZIONARE  ·  TASTO DESTRO = ANNOTA  ·  ESC = ANNULLA"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1.5
             color: Colours.textMuted

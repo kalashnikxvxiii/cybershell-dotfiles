@@ -37,7 +37,7 @@ Row {
             id: capText
             anchors.centerIn: parent
             text: cap.label
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.bold: true
             font.letterSpacing: 0.5

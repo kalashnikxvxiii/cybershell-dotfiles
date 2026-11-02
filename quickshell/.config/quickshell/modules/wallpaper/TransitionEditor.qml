@@ -53,7 +53,7 @@ Item {
                 anchors.leftMargin: 28
                 anchors.verticalCenter: parent.verticalCenter
                 text: "TRANSITION EDITOR"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 16
                 font.letterSpacing: 3
                 font.bold: true
@@ -89,7 +89,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
                 Text { text: "▮▮▮"; color: CP.alpha(Theme.yellow, 0.4); font.pixelSize: 7; anchors.verticalCenter: parent.verticalCenter }
-                Text { text: "ID:" + TransitionConfig.transitionType.toUpperCase(); color: Colours.textMuted; font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1.5; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "ID:" + TransitionConfig.transitionType.toUpperCase(); color: Colours.textMuted; font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1.5; anchors.verticalCenter: parent.verticalCenter }
             }
 
             Item {
@@ -168,7 +168,7 @@ Item {
                             Row {
                                 spacing: 6
                                 Text { text: "▸"; color: Colours.accentPrimary; font.pixelSize: 11; anchors.verticalCenter: parent.verticalCenter }
-                                Text { text: "TYPE"; font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
+                                Text { text: "TYPE"; font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
                             }
                             TypeSelector {
                                 width: parent.width
@@ -183,7 +183,7 @@ Item {
                             Row {
                                 spacing: 6
                                 Text { text: "▸"; color: Colours.accentSecondary; font.pixelSize: 11; anchors.verticalCenter: parent.verticalCenter }
-                                Text { text: "TIMING"; font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
+                                Text { text: "TIMING"; font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
                             }
                             NumericField {
                                 width: parent.width
@@ -223,7 +223,7 @@ Item {
                                 Row {
                                     spacing: 6
                                     Text { text: "▸"; color: Colours.accentPrimary; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
-                                    Text { text: "ANGLE"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
+                                    Text { text: "ANGLE"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
                                 }
                                 Slider {
                                     width: parent.width
@@ -255,7 +255,7 @@ Item {
                                 Row {
                                     spacing: 6
                                     Text { text: "▸"; color: Colours.accentMem; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
-                                    Text { text: "POSITION"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentMem; anchors.verticalCenter: parent.verticalCenter }
+                                    Text { text: "POSITION"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentMem; anchors.verticalCenter: parent.verticalCenter }
                                 }
                                 PositionPicker {
                                     width: parent.width
@@ -294,7 +294,7 @@ Item {
                                 Row {
                                     spacing: 6
                                     Text { text: "▸"; color: Colours.accentOk; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
-                                    Text { text: "WAVE"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
+                                    Text { text: "WAVE"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
                                 }
                                 NumericField {
                                     width: parent.width
@@ -370,10 +370,10 @@ Item {
                             spacing: 6
 
                             Text { text: "▸"; color: Colours.accentPrimary; font.pixelSize: 11; anchors.verticalCenter: parent.verticalCenter }
-                            Text { text: "CURVE"; font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
+                            Text { text: "CURVE"; font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
                             Text {
                                 text: "/ FADE ONLY"
-                                font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5
+                                font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5
                                 color: CP.alpha(Theme.yellow, 0.4)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -397,12 +397,12 @@ Item {
                                     cutBottomRight: 3
                                     anchors.verticalCenter: parent.verticalCenter
 
-                                    Text { anchors.centerIn: parent; text: "SHIFT"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 0.5; font.bold: true; color: Colours.accentPrimary }
+                                    Text { anchors.centerIn: parent; text: "SHIFT"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 0.5; font.bold: true; color: Colours.accentPrimary }
                                 }
 
                                 Text {
                                     text: "SNAP"
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 9
                                     font.letterSpacing: 1.2
                                     color: Colours.textMuted
@@ -511,10 +511,10 @@ Item {
                             spacing: 6
 
                             Text { text: "▸"; color: Colours.accentSecondary; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
-                            Text { text: "PRESETS"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
+                            Text { text: "PRESETS"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2.5; font.bold: true; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
                             Text {
                                 text: presetsScroll.contentHeight > presetsScroll.height ? "/ SCROLL ↓" : ""
-                                font.family: "Oxanium"; font.pixelSize: 7; font.letterSpacing: 1.5
+                                font.family: Theme.font; font.pixelSize: 7; font.letterSpacing: 1.5
                                 color: CP.alpha(Theme.cyan, 0.5)
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -538,8 +538,8 @@ Item {
                             Row {
                                 anchors.centerIn: parent
                                 spacing: 3
-                                Text { text: "+"; font.family: "Oxanium"; font.pixelSize: 11; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
-                                Text { text: "SAVE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
+                                Text { text: "+"; font.family: Theme.font; font.pixelSize: 11; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
+                                Text { text: "SAVE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
                             }
                             MouseArea {
                                 id: saveBtnMa
@@ -579,7 +579,7 @@ Item {
                                 anchors.rightMargin: 8
                                 anchors.verticalCenter: inputBg.verticalCenter
                                 verticalAlignment: TextInput.AlignVCenter
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 9
                                 font.letterSpacing: 0.5
                                 color: Colours.textPrimary
@@ -785,7 +785,7 @@ Item {
                 id: toastText
                 anchors.centerIn: parent
                 text: toast.message
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 2
                 font.bold: true
@@ -845,7 +845,7 @@ Item {
 
                 Text {
                     text: TransitionConfig.isDirty ? "UNSAVED" : "SYNCED"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     font.letterSpacing: 2
                     font.bold: true
@@ -855,17 +855,17 @@ Item {
                 Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
 
                 Text { text: "⬢"; color: Theme.neon; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
-                Text { text: "ACTIVE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 2; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "ACTIVE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 2; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
-                Text { text: TransitionConfig.transitionType.toUpperCase(); font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1.5; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: TransitionConfig.transitionType.toUpperCase(); font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1.5; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
-                Text { text: TransitionConfig.transitionDuration.toFixed(2) + "s"; font.family: "Oxanium"; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: TransitionConfig.transitionDuration.toFixed(2) + "s"; font.family: Theme.font; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
-                Text { text: TransitionConfig.transitionFps + "FPS"; font.family: "Oxanium"; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: TransitionConfig.transitionFps + "FPS"; font.family: Theme.font; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
-                Text { text: "STEP " + TransitionConfig.transitionStep; font.family: "Oxanium"; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "STEP " + TransitionConfig.transitionStep; font.family: Theme.font; font.pixelSize: 9; color: Colours.textPrimary; anchors.verticalCenter: parent.verticalCenter }
                 Rectangle { width: 1; height: 12; color: CP.alpha(Theme.yellow, 0.3); anchors.verticalCenter: parent.verticalCenter }
-                Text { text: "BEZIER " + TransitionConfig.transitionBezier; font.family: "Oxanium"; font.pixelSize: 8; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "BEZIER " + TransitionConfig.transitionBezier; font.family: Theme.font; font.pixelSize: 8; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
             }
         }
 
@@ -899,9 +899,9 @@ Item {
                         strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "A"; font.family: "Oxanium"; font.pixelSize: 9; font.bold: true; color: Colours.accentPrimary }
+                        Text { anchors.centerIn: parent; text: "A"; font.family: Theme.font; font.pixelSize: 9; font.bold: true; color: Colours.accentPrimary }
                     }
-                    Text { text: "TOGGLE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "TOGGLE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Row {
                     spacing: 5
@@ -911,9 +911,9 @@ Item {
                         strokeColor: CP.alpha(Theme.red, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "ESC"; font.family: "Oxanium"; font.pixelSize: 7; font.bold: true; color: Colours.accentDanger }
+                        Text { anchors.centerIn: parent; text: "ESC"; font.family: Theme.font; font.pixelSize: 7; font.bold: true; color: Colours.accentDanger }
                     }
-                    Text { text: "CLOSE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "CLOSE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Row {
                     spacing: 5
@@ -923,9 +923,9 @@ Item {
                         strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "⌃S"; font.family: "Oxanium"; font.pixelSize: 8; font.bold: true; color: Colours.accentPrimary }
+                        Text { anchors.centerIn: parent; text: "⌃S"; font.family: Theme.font; font.pixelSize: 8; font.bold: true; color: Colours.accentPrimary }
                     }
-                    Text { text: "SAVE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "SAVE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Row {
                     spacing: 5
@@ -935,9 +935,9 @@ Item {
                         strokeColor: CP.alpha(Theme.cyan, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "⌃Z"; font.family: "Oxanium"; font.pixelSize: 8; font.bold: true; color: Colours.accentSecondary }
+                        Text { anchors.centerIn: parent; text: "⌃Z"; font.family: Theme.font; font.pixelSize: 8; font.bold: true; color: Colours.accentSecondary }
                     }
-                    Text { text: "REVERT"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "REVERT"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Row {
                     spacing: 5
@@ -947,9 +947,9 @@ Item {
                         strokeColor: CP.alpha(Theme.neon, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "R"; font.family: "Oxanium"; font.pixelSize: 9; font.bold: true; color: Colours.accentOk }
+                        Text { anchors.centerIn: parent; text: "R"; font.family: Theme.font; font.pixelSize: 9; font.bold: true; color: Colours.accentOk }
                     }
-                    Text { text: "REPLAY"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "REPLAY"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 }
                 Row {
                     spacing: 5
@@ -959,9 +959,9 @@ Item {
                         strokeColor: CP.alpha(Theme.yellow, 0.45)
                         strokeWidth: 1; inset: 0.5; cutBottomRight: 3
                         anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: "←→"; font.family: "Oxanium"; font.pixelSize: 9; font.bold: true; color: Colours.accentPrimary }
+                        Text { anchors.centerIn: parent; text: "←→"; font.family: Theme.font; font.pixelSize: 9; font.bold: true; color: Colours.accentPrimary }
                     }
-                    Text { text: "TYPE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "TYPE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
                 }
             }
 
@@ -990,7 +990,7 @@ Item {
                         anchors.centerIn: parent
                         spacing: 5
                         Text { text: "↺"; font.pixelSize: 12; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
-                        Text { text: "REVERT"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
+                        Text { text: "REVERT"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2; color: Colours.accentSecondary; anchors.verticalCenter: parent.verticalCenter }
                     }
                     MouseArea { id: revertMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: TransitionConfig.revert() }
 
@@ -1037,7 +1037,7 @@ Item {
                         anchors.centerIn: parent
                         spacing: 5
                         Text { text: "⬢"; font.pixelSize: 11; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
-                        Text { text: "SAVE"; font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 2; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
+                        Text { text: "SAVE"; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2; font.bold: true; color: Colours.accentPrimary; anchors.verticalCenter: parent.verticalCenter }
                     }
                     MouseArea { id: saveMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: TransitionConfig.save() }
 

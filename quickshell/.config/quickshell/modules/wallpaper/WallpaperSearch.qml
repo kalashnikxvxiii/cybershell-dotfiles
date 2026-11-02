@@ -236,7 +236,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: modelData
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 12
                         font.letterSpacing: 1
                         color: WC.prefixColors[modelData] || Theme.cyan
@@ -246,7 +246,7 @@ Item {
                         id: chipMeasure
                         visible: false
                         text: modelData
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 12
                     }
                 }
@@ -264,7 +264,7 @@ Item {
                     && searchInput.text.startsWith("@")
                     && _activePrefixes.indexOf("#") === -1
             text: _placeholderPrefix
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             color: CP.alpha(Colours.textMuted, 0.35)
         }
@@ -293,7 +293,7 @@ Item {
                     })
                     return remaining.join(" ") + (root._activePrefixes.length === 0 ? " #filter" : "")
                 }
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.letterSpacing: 1
                 color: CP.alpha(Colours.textMuted, 0.3)
@@ -330,7 +330,7 @@ Item {
             width: parent.width - x - submitBtn.width - stopBtn.width - 12
             height: parent.height
             verticalAlignment: TextInput.AlignVCenter
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             color: Colours.textPrimary
             selectionColor: CP.alpha(Theme.cyan, 0.3)
@@ -446,7 +446,7 @@ Item {
         anchors.right: parent.right
         anchors.margins: 4
         text: root.searching ? "SEARCHING..." : ""
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 1
         color: Colours.accentPrimary

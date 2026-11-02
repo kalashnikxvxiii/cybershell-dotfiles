@@ -24,7 +24,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         width: 90
         text: root.label.toUpperCase()
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 1.5
         color: Colours.textMuted
@@ -55,7 +55,7 @@ Item {
         anchors.rightMargin: 4
         anchors.verticalCenter: inputBg.verticalCenter
         verticalAlignment: TextInput.AlignVCenter
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 10
         color: Colours.textPrimary
         selectByMouse: true
@@ -93,7 +93,7 @@ Item {
         anchors.rightMargin: 6
         anchors.verticalCenter: inputBg.verticalCenter
         text: root.suffix
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 1
         color: Colours.textMuted

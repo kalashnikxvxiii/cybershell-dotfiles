@@ -54,7 +54,7 @@ Item {
         y: 62
         text: "STATION"
         color: CP.alpha(Theme.red, 0.9)
-        font { family: "Oxanium"; pixelSize: 10; letterSpacing: 1 }
+        font { family: Theme.font; pixelSize: 10; letterSpacing: 1 }
     }
     Rectangle {
         y: 76
@@ -68,7 +68,7 @@ Item {
         elide: Text.ElideRight
         text: root.station
         color: Theme.red
-        font { family: "Oxanium"; pixelSize: 18; bold: true }
+        font { family: Theme.font; pixelSize: 18; bold: true }
     }
 
     Text {
@@ -76,7 +76,7 @@ Item {
         visible: !AudioControlState.eqAvailable
         text: "EASYEFFECTS REQUIRED"
         color: Theme.red
-        font { family: "Oxanium"; pixelSize: 14; bold: true; letterSpacing: 2 }
+        font { family: Theme.font; pixelSize: 14; bold: true; letterSpacing: 2 }
     }
 
     OptionRow {
@@ -93,7 +93,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         text: "Preset"
         color: CP.alpha(Theme.red, 0.9)
-        font { family: "Oxanium"; pixelSize: 15 }
+        font { family: Theme.font; pixelSize: 15 }
     }
     Item {
         x: 110
@@ -121,7 +121,7 @@ Item {
             anchors.centerIn: parent
             text: AudioControlState.eqPreset
             color: Theme.cyan
-            font { family: "Oxanium"; pixelSize: 15 }
+            font { family: Theme.font; pixelSize: 15 }
         }
         Arrow {
             anchors.right: parent.right
@@ -208,7 +208,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: (band.value > 0 ? "+" : "") + band.value
                                 color: Theme.cyan
-                                font { family: "Oxanium"; pixelSize: 13 }
+                                font { family: Theme.font; pixelSize: 13 }
                             }
                         }
                         MouseArea {
@@ -231,7 +231,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     text: root.labels[band.index]
                     color: CP.alpha(Theme.red, 0.9)
-                    font { family: "Oxanium"; pixelSize: 9 }
+                    font { family: Theme.font; pixelSize: 9 }
                 }
             }
         }
@@ -270,7 +270,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: "Volume boost"
                 color: CP.alpha(Theme.red, 0.9)
-                font { family: "Oxanium"; pixelSize: 15 }
+                font { family: Theme.font; pixelSize: 15 }
             }
             Item {
                 x: 150
@@ -312,7 +312,7 @@ Item {
                         anchors.centerIn: parent
                         text: "+" + AudioControlState.eqBoost + " dB"
                         color: Theme.cyan
-                        font { family: "Oxanium"; pixelSize: 12 }
+                        font { family: Theme.font; pixelSize: 12 }
                     }
                 }
                 Arrow {
@@ -344,7 +344,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             text: option.label
             color: CP.alpha(Theme.red, 0.9)
-            font { family: "Oxanium"; pixelSize: 15 }
+            font { family: Theme.font; pixelSize: 15 }
         }
         Text {
             anchors.right: toggle.left
@@ -353,7 +353,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             text: option.on ? "ON" : "OFF"
             color: option.on ? Theme.cyan : Theme.red
-            font { family: "Oxanium"; pixelSize: 14 }
+            font { family: Theme.font; pixelSize: 14 }
         }
         Item {
             id: toggle

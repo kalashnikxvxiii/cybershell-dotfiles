@@ -116,7 +116,7 @@ Item {
             x: textViewport.marqueeActive ? textViewport.marqueeOffset : (textViewport.width - label1.implicitWidth) / 2
             anchors.verticalCenter: parent.verticalCenter
             text: root.displayText
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             font.italic: true
             font.letterSpacing: 2

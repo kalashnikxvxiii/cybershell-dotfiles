@@ -39,7 +39,7 @@ Item {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: root.label.toUpperCase()
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.5
             color: Colours.textMuted
@@ -49,7 +49,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: (root.isInt ? Math.round(root.value).toString()
                               : root.value.toFixed(root.decimals)) + root.suffix
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             color: Colours.accentPrimary
         }

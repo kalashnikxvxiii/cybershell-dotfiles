@@ -32,7 +32,7 @@ Item {
         id: lbl
         anchors.centerIn: parent
         text: root.label
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 10
         font.letterSpacing: 1.2
         color: ma.containsMouse ? root.accent : CP.alpha(root.accent, 0.45)

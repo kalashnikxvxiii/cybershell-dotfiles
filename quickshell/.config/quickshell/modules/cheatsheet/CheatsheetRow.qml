@@ -53,7 +53,7 @@ Item {
         width: chips.x - x - 8
         elide: Text.ElideRight
         text: root.row.name.toUpperCase()
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 12
         font.bold: true
         font.letterSpacing: 1
@@ -76,7 +76,7 @@ Item {
         width: parent.width - 12
         elide: Text.ElideRight
         text: root.row.note
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         color: "#93a6aa"
     }

@@ -39,7 +39,7 @@ Item {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "⚠ EASYEFFECTS REQUIRED"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 14
                 font.letterSpacing: 3
                 font.bold: true
@@ -82,7 +82,7 @@ Item {
                 Text {
                     text: "· CURRENT:"
                     color: CP.alpha(Theme.neon, 0.65)
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.letterSpacing: 2
                     font.bold: true
@@ -91,7 +91,7 @@ Item {
                 ChromaticText {
                     text: AudioControlState.eqPreset.toUpperCase()
                     color: Theme.neon
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 14
                     font.letterSpacing: 2
                     font.bold: true
@@ -151,7 +151,7 @@ Item {
                             id: chipTxt
                             anchors.centerIn: parent
                             text: modelData.toUpperCase()
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 11
                             font.letterSpacing: 1
                             font.bold: true
@@ -211,7 +211,7 @@ Item {
                     Text {
                         id: applyTxt
                         text: AudioControlState.eqPending ? "APPLY" : "SAVED"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 12
                         font.letterSpacing: 1.5
                         font.bold: true
@@ -259,7 +259,7 @@ Item {
                 delegate: Text {
                     required property int index
                     text: root.bandLabels[index]
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1
                     color: CP.alpha(Theme.neon, 0.65)
@@ -296,29 +296,29 @@ Item {
 
                 Row {
                     spacing: 4
-                    Text { text: "SELECTED"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
+                    Text { text: "SELECTED"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
                     Text {
                         text: AudioControlState.eqSelectedBand >= 0 ? root.bandFreqs[AudioControlState.eqSelectedBand] + " Hz" : "—"
-                        font.family: "Oxanium"; font.pixelSize: 10; color: "white"
+                        font.family: Theme.font; font.pixelSize: 10; color: "white"
                     }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "GAIN"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
+                    Text { text: "GAIN"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
                     Text {
                         text: AudioControlState.eqSelectedBand >= 0 ? (AudioControlState.eqBands[AudioControlState.eqSelectedBand] > 0 ? "+" : "") + AudioControlState.eqBands[AudioControlState.eqSelectedBand] + " dB" : "—"
-                        font.family: "Oxanium"; font.pixelSize: 10; font.bold: true; color: Colours.accentPrimary
+                        font.family: Theme.font; font.pixelSize: 10; font.bold: true; color: Colours.accentPrimary
                     }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "Q"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
-                    Text { text: "1.0"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                    Text { text: "Q"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
+                    Text { text: "1.0"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
                 }
                 Row {
                     spacing: 4
-                    Text { text: "MODE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
-                    Text { text: "BELL"; font.family: "Oxanium"; font.pixelSize: 10; color: "white" }
+                    Text { text: "MODE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1; font.bold: true; color: Theme.neon }
+                    Text { text: "BELL"; font.family: Theme.font; font.pixelSize: 10; color: "white" }
                 }
             }
         }

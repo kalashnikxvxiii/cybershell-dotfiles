@@ -57,7 +57,7 @@ Item {
 
         Text {
             text: "◢ AUTHORIZATION REQUIRED"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             font.bold: true
@@ -71,7 +71,7 @@ Item {
                   + (root.request.description !== "" ? "  ·  " + root.request.description : "")
                 : ""
             elide: Text.ElideRight
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             color: "#e8e4c0"
         }

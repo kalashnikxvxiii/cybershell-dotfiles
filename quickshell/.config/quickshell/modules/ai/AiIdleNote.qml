@@ -93,7 +93,7 @@ Item {
             width: parent.width
             text: "\u25e2 " + root.line
             wrapMode: Text.Wrap
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.4
             lineHeight: 1.3
@@ -104,7 +104,7 @@ Item {
             id: writing
             visible: root.chat?.recapping ?? false
             text: "\u203b RECAP \u00b7 WRITING\u2026"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.4
             color: Theme.magenta
@@ -121,7 +121,7 @@ Item {
             Text {
                 id: mark
                 text: "\u203b"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 color: Theme.magenta
             }

@@ -84,7 +84,7 @@ Item {
             anchors.centerIn: parent
             text: btn.label
             color: root.accent1
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h1 - 1
         }
         MouseArea {
@@ -163,7 +163,7 @@ Item {
             Layout.fillWidth: true
             text: "Tkla:__;v.0.02"
             color: root.accent2
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h2
         }
 
@@ -183,7 +183,7 @@ Item {
                 anchors.leftMargin: 10
                 text: "RADIOPORT"
                 color: root.accent1
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.h1
             }
             Text {
@@ -325,7 +325,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "NO SIGNAL"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: root.h1
                         color: root.accent2
                         visible: coverImg.status !== Image.Ready || !root.activePlayer
@@ -479,7 +479,7 @@ Item {
         Text {
             text: "now playing"
             color: root.accent2
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h2
         }
         Rectangle { // separator
@@ -495,7 +495,7 @@ Item {
                     + (root.activePlayer.trackTitle || root.activePlayer.identity || "Unknown Title")
                   : "Nessun player"
             color: Theme.red
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h1
             wrapMode: Text.WordWrap
             maximumLineCount: 3
@@ -517,7 +517,7 @@ Item {
             Text {
                 text: "volume"
                 color: Theme.red
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.h1
             }
             Item { Layout.fillWidth: true } // spacer
@@ -528,7 +528,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 text: volRow.raw !== null && volRow.raw !== undefined ? Math.round(volRow.raw * 100) + "%" : "N/A"
                 color: root.accent1
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.h1
             }
             MiniVolButton { label: "D"; step: 0.01 }
@@ -572,7 +572,7 @@ Item {
                     text: playerItem.modelData.trackTitle || playerItem.modelData.identity || "Unknown Player"
                     elide: Text.ElideRight
                     color: root.accent1
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: root.h1
                 }
                 MouseArea {
@@ -592,7 +592,7 @@ Item {
             Layout.fillWidth: true
             text: "cyberdeckNutz"
             color: root.accent2
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h2
         }
     }

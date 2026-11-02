@@ -47,7 +47,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: tab.modelData
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 1.2
                     color: tab.current ? Theme.cyan : CP.alpha(Theme.cyan, 0.45)

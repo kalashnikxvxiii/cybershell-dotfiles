@@ -170,7 +170,7 @@ Item {
                 id: moreLabel
                 anchors.centerIn: parent
                 text: root.expanded ? "SHOW LESS" : "SHOW MORE"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 font.letterSpacing: 1.5
                 font.bold: true

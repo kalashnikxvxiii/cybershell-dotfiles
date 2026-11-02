@@ -366,7 +366,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "◢ " + root.title.toUpperCase()
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 13
             font.bold: true
             font.letterSpacing: 1.5
@@ -376,7 +376,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: "ESC"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             color: "#8a9a9c"
@@ -455,7 +455,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     text: root.keyLabel(slot.modelData.key)
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 24
                     font.bold: true
                     color: slot.isSelected ? "#00060e" : Theme.yellow
@@ -470,7 +470,7 @@ Item {
                     maximumLineCount: 2
                     elide: Text.ElideRight
                     text: slot.modelData.label.toUpperCase()
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 11
                     font.letterSpacing: 1
                     color: slot.isSelected ? "#00060e" : "#d8e6e8"

@@ -79,7 +79,20 @@ Singleton {
         root._save()
     }
 
-    function _save() { store.setText(JSON.stringify({ current: root.current, custom: root.custom }, null, 2)) }
+    // -- Fonts: one for the HUD, one for everything else. Only those installed ------
+    readonly property var fonts: ["Oxanium", "Quantico", "Tektur"].filter(f => Qt.fontFamilies().indexOf(f) >= 0)
+    property string font: "Oxanium"
+    property string hudFont: root.fonts.indexOf("Quantico") >= 0 ? "Quantico" : "Oxanium"
+
+    // role: "font" or "hudFont"
+    function setFont(role, family) {
+        if (root.fonts.indexOf(family) < 0 || (role !== "font" && role !== "hudFont"))
+            return
+        root[role] = family
+        root._save()
+    }
+
+    function _save() { store.setText(JSON.stringify({ current: root.current, custom: root.custom, font: root.font, hudFont: root.hudFont }, null, 2)) }
 
     // Read blocking at creation, like HudState: otherwise the shell paints once in the default
     FileView {
@@ -98,6 +111,10 @@ Singleton {
             root.custom = ok
             if (d.current && (root.builtin[d.current] || ok[d.current]))
                 root.current = d.current
+            if (root.fonts.indexOf(d.font) >= 0)
+                root.font = d.font
+            if (root.fonts.indexOf(d.hudFont) >= 0)
+                root.hudFont = d.hudFont
         } catch (e) {}
     }
 }

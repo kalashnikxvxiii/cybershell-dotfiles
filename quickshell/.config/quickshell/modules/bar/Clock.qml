@@ -85,7 +85,7 @@ Item {
         id: label
         anchors.centerIn: parent
         text:               root.timeStr
-        font.family:        "Oxanium"
+        font.family:        Theme.font
         font.pixelSize:     14
         font.bold:          true
         font.letterSpacing: 3

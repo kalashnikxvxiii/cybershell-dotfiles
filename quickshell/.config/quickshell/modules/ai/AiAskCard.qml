@@ -94,7 +94,7 @@ Item {
 
             Text {
                 text: "\u25e2 CLAUDE IS ASKING"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 font.letterSpacing: 2
                 font.bold: true
@@ -118,7 +118,7 @@ Item {
                         text: String(q.modelData.header ?? "").toUpperCase()
                             + (q.multi ? "  \u00b7  SELECT ANY" : "")
                         elide: Text.ElideRight
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 8
                         font.letterSpacing: 2
                         font.bold: true
@@ -129,7 +129,7 @@ Item {
                         width: parent.width
                         text: q.modelData.question ?? ""
                         wrapMode: Text.Wrap
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 12
                         color: "#e8f0f4"
                     }
@@ -177,7 +177,7 @@ Item {
                                     width: parent.width
                                     text: opt.modelData.label ?? ""
                                     wrapMode: Text.Wrap
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 11
                                     font.bold: true
                                     color: opt.on ? Theme.cyan : "#d8e0e8"
@@ -188,7 +188,7 @@ Item {
                                     visible: text !== ""
                                     text: opt.modelData.description ?? ""
                                     wrapMode: Text.Wrap
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 9
                                     color: CP.alpha("#d8e0e8", 0.50)
                                 }
@@ -227,7 +227,7 @@ Item {
                             verticalAlignment: TextInput.AlignVCenter
                             selectByMouse: true
                             clip: true
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 11
                             color: "#d8e0e8"
                             selectionColor: CP.alpha(Theme.cyan, 0.35)

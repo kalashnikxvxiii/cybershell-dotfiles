@@ -83,7 +83,7 @@ Item {
         anchors.right: levelMeter.left
         anchors.rightMargin: 6
         text: root.displayName
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 1
         font.bold: true
@@ -101,7 +101,7 @@ Item {
             if (root.sampleRate) parts.push("SR " + root.sampleRate)
             return parts.join("  ")
         }
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         color: muted ? Colours.textMuted : CP.alpha(Colours.textMuted, 0.85)
         elide: Text.ElideRight
@@ -153,7 +153,7 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 3
         text: muted ? "MUTE" : (root.volPercent + "%")
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.bold: true
         color: muted ? Colours.textMuted : root.meter
@@ -163,7 +163,7 @@ Item {
         anchors.top: rowVolTxt.bottom
         anchors.topMargin: 1
         text: muted ? "MUTE" : (volPercent > 0 ? "IDLE" : "OFF")
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         color: CP.alpha(Colours.textMuted, 0.85)
     }

@@ -52,7 +52,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: btn.label
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             font.bold: true
             font.letterSpacing: 2
@@ -67,7 +67,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             text: btn.note
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             color: CP.alpha(root.fg, 0.45)
         }
@@ -118,7 +118,7 @@ Item {
                 wrapMode: Text.Wrap
                 text: "Claude can be used with your Claude subscription or billed "
                     + "based on API usage through your Console account."
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 color: CP.alpha(root.fg, 0.70)
             }
@@ -129,7 +129,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
                 text: root.session?.loginError ?? ""
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: Theme.red
             }
@@ -138,7 +138,7 @@ Item {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: "HOW DO YOU WANT TO LOG IN?"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 2
                 font.bold: true
@@ -178,7 +178,7 @@ Item {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: "SIGNING IN\u2026"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.letterSpacing: 3
                 font.bold: true
@@ -201,7 +201,7 @@ Item {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: "CONTINUE IN BROWSER"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.letterSpacing: 3
                 font.bold: true
@@ -212,7 +212,7 @@ Item {
                 width: parent.width
                 wrapMode: Text.Wrap
                 text: "If the browser didn't open, visit this URL:"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: CP.alpha(root.fg, 0.60)
             }
@@ -267,7 +267,7 @@ Item {
                 width: parent.width
                 wrapMode: Text.Wrap
                 text: "Or, paste your authorization code manually:"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: CP.alpha(root.fg, 0.60)
             }
@@ -277,7 +277,7 @@ Item {
                 visible: text !== ""
                 wrapMode: Text.Wrap
                 text: root.session?.loginError ?? ""
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: Theme.red
             }

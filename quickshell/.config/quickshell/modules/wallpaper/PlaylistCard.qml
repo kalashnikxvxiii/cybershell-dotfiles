@@ -186,7 +186,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: (root.index + 1).toString()
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1
                 color: Colours.accentPrimary
@@ -253,7 +253,7 @@ Item {
             anchors.rightMargin: 4
             anchors.verticalCenter: parent.verticalCenter
             text: (_resolvedTitle !== "" ? _resolvedTitle : root.path.split("/").pop().replace(/\.[^.]+$/, "")).toUpperCase()
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1
             color: Colours.textMuted
@@ -286,7 +286,7 @@ Item {
                     id: _srcLbl
                     anchors.centerIn: parent
                     text: root.source.toUpperCase()
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 7
                     font.letterSpacing: 1
                     color: root.source === "wpe" ? Colours.accentPrimary : Colours.accentSecondary
@@ -309,7 +309,7 @@ Item {
                     id: _typLbl
                     anchors.centerIn: parent
                     text: root.type.toUpperCase()
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 7
                     font.letterSpacing: 1
                     color: Colours.textMuted
@@ -345,7 +345,7 @@ Item {
                 anchors.right: _secLbl.left
                 verticalAlignment: TextInput.AlignVCenter
                 text: root.entryInterval > 0 ? root.entryInterval.toString() : ""
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 color: Colours.textPrimary
                 validator: IntValidator { bottom: 1; top: 86400 }

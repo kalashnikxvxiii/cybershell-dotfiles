@@ -95,7 +95,7 @@ Item {
                         Text {
                             id: _titleText
                             text: "PLAYLIST"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 48
                             font.letterSpacing: 8
                             color: Colours.accentPrimary
@@ -144,7 +144,7 @@ Item {
                                     id: _nameLabel
                                     visible: !_nameField.renaming
                                     text: (PlaylistState.activeName || PlaylistState.playingName).toUpperCase()
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 13
                                     font.letterSpacing: 3
                                     color: PlaylistState.activeName === PlaylistState.playingName && PlaylistState.isPlaying
@@ -176,7 +176,7 @@ Item {
                                     id: _renameInput
                                     visible: _nameField.renaming
                                     anchors.verticalCenter: parent.verticalCenter
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 13
                                     font.letterSpacing: 3
                                     color: Colours.accentSecondary
@@ -206,7 +206,7 @@ Item {
                                 text: PlaylistState.playingName !== ""
                                     ? "· PLAYING: " + PlaylistState.playingName.toUpperCase()
                                     : "· READY"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 9
                                 font.letterSpacing: 2
                                 color: CP.alpha(Theme.yellow, 0.65)
@@ -216,7 +216,7 @@ Item {
                                 visible: PlaylistState.activeName != ""
                                 text: "· " + PlaylistState.entries.length
                                     + (PlaylistState.entries.length === 1 ? " ENTRY" : " ENTRIES")
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 9
                                 font.letterSpacing: 2
                                 color: CP.alpha(Theme.cyan, 0.75)
@@ -325,7 +325,7 @@ Item {
                     text: "playlist name..."
                     visible: _nameInput.text === ""
                     verticalAlignment: Text.AlignVCenter
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 16
                     color: CP.alpha(Colours.textMuted, 0.4)
                 }
@@ -335,7 +335,7 @@ Item {
                     anchors.leftMargin: 15
                     anchors.rightMargin: 15
                     verticalAlignment: TextInput.AlignVCenter
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 16
                     color: Colours.textPrimary
 
@@ -388,7 +388,7 @@ Item {
                                 id: _modeTxt
                                 anchors.centerIn: parent
                                 text: PlaylistState.intervalMode === "fixed" ? "FIXED" : "PER-ENTRY"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 14
                                 font.letterSpacing: 2
                                 color: Colours.accentSecondary
@@ -453,7 +453,7 @@ Item {
                                     selectByMouse: true
                                     horizontalAlignment: TextInput.AlignHCenter
                                     verticalAlignment: TextInput.AlignVCenter
-                                    font.family: "Oxanium"; font.pixelSize: 15
+                                    font.family: Theme.font; font.pixelSize: 15
                                     color: _intervalSlot._disabled ? Colours.textMuted : Colours.accentPrimary
                                     validator: IntValidator { bottom: 0; top: 99 }
 
@@ -485,7 +485,7 @@ Item {
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "h:"; font.family: "Oxanium"; font.pixelSize: 14; color: Colours.textMuted
+                                    text: "h:"; font.family: Theme.font; font.pixelSize: 14; color: Colours.textMuted
                                 }
 
                                 TextInput {
@@ -495,7 +495,7 @@ Item {
                                     selectByMouse: true
                                     horizontalAlignment: TextInput.AlignHCenter
                                     verticalAlignment: TextInput.AlignVCenter
-                                    font.family: "Oxanium"; font.pixelSize: 15
+                                    font.family: Theme.font; font.pixelSize: 15
                                     color: _intervalSlot._disabled ? Colours.textMuted : Colours.accentPrimary
                                     validator: IntValidator { bottom: 0; top: 59 }
 
@@ -526,7 +526,7 @@ Item {
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "m:"; font.family: "Oxanium"; font.pixelSize: 14; color: Colours.textMuted
+                                    text: "m:"; font.family: Theme.font; font.pixelSize: 14; color: Colours.textMuted
                                 }
 
                                 TextInput {
@@ -536,7 +536,7 @@ Item {
                                     selectByMouse: true
                                     horizontalAlignment: TextInput.AlignHCenter
                                     verticalAlignment: TextInput.AlignVCenter
-                                    font.family: "Oxanium"; font.pixelSize: 15
+                                    font.family: Theme.font; font.pixelSize: 15
                                     color: _intervalSlot._disabled ? Colours.textMuted : Colours.accentPrimary
                                     validator: IntValidator { bottom: 0; top: 59 }
 
@@ -568,7 +568,7 @@ Item {
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "s"; font.family: "Oxanium"; font.pixelSize: 14; color: Colours.textMuted
+                                    text: "s"; font.family: Theme.font; font.pixelSize: 14; color: Colours.textMuted
                                 }
                             }
                         }
@@ -596,7 +596,7 @@ Item {
                                 id: _shufTxt
                                 anchors.centerIn: parent
                                 text: "\u21c5 SHUF"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 14
                                 font.letterSpacing: 2
                                 color: PlaylistState.shuffle ? Colours.accentPrimary : Colours.textMuted
@@ -623,7 +623,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: PlaylistState.sync ? "\u21c4 SYNC" : "\u21d4 INDEP"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 14
                                 font.letterSpacing: 2
                                 color: PlaylistState.sync ? Colours.accentSecondary : Colours.textMuted
@@ -668,7 +668,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: _screenSel._label(PlaylistState.screenMode)
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 14
                                 font.letterSpacing: 2
                                 color: PlaylistState.screenMode === "both" ? Colours.textMuted : Colours.accentSecondary
@@ -762,7 +762,7 @@ Item {
                                     ? p(h) + ":" + p(m) + ":" + p(sec)
                                     : p(m) + ":" + p(sec)
                             }
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 11
                             font.letterSpacing: 1.5
                             color: Colours.accentSecondary
@@ -921,7 +921,7 @@ Item {
                     text: PlaylistState.playingEntries.length > 0
                         ? (_idx + 1) + "/" + PlaylistState.playingEntries.length
                         : "0/0"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     color: Colours.textMuted
                 }
@@ -1002,7 +1002,7 @@ Item {
                                     anchors.centerIn: parent
                                     anchors.horizontalCenterOffset: playing ? 5 : 0
                                     text: modelData.toUpperCase()
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 10
                                     font.letterSpacing: 1
                                     color: playing       ? Colours.accentPrimary
@@ -1045,7 +1045,7 @@ Item {
                         id: _clearTxt
                         anchors.centerIn: parent
                         text: "\u2715 CLEAR"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 7
                         font.letterSpacing: 1
                         color: Colours.accentDanger
@@ -1093,7 +1093,7 @@ Item {
             anchors.centerIn: parent
             visible: PlaylistState.entries.length === 0
             text: "NO ENTRIES\nADD WITH [P] ON A WALLPAPER"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 1
             color: CP.alpha(Colours.textMuted, 0.35)
@@ -1394,7 +1394,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: _screenSel._label(modelData)
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.letterSpacing: 1
                         color: _active ? Colours.accentSecondary : Colours.textMuted
@@ -1450,7 +1450,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: PlaylistState.pendingDelete && PlaylistState.pendingDelete.type === "playlist"
                         ? "DELETE PLAYLIST?" : "REMOVE WALLPAPER?"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.letterSpacing: 3
                     color: Colours.accentDanger
@@ -1461,7 +1461,7 @@ Item {
                     width: 260
                     horizontalAlignment: Text.AlignHCenter
                     text: PlaylistState.pendingDelete ? PlaylistState.pendingDelete.label.toUpperCase() : ""
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1
                     color: Colours.textMuted
@@ -1487,7 +1487,7 @@ Item {
                             id: _okTxt
                             anchors.centerIn: parent
                             text: "DELETE"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             color: Colours.accentDanger
@@ -1514,7 +1514,7 @@ Item {
                             id: _cancelTxt
                             anchors.centerIn: parent
                             text: "CANCEL"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.letterSpacing: 1
                             color: Colours.textMuted

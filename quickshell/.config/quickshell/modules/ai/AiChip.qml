@@ -63,7 +63,7 @@ Item {
             visible: root.label !== ""
             anchors.verticalCenter: parent.verticalCenter
             text: root.label
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.2
             color: (ma.containsMouse && root.interactive)

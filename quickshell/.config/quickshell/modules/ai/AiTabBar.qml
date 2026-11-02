@@ -115,7 +115,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         text: tab.modelData.title !== "" ? tab.modelData.title : "NEW CHAT"
                         elide: Text.ElideRight
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 11
                         font.letterSpacing: tab.modelData.title !== "" ? 0.3 : 2
                         color: tab.front ? root.fg

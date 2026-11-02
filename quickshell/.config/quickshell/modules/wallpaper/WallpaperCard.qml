@@ -416,7 +416,7 @@ Item {
                         text: root.resolution !== ""
                             ? root.resolution.replace("x", "\u00d7")
                             : root.title.toUpperCase()
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 13
                         font.letterSpacing: 2
                         color: Colours.textPrimary
@@ -656,7 +656,7 @@ Item {
                     id: _plTxt
                     anchors.centerIn: parent
                     text: playlistBadge._plPos.toString()
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 16 * playlistBadge._plScale
                     color: Theme.yellow
 

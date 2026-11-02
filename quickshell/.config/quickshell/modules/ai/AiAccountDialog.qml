@@ -176,7 +176,7 @@ Item {
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
                 text: "ACCOUNT & USAGE"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 13
                 font.letterSpacing: 3
                 font.bold: true
@@ -243,7 +243,7 @@ Item {
                 Text {
                     visible: (root.session?.usageError ?? "") !== ""
                     text: "RETRY"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 2
                     font.bold: true
@@ -274,7 +274,7 @@ Item {
                 Text {
                     visible: root.claudeAi
                     text: "Manage usage on claude.ai \u2197"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 11
                     font.underline: manage.containsMouse
                     color: manage.containsMouse ? Theme.cyan : CP.alpha(root.fg, 0.55)
@@ -320,7 +320,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: parent.modelData.label
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 9
                                     font.letterSpacing: 2
                                     font.bold: true
@@ -362,7 +362,7 @@ Item {
                                 width: parent.width
                                 text: parent.modelData.headline
                                 wrapMode: Text.Wrap
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 12
                                 color: root.fg
                             }
@@ -372,7 +372,7 @@ Item {
                                 leftPadding: 10
                                 text: parent.modelData.body
                                 wrapMode: Text.Wrap
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 10
                                 color: CP.alpha(root.fg, 0.55)
                             }
@@ -386,7 +386,7 @@ Item {
 
                         Text {
                             text: "Skills, subagents, plugins, and MCP servers"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 12
                             font.bold: true
                             color: root.fg
@@ -446,7 +446,7 @@ Item {
     // Inline components do not see the file's ids: the colours are spelled out
 
     component SectionTitle: Text {
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 2
         font.bold: true
@@ -456,7 +456,7 @@ Item {
     component Caption: Text {
         width: parent ? parent.width : 0
         wrapMode: Text.Wrap
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         color: CP.alpha("#d8e0e8", 0.40)
     }
@@ -472,7 +472,7 @@ Item {
             id: rowLabel
             anchors.left: parent.left
             text: row.label
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             color: CP.alpha("#d8e0e8", 0.45)
         }
@@ -485,7 +485,7 @@ Item {
             horizontalAlignment: Text.AlignRight
             text: row.value
             elide: Text.ElideLeft
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             color: "#d8e0e8"
         }

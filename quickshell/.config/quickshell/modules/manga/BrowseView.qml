@@ -91,7 +91,7 @@ Item {
                 id: modeLabel
                 anchors.centerIn: parent
                 text: root.searchMode === "author" ? "AUTHOR" : "TITLE"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 font.letterSpacing: 1.5
                 font.bold: true
@@ -150,7 +150,7 @@ Item {
                          : modeChip.visible ? modeChip.left : parent.right
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 13
             font.letterSpacing: 1
             color: Colours.textPrimary
@@ -195,7 +195,7 @@ Item {
             : MangaService.error     ? "◢ ERROR: " + MangaService.error
             : MangaService.results.length === 0 ? "◢ NO RESULTS"
             : "◢ " + MangaService.results.length + " OF " + MangaService.total
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 2
         font.bold: true
@@ -225,7 +225,7 @@ Item {
             id: nsfwLabel
             anchors.centerIn: parent
             text: "NSFW"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 1.5
             font.bold: true
@@ -272,7 +272,7 @@ Item {
             anchors.centerIn: parent
             text: srcBtn.mode === "all" ? "ALL SOURCES"
                 : srcBtn.mode === "mangaworld" ? "MANGAWORLD" : "MANGADEX"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 1.5
             font.bold: true
@@ -321,7 +321,7 @@ Item {
             id: genresLabel
             anchors.centerIn: parent
             text: root.selectedTags.length > 0 ? "GENRES " + root.selectedTags.length : "GENRES"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 1.5
             font.bold: true
@@ -374,7 +374,7 @@ Item {
                         id: chipLabel
                         anchors.centerIn: parent
                         text: chip.modelData.name.toUpperCase()
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 9
                         font.letterSpacing: 1
                         font.bold: true
@@ -429,7 +429,7 @@ Item {
                         id: aLabel
                         anchors.centerIn: parent
                         text: aChip.modelData.name + "  " + aChip.modelData.works
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 9
                         font.letterSpacing: 0.5
                         color: aChip.on ? Theme.void_ : CP.alpha(Colours.textMuted, 0.85)
@@ -543,7 +543,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: card.mrating.toUpperCase()
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 12
                         font.letterSpacing: 1.5
                         font.bold: true
@@ -575,7 +575,7 @@ Item {
                         id: srcTag
                         anchors.centerIn: parent
                         text: parent.both ? "MD+MW" : (card.msrc === "mangaworld" ? "MW" : "MD")
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 8
                         font.letterSpacing: 0.5
                         font.bold: true
@@ -602,7 +602,7 @@ Item {
                 anchors.left: art.left
                 anchors.right: art.right
                 text: card.mtitle
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 13
                 font.letterSpacing: 0.5
                 color: cardMa.containsMouse ? Colours.accentSecondary : Colours.textPrimary

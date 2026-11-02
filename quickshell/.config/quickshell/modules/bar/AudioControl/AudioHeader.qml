@@ -68,7 +68,7 @@ Item {
             var hex = (root.expanded && root.hexId !== "") ? " " + root.hexId : ""
             return "◢ SIGNAL · " + status + hex
         }
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: root.expanded ? 16 : 13
         font.letterSpacing: 2
         font.bold: true
@@ -93,7 +93,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: muted ? "MUTE" : (root.volPercent + "%")
             color: muted ? Colours.textMuted : Colours.accentPrimary
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 22
             font.bold: true
             glitching: root._volGlitching
@@ -123,7 +123,7 @@ Item {
                     id: nameLabel
                     x: nameViewport.marqueeActive ? nameViewport.marqueeOffset : 0
                     text: root.sinkName
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: root.expanded ? 14 : 12
                     font.letterSpacing: 1.5
                     font.bold: true
@@ -148,7 +148,7 @@ Item {
                 width: parent.width
                 elide: Text.ElideRight
                 text: root.sampleSpec
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1
                 color: Colours.textMuted
@@ -172,7 +172,7 @@ Item {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: "▶ FLOW"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             font.letterSpacing: 2
             font.bold: true
@@ -237,7 +237,7 @@ Item {
                 id: muteTxt
                 anchors.centerIn: parent
                 text: root.muted ? "UNMUTE" : "MUTE"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 color: muteMa.containsMouse ? Colours.accentSecondary : CP.alpha(Colours.accentSecondary, 0.65)
@@ -285,7 +285,7 @@ Item {
                 Text {
                     id: expandTxt
                     text: root.expanded ? "COLLAPSE" : "EXPAND"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     color: expandMa.containsMouse ? Colours.accentSecondary : CP.alpha(Colours.accentSecondary, 0.8)

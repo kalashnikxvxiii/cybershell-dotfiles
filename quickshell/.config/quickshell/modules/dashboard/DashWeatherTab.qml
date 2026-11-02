@@ -129,7 +129,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             visible: root.loading || root.hasError
             text: root.loading ? "Loading weather..." : "Could not load weather data"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             color: root.hasError ? Theme.red : Colours.textSecondary
         }
@@ -143,14 +143,14 @@ Item {
                 spacing: 2
                 Text {
                     text: root.city
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: Font.Bold
                     color: Colours.textPrimary
                 }
                 Text {
                     text: new Date().toLocaleDateString(Qt.locale(), "dddd, MMMM d")
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     color: Colours.textSecondary
                 }
@@ -191,14 +191,14 @@ Item {
                     spacing: -2
                     Text {
                         text: root.tempStr
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 28
                         font.weight: Font.Bold
                         color: Colours.accentPrimary
                     }
                     Text {
                         text: root.condition
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         color: Colours.textSecondary
                     }
@@ -222,7 +222,7 @@ Item {
             Layout.topMargin: 2
             visible: !root.loading && !root.hasError && root.forecast.length > 0
             text: "5-Day Forecast"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.weight: Font.Bold
             color: Colours.textPrimary
@@ -258,7 +258,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: forecastItem.index === 0 ? "Today" : forecastItem.modelData.date.toLocaleDateString(Qt.locale(), "ddd")
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.weight: Font.Bold
                             color: Colours.accentPrimary
@@ -271,7 +271,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: forecastItem.modelData.maxC + " / " + forecastItem.modelData.minC
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.weight: Font.Medium
                             color: Colours.accentSecondary
@@ -313,13 +313,13 @@ Item {
 
                 Text {
                     text: detailRoot.label
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     color: Colours.textSecondary
                 }
                 Text {
                     text: detailRoot.value
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 11
                     font.weight: Font.Bold
                     color: detailRoot.colour
@@ -338,8 +338,8 @@ Item {
 
         Text { text: ws.icon; font.pixelSize: 14; anchors.verticalCenter: parent.verticalCenter }
         Column {
-            Text { text: ws.label; font.family: "Oxanium"; font.pixelSize: 8; color: Colours.textSecondary }
-            Text { text: ws.value; font.family: "Oxanium"; font.pixelSize: 10; font.weight: Font.Bold; color: ws.colour }
+            Text { text: ws.label; font.family: Theme.font; font.pixelSize: 8; color: Colours.textSecondary }
+            Text { text: ws.value; font.family: Theme.font; font.pixelSize: 10; font.weight: Font.Bold; color: ws.colour }
         }
     }
 }

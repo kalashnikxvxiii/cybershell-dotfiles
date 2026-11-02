@@ -60,7 +60,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         text: row.label
         elide: Text.ElideRight
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         font.letterSpacing: 0.5
         color: row.connected ? Colours.accentOk

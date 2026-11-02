@@ -142,7 +142,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: root.thought === ""
                 text: "NO REASONING IN THIS STEP YET"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 color: CP.alpha(root.fg, 0.35)
@@ -200,7 +200,7 @@ Item {
 
                     Text {
                         text: root.compacting ? "COMPACTING CONVERSATION" : root.verb.toUpperCase()
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.letterSpacing: 1.5
                         font.bold: true
@@ -217,7 +217,7 @@ Item {
                         TextMetrics {
                             id: dotsMetrics
                             text: "..."
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 10
                             font.letterSpacing: 1.5
                             font.bold: true
@@ -252,7 +252,7 @@ Item {
                     visible: root.compacting
                     anchors.verticalCenter: parent.verticalCenter
                     text: Math.max(0, Math.floor((root.now - root.compactFrom) / 1000)) + "S"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     color: CP.alpha(root.fg, 0.5)
@@ -274,7 +274,7 @@ Item {
                         + (root.fails > 0
                             ? " \u00b7 <font color='" + Theme.red + "'>" + root.fails + " FAILED</font>"
                             : "")
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 1.5
                     color: CP.alpha(Theme.cyan, 0.7)

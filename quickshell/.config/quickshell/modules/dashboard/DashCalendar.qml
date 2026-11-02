@@ -52,7 +52,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "<"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 24
                     color: Colours.accentSecondary
                 }
@@ -69,7 +69,7 @@ Item {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: grid.title
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 22
                 font.capitalization: Font.Capitalize
                 color: Colours.accentPrimary
@@ -89,7 +89,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: ">"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 24
                     color: Colours.accentSecondary
                 }
@@ -112,7 +112,7 @@ Item {
 
                 horizontalAlignment: Text.AlignHCenter
                 text: model.shortName
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 18
                 font.weight: Font.Medium
                 color: (model.day === 0 || model.day === 6) ? Colours.accentSecondary : Colours.textSecondary
@@ -156,7 +156,7 @@ Item {
                         anchors.centerIn: parent
                         horizontalAlignment: Text.AlignHCenter
                         text: grid.locale.toString(dayItem.model.day)
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 18
                         font.weight: dayItem.model.today ? Font.Bold : Font.Normal
                         color: {

@@ -32,7 +32,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: "Effort"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             font.bold: true
             color: CP.alpha(root.fg, 0.80)
@@ -42,7 +42,7 @@ Item {
             // Nothing to show when the model has no effort levels at all
             text: root.levels.length === 0 ? "(not supported)"
                 : "(" + (root.hovered !== "" ? root.hovered : root.current) + ")"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             color: CP.alpha(root.fg, root.hovered !== "" ? 0.70 : 0.40)
             Behavior on color { ColorAnimation { duration: 110 } }

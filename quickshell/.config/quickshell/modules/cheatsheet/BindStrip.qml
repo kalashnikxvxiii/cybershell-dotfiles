@@ -82,7 +82,7 @@ Item {
                 selectByMouse: true
                 verticalAlignment: TextInput.AlignVCenter
                 color: "#e8f2f4"
-                font { family: "Oxanium"; pixelSize: 13 }
+                font { family: Theme.font; pixelSize: 13 }
                 Keys.onEscapePressed: logic.cancel()
                 Keys.onReturnPressed: logic.keys === "" ? capture.begin() : root.save()
                 Keys.onEnterPressed: logic.keys === "" ? capture.begin() : root.save()
@@ -94,7 +94,7 @@ Item {
                 visible: command.text === ""
                 text: "COMMAND"
                 color: "#7f9296"
-                font { family: "Oxanium"; pixelSize: 11; letterSpacing: 2 }
+                font { family: Theme.font; pixelSize: 11; letterSpacing: 2 }
             }
         }
 
@@ -134,7 +134,7 @@ Item {
                 elide: Text.ElideLeft
                 text: logic.capturing ? "PRESS KEYS" : logic.keys !== "" ? logic.keys : "KEYS"
                 color: logic.keys !== "" && !logic.capturing ? "#e8f2f4" : "#7f9296"
-                font { family: "Oxanium"; pixelSize: 11; letterSpacing: 1 }
+                font { family: Theme.font; pixelSize: 11; letterSpacing: 1 }
             }
             MouseArea {
                 anchors.fill: parent
@@ -169,7 +169,7 @@ Item {
         visible: !!root.draft
         text: root.message
         color: Theme.red
-        font { family: "Oxanium"; pixelSize: 11; letterSpacing: 1 }
+        font { family: Theme.font; pixelSize: 11; letterSpacing: 1 }
     }
 
     component Small: Item {
@@ -191,7 +191,7 @@ Item {
             anchors.centerIn: parent
             text: small.label
             color: small.tone
-            font { family: "Oxanium"; pixelSize: 13; bold: true }
+            font { family: Theme.font; pixelSize: 13; bold: true }
         }
         MouseArea {
             id: hit

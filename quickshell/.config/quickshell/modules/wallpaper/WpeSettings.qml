@@ -223,7 +223,7 @@ Item {
                 anchors.leftMargin: 30
                 anchors.verticalCenter: parent.verticalCenter
                 text: "WPE CONFIG"
-                font.family: "Oxanium"; font.pixelSize: 13; font.bold: true; font.letterSpacing: 3
+                font.family: Theme.font; font.pixelSize: 13; font.bold: true; font.letterSpacing: 3
                 color: Colours.accentPrimary
             }
             Text {
@@ -231,7 +231,7 @@ Item {
                 anchors.rightMargin: 14
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.wpeId ? "ID:" + root.wpeId : "· NO ENGINE WALLPAPER"
-                font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1.5
+                font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1.5
                 color: Colours.textMuted
             }
         }
@@ -274,7 +274,7 @@ Item {
                     width: row.modelData.type === "group" || row.modelData.type === "text"
                         ? parent.width : parent.width * 0.45
                     text: row.modelData.type === "group" ? "◢ " + row.modelData.label : row.modelData.label
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: row.modelData.type === "group" ? 10 : 9
                     font.bold: row.modelData.type === "group"
                     font.letterSpacing: row.modelData.type === "group" ? 3 : 1.5
@@ -323,7 +323,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: parent.parent.on ? "ON" : "OFF"
-                                font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1.5
+                                font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1.5
                                 color: parent.parent.on ? Colours.accentSecondary : Colours.textMuted
                             }
                             MouseArea {
@@ -380,7 +380,7 @@ Item {
                             width: parent.width - 36
                             horizontalAlignment: Text.AlignHCenter
                             text: combo.opts.length ? combo.opts[combo.idx].label : row.val
-                            font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
+                            font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1
                             color: Colours.accentPrimary
                             elide: Text.ElideRight
                         }
@@ -460,7 +460,7 @@ Item {
                             id: btnLbl
                             anchors.centerIn: parent
                             text: btn.modelData.label
-                            font.family: "Oxanium"; font.pixelSize: 10; font.letterSpacing: 1.5
+                            font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 1.5
                             color: btn.modelData.danger ? Colours.accentDanger : Colours.accentPrimary
                         }
                         MouseArea {
@@ -479,7 +479,7 @@ Item {
                 anchors.rightMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.dirty ? "· UNSAVED" : "· SAVED"
-                font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 2
+                font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 2
                 color: root.dirty ? CP.alpha(Theme.yellow, 0.65) : Colours.textMuted
                 visible: root.wpePath !== ""
             }
@@ -532,7 +532,7 @@ Item {
             verticalAlignment: TextInput.AlignVCenter
             clip: true
             text: field.text
-            font.family: "Oxanium"; font.pixelSize: 9; font.letterSpacing: 1
+            font.family: Theme.font; font.pixelSize: 9; font.letterSpacing: 1
             color: Colours.accentSecondary
             selectionColor: CP.alpha(Theme.cyan, 0.35)
             onTextEdited: field.edited(text.replace(/\n/g, " "))

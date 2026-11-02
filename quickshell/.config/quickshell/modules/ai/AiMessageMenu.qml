@@ -134,7 +134,7 @@ Item {
                     anchors.leftMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     text: item.modelData.label
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 1.6
                     font.bold: true
@@ -182,7 +182,7 @@ Item {
                     : confirmBox.nothing ? "\u25e2 NO FILE CHANGED SINCE THIS PROMPT"
                     : "\u25e2 " + confirmBox.p.files + (confirmBox.p.files === 1 ? " FILE" : " FILES")
                         + " \u00b7 +" + confirmBox.p.ins + " \u2212" + confirmBox.p.del
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.bold: true
                 font.letterSpacing: 1.4

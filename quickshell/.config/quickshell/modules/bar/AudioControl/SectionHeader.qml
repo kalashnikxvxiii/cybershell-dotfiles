@@ -39,7 +39,7 @@ Item {
 
         Text {
             text: root.label
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 16
             font.letterSpacing: 3
             font.bold: true
@@ -48,7 +48,7 @@ Item {
         Text {
             visible: root.trail !== ""
             text: "· " + root.trail
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             font.letterSpacing: 2
             color: CP.alpha(root.accent, 0.65)

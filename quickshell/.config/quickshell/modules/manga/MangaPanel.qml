@@ -164,7 +164,7 @@ Scope {
                             anchors.left: parent.left
                             anchors.margins: 14
                             text: "◢ MANGA"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 22
                             font.letterSpacing: 3
                             font.bold: true
@@ -195,7 +195,7 @@ Scope {
                                 id: homeLabel
                                 anchors.centerIn: parent
                                 text: "HOME"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 10
                                 font.letterSpacing: 1.5
                                 font.bold: true
@@ -239,7 +239,7 @@ Scope {
                                 id: libBtnLabel
                                 anchors.centerIn: parent
                                 text: libBtn.on ? "BROWSE" : "LIBRARY"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 10
                                 font.letterSpacing: 1.5
                                 font.bold: true

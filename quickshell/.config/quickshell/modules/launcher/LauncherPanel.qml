@@ -189,7 +189,7 @@ Scope {
                         text: "// LAUNCHER — RUNNING"
                         color: CP.redDark
                         font.pixelSize: 10
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                     }
 
                     // Title + search
@@ -202,7 +202,7 @@ Scope {
                             color: Theme.cyan
                             font.bold: true
                             font.pixelSize: 20
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                         }
 
                         TextInput {
@@ -212,7 +212,7 @@ Scope {
                             verticalAlignment: TextInput.AlignVCenter
                             color: "#e6f7ff"
                             font.pixelSize: 14
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             clip: true
                             selectByMouse: true
 
@@ -323,7 +323,7 @@ Scope {
                         text: "// NO MATCH"
                         color: CP.alpha(Theme.cyan, 0.5)
                         font.pixelSize: 12
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         Layout.alignment: Qt.AlignHCenter
                         Layout.topMargin: 8
                         Layout.bottomMargin: 8
@@ -334,7 +334,7 @@ Scope {
                         text: "[ TYPE ] SEARCH   [ ↑↓ ] NAVIGATE   [ ENTER ] SELECT   [ ESC ] BACK"
                         color: CP.redDark
                         font.pixelSize: 9
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                     }
                 }
             }

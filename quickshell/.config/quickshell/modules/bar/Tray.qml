@@ -208,7 +208,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: root.expanded ? ">" : "<"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.iconSize - 4
                 color: Theme.cyan
             }

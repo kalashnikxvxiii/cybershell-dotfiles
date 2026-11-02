@@ -44,7 +44,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 28
         text: "SEARCH RESULTS"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 2
         color: Colours.textMuted
@@ -169,7 +169,7 @@ Item {
                         }
                     }
                     font.family: parent.parent.source === "r" || parent.parent.source === "rg"
-                        ? "JetBrainsMono Nerd Font" : "Oxanium"
+                        ? "JetBrainsMono Nerd Font" : Theme.font
                     font.pixelSize: 12
                     font.letterSpacing: parent.parent.source === "r" || parent.parent.source === "rg" ? 0 : 1
                     color: {
@@ -202,7 +202,7 @@ Item {
                     id: typeText
                     anchors.centerIn: parent
                     text: "GIF"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1
                     color: Colours.accentOk
@@ -222,7 +222,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1
                     text: {
@@ -264,7 +264,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "\u2713"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 18
                     color: Colours.accentOk
                 }
@@ -379,7 +379,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: "•••"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 14
                 color: Colours.accentSecondary
                 visible: parent.width > 0

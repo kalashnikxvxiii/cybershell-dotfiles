@@ -89,7 +89,7 @@ Item {
             id: netLabel
             anchors.verticalCenter: parent.verticalCenter
             text: root.netText
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             // GlitchAnim writes .color imperatively, which would kill a binding
             // here: after the first hover the label stopped turning red when the
@@ -108,7 +108,7 @@ Item {
             id: btLabel
             anchors.verticalCenter: parent.verticalCenter
             text: root.btText
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 12
             color: root.btColor
         }

@@ -48,7 +48,7 @@ Item {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: "\u25e2 ACCOUNT & USAGE"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 font.letterSpacing: 2
                 font.bold: true
@@ -59,7 +59,7 @@ Item {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 text: "VIEW DETAILS"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1
                 font.underline: details.containsMouse
@@ -79,7 +79,7 @@ Item {
 
         Text {
             text: "ACCOUNT"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true
@@ -94,7 +94,7 @@ Item {
                 id: emailLabel
                 anchors.left: parent.left
                 text: "Email"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 color: CP.alpha(root.fg, 0.45)
             }
@@ -107,7 +107,7 @@ Item {
                 horizontalAlignment: Text.AlignRight
                 text: root.session?.account?.email ?? "\u2014"
                 elide: Text.ElideLeft
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 color: root.fg
             }
@@ -115,7 +115,7 @@ Item {
 
         Text {
             text: "USAGE"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true
@@ -127,7 +127,7 @@ Item {
             visible: text !== ""
             text: root.session?.usageNote ?? ""
             wrapMode: Text.Wrap
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             color: CP.alpha(root.fg, 0.45)
         }
@@ -152,7 +152,7 @@ Item {
 
         Text {
             text: "LOG OUT"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1
             font.underline: out.containsMouse

@@ -51,7 +51,7 @@ Item {
             anchors.leftMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: "ATTACHED \u00b7 " + root.paths.length
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true
@@ -63,7 +63,7 @@ Item {
             anchors.rightMargin: 10         // clear of the cut corner
             anchors.verticalCenter: parent.verticalCenter
             text: "CLEAR"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true

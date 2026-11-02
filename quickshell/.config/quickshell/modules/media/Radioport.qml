@@ -23,7 +23,7 @@ FocusScope {
     readonly property real progress: player && player.length > 0 ? player.position / player.length : 0
     readonly property color danger: Theme.red
     readonly property color tech: Theme.cyan
-    readonly property string font: "Oxanium"
+    readonly property string font: Theme.font
     property bool isLiked: Players.isLiked
 
     readonly property string _trackId: {

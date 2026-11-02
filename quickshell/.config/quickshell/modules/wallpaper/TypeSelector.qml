@@ -43,7 +43,7 @@ Item {
                     Text {
                         text: groupColumn.modelData.name
                         color: groupColumn.modelData.accent
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 9
                         font.letterSpacing: 2.5
                         font.bold: true
@@ -105,7 +105,7 @@ Item {
                                 id: chipText
                                 anchors.centerIn: parent
                                 text: chipItem.modelData.toUpperCase()
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 9
                                 font.letterSpacing: 1.5
                                 color: chipItem._selected ? "white" : Colours.textMuted

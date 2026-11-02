@@ -48,7 +48,7 @@ Item {
         id: hb
         property color accent: Theme.cyan
         signal clicked()
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 1.8
         color: hbMa.containsMouse ? hb.accent : CP.alpha(hb.accent, 0.45)
@@ -80,7 +80,7 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 7
         text: (root.lang === "" ? "TEXT" : root.lang.toUpperCase())
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 1.8
         color: CP.alpha(Theme.cyan, 0.65)
@@ -113,7 +113,7 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 7
         text: root._copied ? "COPIED" : "COPY"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 1.8
         color: root._copied ? Theme.neon
@@ -193,7 +193,7 @@ Item {
                     ? "RUNNING \u00b7 " + root._secs(root._now - (root.run?.startedAt ?? 0))
                     : (outPane.stopped ? "STOPPED" : "EXIT " + outPane.exitCode) + " \u00b7 "
                         + root._secs((root.run?.endedAt ?? 0) - (root.run?.startedAt ?? 0)))
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.bold: true
             font.letterSpacing: 1.8

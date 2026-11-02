@@ -255,7 +255,7 @@ Item {
         }
         Text {
             text: "NETWORK"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             color: Colours.accentSecondary
@@ -490,7 +490,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             y: parent.height / 2 - height - 4
             text: card.phaseKey
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 2
             font.bold: true
@@ -543,7 +543,7 @@ Item {
             opacity: (card.mode === "done" && ringMa.containsMouse) ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: 140 } }
             text: "↻ REPEAT"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1.5
             font.bold: true
@@ -605,7 +605,7 @@ Item {
         Text {
             anchors.baseline: valueText.baseline
             text: parent.key
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1
             color: Colours.textMuted
@@ -723,7 +723,7 @@ Item {
             text: card.mode === "testing" ? "■ CANCEL"
                 : card.mode === "done"    ? "✕ EXIT"
                                           : "▶ SPEEDTEST"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1.5
             font.bold: true

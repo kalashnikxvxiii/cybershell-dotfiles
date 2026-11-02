@@ -25,7 +25,7 @@ Item {
         // The section leans downwards: any longer and it would reach the windows
         width:              Math.min(implicitWidth, 340)
         elide:              Text.ElideRight
-        font.family:        "Oxanium"
+        font.family:        Theme.font
         font.pixelSize:     12
         font.letterSpacing: 2
         color:              CP.white

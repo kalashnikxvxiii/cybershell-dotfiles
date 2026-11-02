@@ -133,7 +133,7 @@ Item {
 
         Text {
             text: "X " + root._px.toFixed(2)
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1
             color: Colours.accentMem
@@ -141,7 +141,7 @@ Item {
         }
         Text {
             text: "Y " + root._py.toFixed(2)
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1
             color: Colours.accentMem
@@ -176,7 +176,7 @@ Item {
                 }
                 Text {
                     text: "RESET"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     font.letterSpacing: 1.5
                     font.bold: true

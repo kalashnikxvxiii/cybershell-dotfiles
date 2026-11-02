@@ -239,6 +239,18 @@ Singleton {
         run: () => Theme.use(n)
     }))
 
+    function fontRows(role) {
+        return Theme.fonts.map(f => ({
+            id: "theme:font:" + role + ":" + f,
+            name: f,
+            on: Theme[role] === f ? true : undefined,
+            comment: Theme[role] === f ? "active" : "select to apply",
+            glyph: "\uf031",
+            keepOpen: true,
+            run: () => Theme.setFont(role, f)
+        }));
+    }
+
     readonly property var hudProfiles: ["minimal", "balanced", "cinematic"].map(p => ({
         id: "settings:profile:" + p,
         name: p.charAt(0).toUpperCase() + p.slice(1),
@@ -272,6 +284,10 @@ Singleton {
                 { id: "keybinds", name: "Keybinds", glyph: "\uf11c", comment: "Cheatsheet and your own binds", children: () => root.keybinds },
                 { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and palette", children: () => [
                     { id: "theme:wallpaper", name: "Wallpaper", glyph: "\uf03e", comment: "Open the wallpaper picker", run: () => WallpaperState.togglePicker(LauncherState.screenName) },
+                    { id: "theme:font", name: "Font", glyph: "\uf031", comment: Theme.font + " · HUD " + Theme.hudFont, children: () => [
+                        { id: "theme:font:shell", name: "Shell font", glyph: "\uf031", comment: Theme.font, children: () => root.fontRows("font") },
+                        { id: "theme:font:hud", name: "HUD font", glyph: "\uf031", comment: Theme.hudFont, children: () => root.fontRows("hudFont") }
+                    ] },
                     { id: "theme:palette", name: "Palette", glyph: "\uf53f", comment: Theme.current.toUpperCase(), children: () => root.palettes }
                 ] },
                 { id: "settings", name: "Settings", glyph: "\uf013", comment: "HUD and sounds", children: () => root.settings },

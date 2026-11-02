@@ -34,7 +34,7 @@ TextEdit {
     persistentSelection: AiState.multiSelect
     Component.onCompleted: AiState.registerText(root)
     Component.onDestruction: AiState.unregisterText(root)
-    font.family: "Oxanium"
+    font.family: Theme.font
     font.pixelSize: 12
     color: "#d8e0e8"
 

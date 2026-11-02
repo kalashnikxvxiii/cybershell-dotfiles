@@ -252,7 +252,7 @@ Item {
             var te = face._entry(tag)
             if (te) {
                 var tp = face._pos(te)
-                ctx.font = "9px Oxanium"
+                ctx.font = "9px " + Theme.font
                 ctx.textAlign = tp.x > cx ? "right" : "left"
                 ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.95)
                 ctx.fillText(te.label, tp.x + (tp.x > cx ? -10 : 10), tp.y - 8)

@@ -64,7 +64,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: menu.targetPinned ? "Unpin" : "Pin"
-                    font.family: "Oxanium"; font.pixelSize: 11
+                    font.family: Theme.font; font.pixelSize: 11
                     color: Theme.cyan
                 }
                 MouseArea {
@@ -89,7 +89,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "Change Icon"
-                    font.family: "Oxanium"; font.pixelSize: 11
+                    font.family: Theme.font; font.pixelSize: 11
                     color: Theme.cyan
                 }
                 MouseArea {
@@ -114,7 +114,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "Remove"
-                    font.family: "Oxanium"; font.pixelSize: 11
+                    font.family: Theme.font; font.pixelSize: 11
                     color: Theme.red
                 }
                 MouseArea {

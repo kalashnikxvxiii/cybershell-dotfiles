@@ -2173,7 +2173,7 @@ Scope {
                                 return sr.w + "\u00d7" + sr.h
                             return ""
                         }
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 13
                         font.letterSpacing: 2
                         color: Colours.textPrimary
@@ -2238,7 +2238,7 @@ Scope {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: root._trialDownloading ? "PROBING SCENE" : "DOWNLOADING"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 10
                             font.letterSpacing: 3
                             color: Theme.cyan
@@ -2247,7 +2247,7 @@ Scope {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: Math.floor(previewDownloadOverlay._progress * 100) + "%"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 14
                             color: Theme.yellow
                         }
@@ -2406,7 +2406,7 @@ Scope {
                                 "RENDERING SCENE..."
                             ]
                             text: msgs[root._previewMsgIdx % msgs.length]
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 10
                             font.letterSpacing: 2
                             color: Theme.magenta
@@ -2467,7 +2467,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             width: Math.min(implicitWidth, previewErrorBanner.parent.width - 72)
                             text: root.previewError
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 10
                             font.letterSpacing: 1.5
                             font.bold: true
@@ -2524,7 +2524,7 @@ Scope {
                                     return ""
                             return wallpaperModel.get(carousel.currentIndex).title.toUpperCase()
                         }
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 12
                         font.letterSpacing: 2
                         color: Colours.textPrimary
@@ -2555,7 +2555,7 @@ Scope {
                             id: _srcLbl
                             anchors.centerIn: parent
                             text: parent._src.toUpperCase()
-                            font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1
+                            font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1
                             color: parent._src === "wpe" ? Colours.accentPrimary : Colours.accentSecondary
                         }
                     }
@@ -2582,7 +2582,7 @@ Scope {
                             id: _typLbl
                             anchors.centerIn: parent
                             text: parent._typ.toUpperCase()
-                            font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1
+                            font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1
                             color: Colours.textMuted
                         }
                     }
@@ -2591,7 +2591,7 @@ Scope {
                         text: carousel.searchFocused
                             ? root._searchFileSize
                             : root._currentSize
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.letterSpacing: 1
                         color: Colours.accentSecondary
@@ -2602,7 +2602,7 @@ Scope {
                         text: carousel.searchFocused && filterBar.resultsModel
                             ? (carousel.selectedSearchIdx + 1) + " / " + filterBar.resultsModel.count
                             : root.currentVisiblePosition() + " / " + carousel.visibleCount
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         color: Colours.textMuted
                     }
@@ -2701,7 +2701,7 @@ Scope {
                                     id: _btnLabel
                                     anchors.centerIn: parent
                                     text: _delRow.modelData
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 9
                                     font.letterSpacing: 1
                                     color: _btnItem._active              ? Colours.accentSecondary
@@ -2781,7 +2781,7 @@ Scope {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "DELETE WALLPAPER?"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 13
                         font.letterSpacing: 3
                         color: Colours.accentDanger
@@ -2794,7 +2794,7 @@ Scope {
                                 return ""
                             return wallpaperModel.get(carousel.currentIndex).title.toUpperCase()
                         }
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         font.letterSpacing: 1
                         color: Colours.textMuted
@@ -2826,7 +2826,7 @@ Scope {
                                 id: confirmText
                                 anchors.centerIn: parent
                                 text: "ENTER - DELETE"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 10
                                 font.letterSpacing: 1
                                 color: Colours.accentDanger
@@ -2858,7 +2858,7 @@ Scope {
                                 id: cancelText
                                 anchors.centerIn: parent
                                 text: "ESC - CANCEL"
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 10
                                 font.letterSpacing: 1
                                 color: Colours.textMuted

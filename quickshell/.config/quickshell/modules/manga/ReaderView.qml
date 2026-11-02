@@ -107,7 +107,7 @@ FocusScope {
         text: MangaService.downloadingPages ? "◢ DOWNLOADING CHAPTER…"
             : MangaService.pagesError        ? "◢ " + MangaService.pagesError.toUpperCase()
             : "◢ WAITING…"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 14
         font.letterSpacing: 3
         font.bold: true
@@ -229,7 +229,7 @@ FocusScope {
                     ? (img._retries < 2 ? "RETRYING PAGE " + (cell.index + 1) + "…"
                                         : "PAGE " + (cell.index + 1) + " NOT AVAILABLE")
                     : "LOADING " + (cell.index + 1)
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 16
                 font.letterSpacing: 3
                 color: CP.alpha(Colours.textMuted, 0.6)
@@ -250,7 +250,7 @@ FocusScope {
             anchors.leftMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: root.chapterLabel + "      ↑↓←→  MOVE · + / −  ZOOM · 0  RESET · PGUP/PGDN  PAGE"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 13
             font.letterSpacing: 2
             font.bold: true
@@ -264,7 +264,7 @@ FocusScope {
             text: Math.round(root.zoom * 100) + "%   ·   "
                 + root.currentPage + " / " + root.pageCount
                 + (root.dataSaver ? "   ·   DATA-SAVER" : "   ·   FULL")
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 13
             font.letterSpacing: 2
             color: CP.alpha(Colours.textMuted, 0.85)

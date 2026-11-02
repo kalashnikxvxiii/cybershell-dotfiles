@@ -127,7 +127,7 @@ Item {
 
             // ── Axis tick labels (0, 1 on both axes) ──────────────
             ctx.fillStyle = "rgba(252, 236, 12, 0.80)"
-            ctx.font = "8px Oxanium"
+            ctx.font = "8px " + Theme.font
             ctx.textAlign = "right"
             ctx.textBaseline = "middle"
             ctx.fillText("1", pad - 4, p3[1])
@@ -140,7 +140,7 @@ Item {
 
             // ── Axis legend (instructional) ────────────────────────
             ctx.fillStyle = "rgba(0, 255, 210, 0.70)"
-            ctx.font = "9px Oxanium"
+            ctx.font = "9px " + Theme.font
             ctx.textAlign = "center"
             ctx.textBaseline = "bottom"
             ctx.fillText("X · TIME ▶", w / 2, h - 3)
@@ -156,7 +156,7 @@ Item {
 
             // ── Zone hints (extended Y range explanation) ───────────
             ctx.fillStyle = "rgba(234, 0, 217, 0.3)"
-            ctx.font = "12px Oxanium"
+            ctx.font = "12px " + Theme.font
             ctx.textAlign = "right"
             ctx.textBaseline = "middle"
             var oy = root._mathToCanvas(0, 1.46)[1]
@@ -166,7 +166,7 @@ Item {
 
             // ── Modifier hint (top-right) ──────────────────────────
             ctx.fillStyle = "rgba(0, 255, 210, 0.45)"
-            ctx.font = "8px Oxanium"
+            ctx.font = "8px " + Theme.font
             ctx.textBaseline = "top"
             ctx.fillText("⇧ SHIFT · SNAP 0.05", w - pad - 2, 4)
         }

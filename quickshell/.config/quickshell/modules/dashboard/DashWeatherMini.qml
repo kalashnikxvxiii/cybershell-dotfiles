@@ -71,7 +71,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.loading ? "--°C" : root.tempStr
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 36
             font.weight: Font.Bold
             color: Colours.accentPrimary
@@ -81,7 +81,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.condition
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 18
             color: Colours.textSecondary
             elide: Text.ElideRight

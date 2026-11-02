@@ -95,7 +95,7 @@ Item {
             id: titleText
             width: parent.width
             text: root.modelData.title.toUpperCase()
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             font.bold: true
             font.letterSpacing: 2
@@ -107,7 +107,7 @@ Item {
             width: parent.width
             text: root.modelData.message
             visible: text !== ""
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.letterSpacing: 1
             color: Colours.textSecondary

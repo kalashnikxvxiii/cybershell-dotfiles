@@ -6,6 +6,7 @@
 // but no longer in the model's context
 import QtQuick
 import "../../common/Colors.js" as CP
+import "../../common"
 import "AiMarkdown.js" as Md
 
 Item {
@@ -45,7 +46,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "COMPACTED CHAT \u00b7 " + (root.part.trigger === "manual" ? "MANUAL" : "AUTO")
                         + " \u00b7 " + Math.round(root.freed / 1000) + "K TOKENS FREED"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     color: CP.alpha(root.fg, ma.containsMouse || root.expanded ? 0.75 : 0.5)
@@ -87,7 +88,7 @@ Item {
                 id: noneComp
                 Text {
                     text: "Conversation was compacted to free up context."
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 11
                     color: CP.alpha(root.fg, 0.55)
                 }
@@ -103,7 +104,7 @@ Item {
                 id: cutLabel
                 anchors.centerIn: parent
                 text: "COMPACTED"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 2
                 color: CP.alpha(root.fg, 0.4)

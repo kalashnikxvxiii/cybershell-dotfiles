@@ -1,7 +1,7 @@
 // ChromaticText.qml — Chromatic aberration (3 layers: red, cyan, main)
 // Usage:
 //   ChromaticText {
-//       text: "CPU 42%"; font.family: "Oxanium"; font.pixelSize: 38
+//       text: "CPU 42%"; font.family: Theme.font; font.pixelSize: 38
 //       color: Colours.accentSecondary
 //       glitching: root._glitching
 //   }

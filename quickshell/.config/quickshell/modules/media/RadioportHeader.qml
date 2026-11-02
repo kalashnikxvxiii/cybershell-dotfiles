@@ -19,7 +19,7 @@ Item {
     Text {
         text: root.code
         color: CP.alpha(Theme.red, 0.7)
-        font { family: "Oxanium"; pixelSize: 10; letterSpacing: 1 }
+        font { family: Theme.font; pixelSize: 10; letterSpacing: 1 }
     }
     CutShape {
         y: 18
@@ -47,7 +47,7 @@ Item {
         text: root.title
         color: Theme.cyan
         transform: Translate { id: shift }
-        font { family: "Oxanium"; pixelSize: 19; letterSpacing: 1 }
+        font { family: Theme.font; pixelSize: 19; letterSpacing: 1 }
     }
     Item {
         id: slot

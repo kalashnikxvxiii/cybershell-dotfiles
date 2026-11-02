@@ -215,7 +215,7 @@ Item {
                 Text {
                     visible: entry.isOpen
                     text: "OPEN"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     font.letterSpacing: 2
                     font.bold: true
@@ -224,7 +224,7 @@ Item {
 
                 Text {
                     text: root.ago(entry.modelData.mtime)
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1
                     color: CP.alpha(Theme.cyan, 0.55)
@@ -244,7 +244,7 @@ Item {
             anchors.centerIn: parent
             visible: root.rows.length === 0
             text: lister.running ? "READING SESSIONS\u2026" : "NO SESSIONS"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 2
             color: CP.alpha(root.fg, 0.35)
@@ -272,7 +272,7 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 11
             text: root.rows.length + " SESSIONS \u00b7 ENTER TO RESUME"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 1
             color: CP.alpha(root.fg, 0.45)

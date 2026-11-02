@@ -55,7 +55,7 @@ Item {
             anchors.leftMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: "SELECT A MODEL"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true
@@ -112,7 +112,7 @@ Item {
                 anchors.topMargin: 6
                 text: modelData.displayName ?? modelData.value
                 elide: Text.ElideRight
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.bold: true
                 color: active ? root.fg : CP.alpha(root.fg, 0.82)
@@ -126,7 +126,7 @@ Item {
                 anchors.topMargin: 1
                 text: modelData.description ?? ""
                 elide: Text.ElideRight
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 color: CP.alpha(root.fg, 0.40)
             }

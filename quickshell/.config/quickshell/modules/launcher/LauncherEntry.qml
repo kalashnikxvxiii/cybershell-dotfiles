@@ -52,7 +52,7 @@ Item {
                 anchors.centerIn: parent
                 text: item.index + 1
                 color: Theme.cyan
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.bold: true
                 font.pixelSize: 12
             }
@@ -124,7 +124,7 @@ Item {
                     Text {
                         text: item.modelData.name
                         color: item.current ? CP.white : "#aab4c8"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.bold: true
                         font.pixelSize: 14
                         elide: Text.ElideRight
@@ -134,7 +134,7 @@ Item {
                         visible: text !== ""
                         text: item.subtitle
                         color: CP.alpha(item.tone, 0.7)
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 10
                         elide: Text.ElideRight
                         Layout.fillWidth: true

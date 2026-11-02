@@ -88,7 +88,7 @@ Item {
             text: namePlate.stacked
             horizontalAlignment: Text.AlignHCenter
             lineHeight: 0.95
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.letterSpacing: 0
             font.bold: true

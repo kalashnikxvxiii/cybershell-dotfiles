@@ -237,7 +237,7 @@ Scope {
 
                         Text {
                             text: "KEYMAP"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 38
                             font.letterSpacing: 8
                             color: Theme.yellow
@@ -247,7 +247,7 @@ Scope {
                             text: "· " + (root.query !== "" || root.modFilter !== ""
                                     ? root.matchCount + " OF " + root.rowCount + " BINDS"
                                     : root.rowCount + " BINDS") + " · LIVE FROM HYPRLAND"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 10
                             font.letterSpacing: 2
                             color: CP.alpha(Theme.yellow, 0.65)
@@ -260,7 +260,7 @@ Scope {
                         height: parent.height
                         verticalAlignment: Text.AlignVCenter
                         text: "◢ KEYMAP"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 15
                         font.bold: true
                         font.letterSpacing: 3
@@ -307,7 +307,7 @@ Scope {
                             width: parent.width - 24
                             height: parent.height
                             verticalAlignment: TextInput.AlignVCenter
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 13
                             font.letterSpacing: 1
                             color: "#e8f2f4"
@@ -326,7 +326,7 @@ Scope {
                             verticalAlignment: Text.AlignVCenter
                             visible: search.text === ""
                             text: "TYPE TO SEARCH · ESC CLOSES"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 11
                             font.letterSpacing: 2
                             color: "#7f9296"
@@ -376,7 +376,7 @@ Scope {
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: legend.modelData.verb
-                                        font.family: "Oxanium"
+                                        font.family: Theme.font
                                         font.pixelSize: 10
                                         font.letterSpacing: 1.5
                                         color: "#93a6aa"
@@ -474,7 +474,7 @@ Scope {
         Text {
             anchors.centerIn: parent
             text: button.glyph
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 13
             font.bold: true
             color: button.tone

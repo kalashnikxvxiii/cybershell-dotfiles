@@ -70,7 +70,7 @@ Item {
         Row {
             spacing: 6
             Text { text: "▸"; color: Colours.accentOk; font.pixelSize: 11; anchors.verticalCenter: parent.verticalCenter }
-            Text { text: "PREVIEW"; font.family: "Oxanium"; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: "PREVIEW"; font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3; font.bold: true; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
         }
 
         // Wallpaper preview (16:9, full width)
@@ -257,7 +257,7 @@ Item {
                 }
                 Text {
                     text: "LIVE"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 7
                     font.letterSpacing: 1.5
                     font.bold: true
@@ -272,7 +272,7 @@ Item {
                 visible: root.sample1 === ""
                 text: "NO\nSAMPLES"
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 color: Colours.textMuted
@@ -288,15 +288,15 @@ Item {
                 text: root._paused
                     ? "⏸ PAUSED"
                     : "Auto-cycle " + ((TransitionConfig.transitionDuration + 1.5).toFixed(1)) + "s"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 font.letterSpacing: 1
                 color: root._paused ? Colours.accentWarn : Colours.textMuted
             }
             Row {
                 spacing: 4
-                Text { text: "FRAME"; font.family: "Oxanium"; font.pixelSize: 7; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
-                Text { text: root._showFirst ? "1/2" : "2/2"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: "FRAME"; font.family: Theme.font; font.pixelSize: 7; font.letterSpacing: 1.5; color: Colours.textMuted; anchors.verticalCenter: parent.verticalCenter }
+                Text { text: root._showFirst ? "1/2" : "2/2"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
             }
             Text {
                 width: parent.width
@@ -306,7 +306,7 @@ Item {
                     return p.split("/").pop()
                 }
                 elide: Text.ElideMiddle
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 7
                 font.letterSpacing: 0.5
                 color: CP.alpha(Theme.neon, 0.5)
@@ -341,7 +341,7 @@ Item {
                     Text { text: "↻"; font.pixelSize: 11; color: Colours.accentOk; anchors.verticalCenter: parent.verticalCenter }
                     Text {
                         text: "REPLAY"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 8
                         font.letterSpacing: 1.2
                         font.bold: true
@@ -415,7 +415,7 @@ Item {
                     anchors.centerIn: parent
                     spacing: 4
                     Text { text: "⤨"; font.pixelSize: 11; color: Colours.accentMem; anchors.verticalCenter: parent.verticalCenter }
-                    Text { text: "SHUFFLE"; font.family: "Oxanium"; font.pixelSize: 8; font.letterSpacing: 1.2; font.bold: true; color: Colours.accentMem; anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "SHUFFLE"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.2; font.bold: true; color: Colours.accentMem; anchors.verticalCenter: parent.verticalCenter }
                 }
                 MouseArea {
                     id: shuffleMa

@@ -38,7 +38,7 @@ Item {
         anchors.left: parent.left
         anchors.top: parent.top
         text: root.label
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         color: CP.alpha(root.fg, 0.85)
     }
@@ -47,7 +47,7 @@ Item {
         anchors.right: parent.right
         anchors.baseline: name.baseline
         text: Math.floor(root.utilization) + "%"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         font.bold: true
         color: root.high ? Theme.red : CP.alpha(root.fg, 0.85)
@@ -73,7 +73,7 @@ Item {
         anchors.top: track.bottom
         anchors.topMargin: 4
         text: root.resetText(root.resetsAt)
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 8
         font.letterSpacing: 1
         color: CP.alpha(root.fg, 0.40)

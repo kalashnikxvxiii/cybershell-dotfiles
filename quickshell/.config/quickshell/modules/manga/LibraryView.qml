@@ -21,7 +21,7 @@ Item {
         text: root.busy ? "◢ OPENING…"
             : MangaState.library.length === 0 ? "◢ LIBRARY EMPTY"
             : "◢ " + MangaState.library.length + " IN LIBRARY"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         font.letterSpacing: 2
         font.bold: true
@@ -36,7 +36,7 @@ Item {
         visible: MangaState.library.length === 0
         text: "Add a series from its page with ADD.\n"
             + "Reading progress is saved on its own, chapter and page."
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         color: CP.alpha(Colours.textMuted, 0.8)
         wrapMode: Text.WordWrap
@@ -104,7 +104,7 @@ Item {
                 anchors.top: parent.top
                 anchors.topMargin: 6
                 text: row.modelData.title
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.letterSpacing: 0.5
                 font.bold: true
@@ -123,7 +123,7 @@ Item {
                       ? "CH " + row.modelData.lastChapterNum
                         + "   ·   PAGE " + (row.modelData.lastPage + 1)
                       : "NOT STARTED"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 font.letterSpacing: 1
                 color: row.started ? CP.alpha(Colours.accentPrimary, 0.8)
@@ -152,7 +152,7 @@ Item {
                     id: resumeLabel
                     anchors.centerIn: parent
                     text: "RESUME"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     font.bold: true

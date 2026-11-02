@@ -103,7 +103,7 @@ Column {
                         width: root.step - 4
                         horizontalAlignment: Text.Right
                         text: blk.b.marker
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 11
                         font.bold: true
                         color: Theme.cyan
@@ -239,7 +239,7 @@ Column {
                         y: visible ? 2 : 0
                         height: visible ? implicitHeight : 0
                         text: "\u25e2 " + blk.b.kind.toUpperCase()
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 9
                         font.bold: true
                         font.letterSpacing: 1.6

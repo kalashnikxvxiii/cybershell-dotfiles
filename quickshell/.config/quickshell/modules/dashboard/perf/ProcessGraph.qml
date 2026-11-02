@@ -371,7 +371,7 @@ Item {
         let barY = y - barH
 
         ctx.textAlign = "left"
-        ctx.font = "9px Oxanium"
+        ctx.font = "9px " + Theme.font
         ctx.fillStyle = Qt.rgba(1, 1, 1, 0.5 * alpha)
         ctx.fillText(label, x, y)
 
@@ -383,7 +383,7 @@ Item {
         ctx.fillRect(barX, barY, fillW, barH)
 
         ctx.textAlign = "right"
-        ctx.font = "bold 11px Oxanium"
+        ctx.font = "bold 11px " + Theme.font
         ctx.fillStyle = Qt.rgba(color.r, color.g, color.b, alpha)
         ctx.fillText(value.toFixed(1) + "%", x + maxW, y)
     }
@@ -493,7 +493,7 @@ Item {
             let ty = cy - 20 + (glitchOn ? (Math.random() - 0.5) * 4 : 0)
 
             // Red layer
-            ctx.font = "bold 13px Oxanium"
+            ctx.font = "bold 13px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 0.1, 0.2, glitchOn ? 0.6 * ep : 0)
             ctx.fillText(loadText + dots, tx + 2, ty)
             // Main layer
@@ -518,13 +518,13 @@ Item {
             ctx.fillRect(barX + fillW - 8, barY - 1, 8, barH + 2)
 
             // Percentage
-            ctx.font = "10px Oxanium"
+            ctx.font = "10px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.4 * ep)
             ctx.fillText(Math.floor(lp * 100) + "%", cx, barY + 18)
 
             // Hex data flickering
             if (lp > 0.2) {
-                ctx.font = "8px Oxanium"
+                ctx.font = "8px " + Theme.font
                 ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.15 * ep)
                 let hexLine = ""
                 for (let h = 0; h < 12; h++) hexLine += Math.floor(Math.random() * 65536).toString(16).padStart(4, "0") + " "
@@ -560,14 +560,14 @@ Item {
 
         // ── Title ─────────────────
         ctx.textAlign = "left"
-        ctx.font = "bold 22px Oxanium"
+        ctx.font = "bold 22px " + Theme.font
         ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, contentAlpha)
         ctx.fillText(node.name.toUpperCase(), left, top)
 
         let info = graphRoot.expandedInfo
         if (info) {
             ctx.textAlign = "right"
-            ctx.font = "13px Oxanium"
+            ctx.font = "13px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.4 * contentAlpha)
             ctx.fillText("PID " + info.pid, right, top)
         }
@@ -583,7 +583,7 @@ Item {
 
         if (!info) {
             ctx.textAlign = "center"
-            ctx.font = "14px Oxanium"
+            ctx.font = "14px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.4 * contentAlpha)
             ctx.fillText("FETCHING DATA...", cx, cy)
             return
@@ -607,7 +607,7 @@ Item {
             ctx.stroke()
             y += 16
             ctx.textAlign = "left"
-            ctx.font = "10px Oxanium"
+            ctx.font = "10px " + Theme.font
             ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.5 * contentAlpha)
             ctx.fillText("── SYSTEM INFO", left, y)
             y += 16
@@ -638,10 +638,10 @@ Item {
 
             for (let i = 0; i < details.length; i++) {
                 ctx.textAlign = "left"
-                ctx.font = labelFontSize + "px Oxanium"
+                ctx.font = labelFontSize + "px " + Theme.font
                 ctx.fillStyle = Qt.rgba(1, 1, 1, 0.35 * contentAlpha)
                 ctx.fillText(details[i][0], left, y)
-                ctx.font = valueFontSize + "px Oxanium"
+                ctx.font = valueFontSize + "px " + Theme.font
                 ctx.fillStyle = Qt.rgba(1, 1, 1, 0.9 * contentAlpha)
                 let val = details[i][1] || "N/A"
                 if (val.length > maxChars) val = val.substring(0, maxChars - 3) + "..."
@@ -650,7 +650,7 @@ Item {
             }
 
             ctx.textAlign = "right"
-            ctx.font = "10px Oxanium"
+            ctx.font = "10px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.25 * contentAlpha)
             ctx.fillText("[ESC] CLOSE", right + 10, bottom + 10)
             ctx.restore()
@@ -675,7 +675,7 @@ Item {
         ctx.stroke()
         y += 22
         ctx.textAlign = "left"
-        ctx.font = "10px Oxanium"
+        ctx.font = "10px " + Theme.font
         ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.5 * contentAlpha)
         ctx.fillText("── DETAILS", left, y)
         y += 26
@@ -702,11 +702,11 @@ Item {
 
         for (let i = 0; i < details.length; i++) {
             ctx.textAlign = "left"
-            ctx.font = labelFontSize + "px Oxanium"
+            ctx.font = labelFontSize + "px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.35 * contentAlpha)
             ctx.fillText(details[i][0], left, y)
 
-            ctx.font = valueFontSize + "px Oxanium"
+            ctx.font = valueFontSize + "px " + Theme.font
             ctx.fillStyle = Qt.rgba(1, 1, 1, 0.9 * contentAlpha)
             let val = details[i][1] || "N/A"
             if (val.length > maxChars) val = val.substring(0, maxChars - 3) + "..."
@@ -716,7 +716,7 @@ Item {
 
         // ── ESC hint ──────────────────────────────
         ctx.textAlign = "right"
-        ctx.font = "10px Oxanium"
+        ctx.font = "10px " + Theme.font
         ctx.fillStyle = Qt.rgba(1, 1, 1, 0.25 * contentAlpha)
         ctx.fillText("[ESC] CLOSE", right + 10, bottom + 10)
 
@@ -873,14 +873,14 @@ Item {
                 let drawR = isConn ? n.radius * (1.3 + 0.8 / graphRoot.viewScale)
                             : isHov ? n.radius * (1.2 + 0.5 / graphRoot.viewScale)
                             : n.radius
-                ctx.font = (n.isRoot || isHov ? "bold " : "") + nameSize + "px Oxanium"
+                ctx.font = (n.isRoot || isHov ? "bold " : "") + nameSize + "px " + Theme.font
                 ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, isConn || isHov ? 1.0 : 0.9)
                 ctx.fillText(n.name.toUpperCase(), n.x, n.y + drawR + 12)
 
                 // CPU% sublabel - always shown for connected nodes
                 if (!n.isRoot && graphRoot.viewScale > 0.8 || isConn || isHov) {
                     let subSize = (isConn || isHov) ? Math.min(Math.round(9 / graphRoot.viewScale * 0.7), 16) : 7
-                    ctx.font = subSize + "px Oxanium"
+                    ctx.font = subSize + "px " + Theme.font
                     ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 0.5)
                     ctx.fillText(n.cpu.toFixed(1) + "%", n.x, n.y + drawR + 12 + subSize + 2)
                 }

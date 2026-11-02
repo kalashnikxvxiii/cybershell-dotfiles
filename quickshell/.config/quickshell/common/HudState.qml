@@ -75,7 +75,7 @@ Singleton {
     // Follows the wallpaper: the sonar and the corner buttons only
     readonly property color wallust: CP.neonize(Colours.glow, Theme.cyan)
 
-    readonly property string font: Qt.fontFamilies().indexOf("Quantico") >= 0 ? "Quantico" : "Oxanium"
+    readonly property string font: Theme.hudFont
     readonly property string icons: "JetBrainsMono Nerd Font"
 
     function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }

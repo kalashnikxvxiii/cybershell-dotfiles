@@ -59,7 +59,7 @@ Item {
             anchors.leftMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: "MODES"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 2
             font.bold: true
@@ -83,7 +83,7 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "to switch"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 color: CP.alpha(root.fg, 0.30)
             }
@@ -140,7 +140,7 @@ Item {
                     anchors.topMargin: 7
                     text: meta.label ?? modelData
                     elide: Text.ElideRight
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.bold: true
                     color: active ? root.fg : CP.alpha(root.fg, 0.80)
@@ -156,7 +156,7 @@ Item {
                     wrapMode: Text.Wrap
                     maximumLineCount: 2
                     elide: Text.ElideRight
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     lineHeight: 1.15
                     color: CP.alpha(root.fg, 0.40)

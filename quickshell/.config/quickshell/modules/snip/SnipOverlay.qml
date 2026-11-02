@@ -204,7 +204,7 @@ Scope {
                     anchors.centerIn: parent
                     text: Math.round(win.selW * SnipState.monitorScale) + "×"
                         + Math.round(win.selH * SnipState.monitorScale) + " PX"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 2
                     color: SnipState.currentAccent

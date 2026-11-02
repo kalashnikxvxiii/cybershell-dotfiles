@@ -113,7 +113,7 @@ Item {
         id: moduleLabel
         anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 12 }
         text:               root.text
-        font.family:        "Oxanium"
+        font.family:        Theme.font
         font.pixelSize:     root.pixelSize
         font.letterSpacing: 0
         color:              root.accent

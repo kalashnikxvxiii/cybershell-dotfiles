@@ -132,7 +132,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottomMargin: 3
             text: root.iconCategory
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 1
             color: muted ? Colours.textMuted : CP.alpha(root.accent, 0.65)
@@ -156,7 +156,7 @@ Item {
             anchors.top: parent.top
             anchors.left: parent.left
             text: root.appName
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 11
             font.letterSpacing: 1
             font.bold: true
@@ -173,7 +173,7 @@ Item {
                 if (root.muted) return "PID " + root.streamPid + "  STREAM " + root.streamPath + "  MUTED"
                 return "PID " + root.streamPid + "  STREAM " + root.streamPath + "  " + root.streamFormat
             }
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 8
             font.letterSpacing: 0.5
             color: Colours.textMuted
@@ -242,7 +242,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: "— SIGNAL CUT —"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 9
                 font.letterSpacing: 1.5
                 font.bold: true
@@ -345,7 +345,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.topMargin: 3
             text: muted ? "MUTE" : (root.volPercent + "%")
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             font.bold: true
             color: muted ? Colours.textMuted : root.accent

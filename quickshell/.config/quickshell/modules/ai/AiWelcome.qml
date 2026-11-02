@@ -92,7 +92,7 @@ Column {
         textFormat: Text.StyledText
         text: root.greeting.slice(0, root.shown)
             + "<font color='#00000000'>" + root.greeting.slice(root.shown) + "</font>"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 16
         font.letterSpacing: 0.5
         color: root.fg
@@ -101,7 +101,7 @@ Column {
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: "AWAITING INPUT"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 9
         font.letterSpacing: 3
         color: Theme.magenta

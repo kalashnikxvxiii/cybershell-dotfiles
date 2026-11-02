@@ -43,7 +43,7 @@ Item {
             id: tag
             anchors.verticalCenter: parent.verticalCenter
             text: "\u25e2 BTW"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             font.bold: true
             font.letterSpacing: 1.8
@@ -58,7 +58,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: root.side?.question ?? ""
             elide: Text.ElideRight
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 10
             color: CP.alpha(root.fg, 0.6)
         }
@@ -99,7 +99,7 @@ Item {
                 width: parent.width
                 wrapMode: Text.Wrap
                 text: root.side?.pending ? "Thinking aside\u2026" : (root.side?.error ?? "")
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 color: root.side?.pending ? CP.alpha(Theme.cyan, notePulse.k) : Theme.red
 

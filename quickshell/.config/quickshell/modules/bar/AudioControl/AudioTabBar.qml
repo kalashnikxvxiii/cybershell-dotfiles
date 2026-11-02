@@ -74,7 +74,7 @@ Item {
                     anchors.top: parent.top
                     anchors.margins: 3
                     text: chip.index + 1
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     font.letterSpacing: 0.5
                     color: chip.active ? CP.alpha("white", 0.75)
@@ -86,7 +86,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: modelData.label
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 18
                     font.letterSpacing: 1.2
                     font.bold: true

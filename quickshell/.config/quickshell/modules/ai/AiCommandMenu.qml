@@ -251,7 +251,7 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 3
                 text: modelData.name
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 8
                 font.letterSpacing: 2
                 font.bold: true
@@ -382,7 +382,7 @@ Item {
             anchors.rightMargin: 11
             elide: Text.ElideRight
             text: footer.row ? footer.row.desc : ""
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 9
             color: CP.alpha(root.fg, 0.45)
         }

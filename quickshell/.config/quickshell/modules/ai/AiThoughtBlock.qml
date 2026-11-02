@@ -47,7 +47,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: root.hasText
                     text: root.expanded ? "\u25be" : "\u25b8"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     color: Theme.magenta
                 }
@@ -58,7 +58,7 @@ Item {
                         : root.ms > 0
                         ? "THOUGHT FOR " + Math.max(1, Math.round(root.ms / 1000)) + "S"
                         : "THOUGHT"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     opacity: root.streaming ? pulse.k : 1

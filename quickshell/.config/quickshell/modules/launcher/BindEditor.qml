@@ -83,7 +83,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             text: "KEYS"
             color: CP.alpha(Theme.cyan, 0.7)
-            font { family: "Oxanium"; pixelSize: 10 }
+            font { family: Theme.font; pixelSize: 10 }
         }
         Text {
             x: 90
@@ -91,7 +91,7 @@ ColumnLayout {
             text: logic.capturing ? "Press the combination, Esc to cancel"
                 : logic.keys !== "" ? logic.keys : "Click or Enter to capture"
             color: logic.capturing || logic.keys !== "" ? CP.white : "#aab4c8"
-            font { family: "Oxanium"; pixelSize: 14; bold: logic.keys !== "" && !logic.capturing }
+            font { family: Theme.font; pixelSize: 14; bold: logic.keys !== "" && !logic.capturing }
         }
         MouseArea {
             anchors.fill: parent
@@ -108,7 +108,7 @@ ColumnLayout {
             : ""
         color: Theme.red
         wrapMode: Text.WordWrap
-        font { family: "Oxanium"; pixelSize: 12 }
+        font { family: Theme.font; pixelSize: 12 }
     }
 
     RowLayout {
@@ -156,7 +156,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             text: field.label
             color: CP.alpha(Theme.cyan, 0.7)
-            font { family: "Oxanium"; pixelSize: 10 }
+            font { family: Theme.font; pixelSize: 10 }
         }
         TextInput {
             id: input
@@ -167,7 +167,7 @@ ColumnLayout {
             selectByMouse: true
             activeFocusOnTab: true
             color: "#e6f7ff"
-            font { family: "Oxanium"; pixelSize: 14 }
+            font { family: Theme.font; pixelSize: 14 }
             Keys.onEscapePressed: logic.cancel()
         }
     }
@@ -193,7 +193,7 @@ ColumnLayout {
             anchors.centerIn: parent
             text: button.label
             color: button.accent
-            font { family: "Oxanium"; pixelSize: 12; bold: true }
+            font { family: Theme.font; pixelSize: 12; bold: true }
         }
         MouseArea {
             id: hit

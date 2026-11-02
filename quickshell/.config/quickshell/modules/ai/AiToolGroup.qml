@@ -56,7 +56,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.expanded ? "\u25be" : "\u25b8"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     color: root.accent
                 }
@@ -68,7 +68,7 @@ Item {
                         + root.calls.length
                         + (root.calls.length === 1 ? " TOOL CALL" : " TOOL CALLS")
                         + (root.failed > 0 ? " \u00b7 " + root.failed + " FAILED" : "")
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     color: ma.containsMouse

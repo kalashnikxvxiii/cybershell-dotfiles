@@ -103,7 +103,7 @@ FocusScope {
             Layout.fillWidth: true
             text: "Tkla:__;v.0.02"
             color: root.accent2
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h2
         }
 
@@ -123,7 +123,7 @@ FocusScope {
                 anchors.leftMargin: 12
                 text: "RADIOPORT"
                 color: root.accent1
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.h1
                 transform: Translate { id: tagShift }
             }
@@ -242,7 +242,7 @@ FocusScope {
                     visible: coverImg.status !== Image.Ready && !tearTransition.visible
                     text: "NO SIGNAL"
                     color: root.accent2
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: root.h1
                 }
 
@@ -262,7 +262,7 @@ FocusScope {
                 Text {
                     text: "now playing"
                     color: root.accent2
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: root.h2
                 }
                 Rectangle { // separator
@@ -284,7 +284,7 @@ FocusScope {
                                 + (root.activePlayer.trackTitle || root.activePlayer.identity || "Unknown Title")
                               : "Nessun player"
                         color: Theme.red
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: root.h1
                         wrapMode: Text.WordWrap
                         maximumLineCount: 4
@@ -300,7 +300,7 @@ FocusScope {
                         visible: text !== ""
                         text: root.activePlayer?.trackAlbum ?? ""
                         color: Colours.textSecondary
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: root.h2 + 1
                         elide: Text.ElideRight
                     }
@@ -317,7 +317,7 @@ FocusScope {
                     Text {
                         text: "volume"
                         color: Theme.red
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: root.h1
                     }
                     Item { Layout.fillWidth: true } // spacer
@@ -328,7 +328,7 @@ FocusScope {
                         horizontalAlignment: Text.AlignHCenter
                         text: volRow.raw !== null && volRow.raw !== undefined ? Math.round(volRow.raw * 100) + "%" : "N/A"
                         color: root.accent1
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: root.h1
                     }
                     VolButton { label: "D"; step: 0.01 }
@@ -454,7 +454,7 @@ FocusScope {
 
             Text {
                 text: root.formatTime(root.activePlayer?.position ?? 0)
-                font.family: "Oxanium"; font.pixelSize: root.h2
+                font.family: Theme.font; font.pixelSize: root.h2
                 color: Colours.textSecondary
             }
             Item {
@@ -493,7 +493,7 @@ FocusScope {
             }
             Text {
                 text: root.formatTime(root.activePlayer?.length ?? 0)
-                font.family: "Oxanium"; font.pixelSize: root.h2
+                font.family: Theme.font; font.pixelSize: root.h2
                 color: Colours.textSecondary
             }
         }
@@ -531,7 +531,7 @@ FocusScope {
                     text: playerItem.modelData.trackTitle || playerItem.modelData.identity || "Unknown Player"
                     elide: Text.ElideRight
                     color: root.accent1
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: root.h1
                 }
                 MouseArea {
@@ -551,7 +551,7 @@ FocusScope {
             Layout.fillWidth: true
             text: "cyberdeckNutz"
             color: root.accent2
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h2
         }
     }
@@ -575,7 +575,7 @@ FocusScope {
             anchors.centerIn: parent
             text: btn.label
             color: root.accent1
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.h1
         }
         MouseArea {

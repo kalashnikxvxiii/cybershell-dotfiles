@@ -145,7 +145,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: chip.modelData.name
                     elide: Text.ElideRight
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 8
                     font.letterSpacing: 0.3
                     color: chip.selectedActive

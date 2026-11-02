@@ -93,7 +93,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: root.username ? root.username[0].toUpperCase() : "?"
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: root.avatarSize * 0.4
                     font.weight: Font.Bold
                     color: Theme.cyan
@@ -153,7 +153,7 @@ Item {
                 id: usernameLabel
                 Layout.fillWidth: true
                 text: root.username || "user"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: root.fontSize * 1.8
                 font.weight: Font.Bold
                 color: Theme.yellow
@@ -202,7 +202,7 @@ Item {
 
         Text {
             text: infoRow.prefix
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.fontSize
             font.weight: Font.Bold
             color: infoRow.accent
@@ -211,7 +211,7 @@ Item {
         Text {
             Layout.fillWidth: true
             text: infoRow.value
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.fontSize
             color: Colours.textSecondary
             elide: Text.ElideRight

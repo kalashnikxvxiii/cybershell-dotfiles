@@ -58,7 +58,7 @@ Item {
 
         Text {
             text: gd.txt
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: gd.sz
             font.weight: Font.Bold
             color: Colours.accentDanger
@@ -68,7 +68,7 @@ Item {
 
         Text {
             text: gd.txt
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: gd.sz
             font.weight: Font.Bold
             color: Colours.accentPrimary
@@ -79,7 +79,7 @@ Item {
         Text {
             id: lbl
             text: gd.txt
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: gd.sz
             font.weight: Font.Bold
             color: Colours.accentSecondary
@@ -135,7 +135,7 @@ Item {
         Text {
             Layout.alignment: Qt.AlignHCenter
             text: "•••"
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: root.fontSize / 2
             color: Colours.accentPrimary
         }

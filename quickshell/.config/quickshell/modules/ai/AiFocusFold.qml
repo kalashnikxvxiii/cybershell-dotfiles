@@ -75,7 +75,7 @@ Item {
                     visible: root.runningLabel !== ""
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.runningLabel
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     font.bold: true
@@ -87,7 +87,7 @@ Item {
                     visible: root.runningLabel === "" || root.fold.calls > 0
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.label
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 9
                     font.letterSpacing: 1.5
                     color: ma.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.62)
@@ -178,7 +178,7 @@ Item {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "COLLAPSE"
-                            font.family: "Oxanium"
+                            font.family: Theme.font
                             font.pixelSize: 9
                             font.letterSpacing: 1.5
                             color: endMa.containsMouse ? Theme.cyan : CP.alpha(Theme.cyan, 0.45)

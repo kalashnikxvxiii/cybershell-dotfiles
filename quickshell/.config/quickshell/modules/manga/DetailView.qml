@@ -139,7 +139,7 @@ Item {
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             text: root.manga ? root.manga.title : ""
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 16
             font.letterSpacing: 1
             font.bold: true
@@ -165,7 +165,7 @@ Item {
                 id: libLabel
                 anchors.centerIn: parent
                 text: libBtn.saved ? "IN LIBRARY" : "ADD"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 10
                 font.letterSpacing: 1.5
                 font.bold: true
@@ -223,7 +223,7 @@ Item {
                     p.push(root.manga.contentRating.toUpperCase())
                     return p.join("  ·  ")
                 }
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.letterSpacing: 1.5
                 font.bold: true
@@ -249,7 +249,7 @@ Item {
                     if (e.type) p.push(e.type.toUpperCase())
                     return p.join("   ·   ")
                 }
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.letterSpacing: 1.5
                 font.bold: true
@@ -262,7 +262,7 @@ Item {
                 width: parent.width
                 visible: root.manga && root.manga.warnings.length > 0
                 text: root.manga ? "⚠ " + root.manga.warnings.join(" · ").toUpperCase() : ""
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.letterSpacing: 1
                 font.bold: true
@@ -304,7 +304,7 @@ Item {
                     // never runs under the scroll indicator.
                     width: descFlick.width - 6
                     text: root.manga ? root.manga.description : ""
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 14
                     color: CP.alpha(Colours.textMuted, 0.9)
                     wrapMode: Text.WordWrap
@@ -380,7 +380,7 @@ Item {
         anchors.left: parent.left
         text: MangaService.loadingChapters ? "◢ CHAPTERS…"
                                             : "◢ " + root.sortedChapters.length + " CHAPTERS"
-        font.family: "Oxanium"
+        font.family: Theme.font
         font.pixelSize: 11
         font.letterSpacing: 2
         font.bold: true
@@ -426,7 +426,7 @@ Item {
                     id: tabLabel
                     anchors.centerIn: parent
                     text: tab.modelData.toUpperCase() + "  " + tab.count
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 11
                     font.letterSpacing: 1.5
                     font.bold: true
@@ -456,7 +456,7 @@ Item {
             text: "No readable chapters in Italian, English or the original "
                 + "language.\nChapters hosted by the publisher instead of by "
                 + "MangaDex are left out, since they cannot be opened here."
-            font.family: "Oxanium"
+            font.family: Theme.font
             font.pixelSize: 16
             color: CP.alpha(Colours.textMuted, 0.8)
             wrapMode: Text.WordWrap
@@ -475,7 +475,7 @@ Item {
                 id: allLangLabel
                 anchors.centerIn: parent
                 text: "SHOW ALL LANGUAGES"
-                font.family: "Oxanium"
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.letterSpacing: 1.5
                 font.bold: true
@@ -562,7 +562,7 @@ Item {
                         x: chapNum.marqueeActive ? chapNum.marqueeOffset : 0
                         anchors.verticalCenter: parent.verticalCenter
                         text: chapNum.label
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 14
                         font.letterSpacing: 0.5
                         color: chapMa.containsMouse ? Colours.accentSecondary
@@ -601,7 +601,7 @@ Item {
                           ? row.items.length + " VERSIONS"
                           : (row.only.group || "NO GROUP")
                             + (row.only.volume ? "   ·   VOL " + row.only.volume : "")
-                    font.family: "Oxanium"
+                    font.family: Theme.font
                     font.pixelSize: 10
                     font.letterSpacing: 0.5
                     color: CP.alpha(Colours.accentPrimary, 0.7)
@@ -627,7 +627,7 @@ Item {
                         id: srcTagLabel
                         anchors.centerIn: parent
                         text: srcTag.mw ? "MW" : "MD"
-                        font.family: "Oxanium"
+                        font.family: Theme.font
                         font.pixelSize: 8
                         font.letterSpacing: 0.5
                         font.bold: true
@@ -646,7 +646,7 @@ Item {
                     text: row.many
                           ? String.fromCodePoint(row.open ? 0xF0143 : 0xF0140)  // chevron up/down
                           : (row.only.pages > 0 ? row.only.pages + " PAG" : "")
-                    font.family: row.many ? "JetBrainsMono Nerd Font" : "Oxanium"
+                    font.family: row.many ? "JetBrainsMono Nerd Font" : Theme.font
                     font.pixelSize: row.many ? 14 : 11
                     font.letterSpacing: 1
                     color: CP.alpha(Colours.textMuted, row.many ? 0.85 : 0.6)
@@ -700,7 +700,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: (v.modelData.group || "NO GROUP")
                                     + (v.modelData.volume ? "   ·   VOL " + v.modelData.volume : "")
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 11
                                 font.letterSpacing: 0.5
                                 color: vMa.containsMouse ? Colours.accentSecondary
@@ -727,7 +727,7 @@ Item {
                                     id: vSrcLabel
                                     anchors.centerIn: parent
                                     text: vSrc.mw ? "MW" : "MD"
-                                    font.family: "Oxanium"
+                                    font.family: Theme.font
                                     font.pixelSize: 8
                                     font.letterSpacing: 0.5
                                     font.bold: true
@@ -741,7 +741,7 @@ Item {
                                 anchors.rightMargin: 7
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: v.modelData.pages > 0 ? v.modelData.pages + " PAG" : ""
-                                font.family: "Oxanium"
+                                font.family: Theme.font
                                 font.pixelSize: 10
                                 font.letterSpacing: 1
                                 color: CP.alpha(Colours.textMuted, 0.6)
