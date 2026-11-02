@@ -159,6 +159,8 @@ hl.layer_rule({
     name      = "qs-launcher",
     match     = { namespace = "qs-launcher" },
     blur      = true,
+    -- Blur only behind the menu's veil (alpha 0.35): with the veil gone the desktop shows through
+    ignore_alpha = 0.3,
     animation = "fade",
 })
 
