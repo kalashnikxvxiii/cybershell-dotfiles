@@ -72,7 +72,6 @@ cursor_colors     = { template = 'vscode',                target = '~/.cache/wal
 #wallpaper = """swww img "$(find ~/Media/Pictures/Wallpapers -iregex '.*.\\(jpg\\|jpeg\\|png\\|gif\\)' -type f | shuf -n 1)" """
 reload = """
 pkill -SIGUSR1 kitty 2>/dev/null || true
-pkill hyprlauncher 2>/dev/null || true; hyprlauncher --daemon &
 find /run/user/$(id -u) /tmp -maxdepth 3 -name 'nvim.*.0' 2>/dev/null | while read sock; do
   nvim --server "$sock" --remote-send ':WallustReload<CR>' 2>/dev/null || true
 done
