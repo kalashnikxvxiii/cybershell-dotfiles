@@ -159,7 +159,7 @@ hl.animation({ leaf = "fadeOut",      enabled = true, speed = 4, bezier = "easeI
 hl.animation({ leaf = "fadeSwitch",   enabled = true, speed = 5, bezier = "easeOutExpo"    })
 hl.animation({ leaf = "fadeShadow",   enabled = true, speed = 5, bezier = "easeOutExpo"    })
 
--- ── Layer (quickshell, swaync, wlogout…) ──────────────────────────────
+-- ── Layer (quickshell, wlogout…) ──────────────────────────────
 hl.animation({ leaf = "layers",        enabled = true, speed = 4, bezier = "easeOutExpo"    })
 hl.animation({ leaf = "layersIn",      enabled = true, speed = 5, bezier = "easeOutExpo",   style = "slide top" })
 hl.animation({ leaf = "layersOut",     enabled = true, speed = 3, bezier = "easeOutExpo",   style = "slide top" })

@@ -52,7 +52,6 @@ palette = "saliencedark"
 cava              = { template = 'cava_theme',            target = '~/.config/cava/themes/wallust' }
 kitty             = { template = 'kitty_colors',          target = '~/.config/kitty/colors.conf' }
 wofi              = { template = 'wofi_style',            target = '~/.config/wofi/style.css' }
-swaync            = { template = 'swaync_style',          target = '~/.config/swaync/style.css' }
 hyprtoolkit       = { template = 'hyprtoolkit',           target = '~/.config/hypr/hyprtoolkit.conf' }
 cava_colors       = { template = 'cava_bar_colors',       target = '~/.cache/wallust/cava_colors.sh' }
 kde               = { template = 'kde_colors',            target = '~/.local/share/color-schemes/Cyberpunk-Wallust.colors' }
@@ -72,7 +71,6 @@ cursor_colors     = { template = 'vscode',                target = '~/.cache/wal
 # Run commands when wallust is invoked. Useful to avoid scripting.
 #wallpaper = """swww img "$(find ~/Media/Pictures/Wallpapers -iregex '.*.\\(jpg\\|jpeg\\|png\\|gif\\)' -type f | shuf -n 1)" """
 reload = """
-swaync-client -rs 2>/dev/null || true
 pkill -SIGUSR1 kitty 2>/dev/null || true
 pkill hyprlauncher 2>/dev/null || true; hyprlauncher --daemon &
 find /run/user/$(id -u) /tmp -maxdepth 3 -name 'nvim.*.0' 2>/dev/null | while read sock; do

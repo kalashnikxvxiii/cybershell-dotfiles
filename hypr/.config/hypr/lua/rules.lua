@@ -213,22 +213,6 @@ hl.layer_rule({
     animation   = "none",
 })
 
--- Swaync floating notif: right slide-in / right slide-out
--- Override the global animation "slide top" (layersIn/Out line 237-238)
--- notifications namespace limited, so the other layers are not being touched
-hl.layer_rule({
-    name        = "swaync-notif-slide",
-    match       = { namespace = "swaync-notification-window" },
-    animation   = "slide right",
-})
-
--- Swaync control center: slide-in/out from right
-hl.layer_rule({
-    name        = "swaync-cc-slide",
-    match       = { namespace = "swaync-control-center" },
-    animation   = "slide-right",
-})
-
 -- Manga reader: the panel animates itself in QML — the drawer slides
 -- horizontally while the dark backdrop fades on its own timing. Hyprland's
 -- global "slide top" would drag the whole surface vertically instead and hide
