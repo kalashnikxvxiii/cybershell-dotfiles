@@ -104,7 +104,17 @@ Singleton {
         root._save()
     }
 
-    function _save() { store.setText(JSON.stringify({ current: root.current, custom: root.custom, font: root.font, hudFont: root.hudFont }, null, 2)) }
+    // What the Cyberpunk cursor shows over links: "hand" or "pulse" (scripts/cursor-hand.sh)
+    property string cursorHand: "hand"
+    function setCursorHand(v) {
+        if (v !== "hand" && v !== "pulse")
+            return
+        root.cursorHand = v
+        Quickshell.execDetached([Quickshell.shellPath("scripts/cursor-hand.sh"), v])
+        root._save()
+    }
+
+    function _save() { store.setText(JSON.stringify({ current: root.current, custom: root.custom, font: root.font, hudFont: root.hudFont, cursorHand: root.cursorHand }, null, 2)) }
 
     // Read blocking at creation, like HudState: otherwise the shell paints once in the default
     FileView {
@@ -127,6 +137,8 @@ Singleton {
                 root.font = d.font
             if (root.fonts.indexOf(d.hudFont) >= 0)
                 root.hudFont = d.hudFont
+            if (d.cursorHand === "hand" || d.cursorHand === "pulse")
+                root.cursorHand = d.cursorHand
         } catch (e) {}
     }
 }

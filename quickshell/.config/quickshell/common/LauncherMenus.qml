@@ -291,6 +291,15 @@ Singleton {
                 { id: "keybinds", name: "Keybinds", glyph: "\uf11c", comment: "Cheatsheet and your own binds", children: () => root.keybinds },
                 { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and palette", children: () => [
                     { id: "theme:wallpaper", name: "Wallpaper", glyph: "\uf03e", comment: "Open the wallpaper picker", run: () => WallpaperState.togglePicker(LauncherState.screenName) },
+                    { id: "theme:cursor", name: "Cursor", glyph: "\uf245", comment: "Over links: " + Theme.cursorHand, children: () => ["hand", "pulse"].map(v => ({
+                        id: "theme:cursor:" + v,
+                        name: v === "hand" ? "Hand" : "Pulse",
+                        on: Theme.cursorHand === v ? true : undefined,
+                        comment: v === "hand" ? "The pointing hand" : "CyberArch's pulsing arrow",
+                        glyph: "\uf245",
+                        keepOpen: true,
+                        run: () => Theme.setCursorHand(v)
+                    })) },
                     { id: "theme:font", name: "Font", glyph: "\uf031", comment: Theme.font + " · HUD " + Theme.hudFont, children: () => [
                         { id: "theme:font:shell", name: "Shell font", glyph: "\uf031", comment: Theme.font, children: () => root.fontRows("font") },
                         { id: "theme:font:hud", name: "HUD font", glyph: "\uf031", comment: Theme.hudFont, children: () => root.fontRows("hudFont") }
