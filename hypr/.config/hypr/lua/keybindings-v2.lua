@@ -175,7 +175,7 @@ bind(mod("H"),                run(hypr_scripts .. "clipboard.sh"),        "Clipb
 bind(mod("CTRL + H"),         run(hypr_scripts .. "clipboard.sh delete"), "Clipboard drop",  "Delete one entry")
 bind(mod("CTRL + SHIFT + H"), run(hypr_scripts .. "clipboard.sh wipe"),   "Clipboard wipe",  "Empty the history")
 bind(mod("I"),                run("hyprpicker -a"),                       "Color picker",    "Copy a color from the screen")
-bind(mod("L"),                run("hyprlock"),                            "Lock",            "Lock the session")
+bind(mod("L"),                run("qs ipc call lock lock"),                            "Lock",            "Lock the session")
 
 -- Cursor zoom and window opacity share the scroll wheel
 bind(mod("ALT + mouse_down"), function()
