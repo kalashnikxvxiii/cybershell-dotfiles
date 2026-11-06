@@ -8,7 +8,6 @@ import QtQuick
 import "modules/core"
 import "common"
 import "modules/wallpaper"
-import "modules/manga"
 import "modules/sonar"
 import "modules/snip"
 import "modules/kill"
@@ -173,10 +172,6 @@ ShellRoot {
             }
 
             WallpaperPicker {
-                screen: modelData
-            }
-
-            MangaPanel {
                 screen: modelData
             }
 

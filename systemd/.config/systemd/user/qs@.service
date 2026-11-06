@@ -1,0 +1,21 @@
+# One Quickshell process per heavy panel (%i.qml in the shell config), so a
+# crash takes down only that panel. Started from hypr/lua/autostart.lua after
+# importing the session variables Hyprland sets (cursor theme, NVIDIA, Qt).
+#   systemctl --user restart qs@manga     journalctl --user -u qs@manga
+[Unit]
+Description=Quickshell panel %i
+PartOf=graphical-session.target
+After=graphical-session.target
+# A panel that keeps dying at startup is left down instead of looping
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+# systemd is the only one restarting: Quickshell's own crash handler would
+# relaunch a second copy inside the unit
+Environment=QS_DISABLE_CRASH_HANDLER=1
+ExecStart=/usr/bin/qs -n -p %h/.config/quickshell/%i.qml
+# A crash leaves the panel's "open" flag behind for the main shell to read
+ExecStopPost=/usr/bin/rm -f %t/qs-%i-open
+Restart=always
+RestartSec=1

@@ -40,6 +40,16 @@ Singleton {
 
     function closeAll()    { root.readerOpen = false; root.panelOpen = false }
 
+    // This singleton lives in its own process (manga.qml): the dock in the main
+    // shell learns the open state from this file. Startup writes "0" too, so a
+    // value left by a crashed instance does not keep the dock slot lit.
+    readonly property string openFile: Quickshell.env("XDG_RUNTIME_DIR") + "/qs-manga-open"
+    function _writeOpen() {
+        Quickshell.execDetached(["sh", "-c", 'printf %s "$1" > "$2"', "sh", root.panelOpen ? "1" : "0", root.openFile])
+    }
+    onPanelOpenChanged: _writeOpen()
+    Component.onCompleted: _writeOpen()
+
     // -- Filters ----------------------------------------
     // Which catalogue the browse view queries. MangaDex has the metadata and
     // the multi-language chapter lists; MangaWorld has the Italian catalogue
@@ -176,6 +186,7 @@ Singleton {
 
     // -- IPC: toggle file, same handshake as WallpaperState -------------
     property string _lastToggleContent: ""
+    readonly property real _startupMs: Date.now()
 
     // The file survives a shell restart, so it is blanked at startup and its
     // content recorded as the baseline: without this a stale value from the
@@ -198,7 +209,11 @@ Singleton {
         onFileChanged: reload()
         onLoaded: {
             var content = text().trim()
-            if (content !== "" && content !== root._lastToggleContent) {
+            // The blanking above races the first read, and since the panel got
+            // its own process a crash restart would reopen it from the toggle
+            // that was already handled: payloads written before startup are stale
+            var sentMs = Number(content.split("_")[1]) / 1e6
+            if (content !== "" && content !== root._lastToggleContent && !(sentMs < root._startupMs)) {
                 root._lastToggleContent = content
                 root.togglePanel(content.split("_")[0])
             }

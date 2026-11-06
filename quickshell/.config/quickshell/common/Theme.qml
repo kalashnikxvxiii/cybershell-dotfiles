@@ -121,8 +121,14 @@ Singleton {
         id: store
         path: Quickshell.env("HOME") + "/.config/quickshell/palettes.json"
         blockLoading: true
+        // Several Quickshell processes share this file (manga.qml has its own
+        // Theme): follow the changes another one writes
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: root._load()
     }
-    Component.onCompleted: {
+    Component.onCompleted: root._load()
+    function _load() {
         try {
             const d = JSON.parse(store.text())
             const ok = {}

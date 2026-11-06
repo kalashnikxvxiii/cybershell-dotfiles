@@ -6,6 +6,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import "Colors.js" as CP
 
@@ -27,7 +28,7 @@ Singleton {
         "ai": AiState.open,
         "wallpaper": WallpaperState.pickerOpen,
         "sonar": SonarState.open,
-        "manga": MangaState.panelOpen
+        "manga": root._mangaOpen.text().trim() === "1"
     })
 
     // Every target already owns its toggle logic, so the dock calls the
@@ -38,7 +39,20 @@ Singleton {
             case "ai": AiState.toggleFrom(screenName); break
             case "wallpaper": WallpaperState.togglePicker(screenName); break
             case "sonar": SonarState.toggleFrom(screenName, "net"); break
-            case "manga": MangaState.togglePanel(screenName); break
+            case "manga": root._toggleManga(screenName); break
         }
+    }
+
+    // The manga panel runs in its own process (manga.qml), so its singleton is
+    // out of reach here: toggle through the file it watches, read the state
+    // from the file it writes. Same payload as the keybind: screen_nanoseconds.
+    property FileView _mangaOpen: FileView {
+        path: Quickshell.env("XDG_RUNTIME_DIR") + "/qs-manga-open"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+    }
+    function _toggleManga(screenName) {
+        Quickshell.execDetached(["sh", "-c", 'printf "%s_%s" "$1" "$(date +%s%N)" > /tmp/qs-manga-toggle', "sh", screenName])
     }
 }
