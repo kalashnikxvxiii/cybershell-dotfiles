@@ -38,9 +38,9 @@ Scope {
         color: "transparent"
         anchors { top: true; right: true }
         // Clear of the sonar, closed or open
-        margins { top: 60; right: SonarState.open ? 410 : 250 }
-        implicitWidth: 340
-        implicitHeight: 90
+        margins { top: 40; right: SonarState.open ? 390 : 230 }
+        implicitWidth: 380
+        implicitHeight: 130
         exclusiveZone: 0
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "qs-nowplaying"
@@ -49,8 +49,8 @@ Scope {
         Item {
             id: plate
             anchors.centerIn: parent
-            width: 320
-            height: 64
+            width: 360
+            height: 104
             transform: Tilt { w: plate.width; h: plate.height; yaw: -16; pitch: 1; roll: -1.5; focal: 2600 }
             layer.enabled: true
             layer.smooth: true
@@ -60,16 +60,26 @@ Scope {
             // The red line
             Rectangle {
                 id: line
+                x: 20
                 y: parent.height / 2 - 1.5
                 width: 0
                 height: 3
                 color: HudState.danger
             }
+            HudGhosts {
+                target: panel
+                opacity: panel.opacity
+                center: Qt.point(win.margins.right + win.implicitWidth - root.screen.width / 2, root.screen.height / 2 - win.margins.top)
+                ghost: Rectangle {
+                    color: HudState.alpha(HudState.danger, 0.28)
+                    border.color: HudState.danger
+                }
+            }
             // The panel
             Item {
                 id: panel
                 anchors.fill: parent
-                anchors.margins: 4
+                anchors.margins: 24
                 opacity: 0
                 clip: true
 
@@ -139,7 +149,7 @@ Scope {
         id: run
         PropertyAction { target: panel; property: "opacity"; value: 0 }
         PropertyAction { target: line; property: "opacity"; value: 1 }
-        NumberAnimation { target: line; property: "width"; from: 0; to: plate.width; duration: 170 }
+        NumberAnimation { target: line; property: "width"; from: 0; to: plate.width - 40; duration: 170 }
         // Flicker, stepped
         PropertyAction { target: line; property: "opacity"; value: 0.12 }
         PauseAnimation { duration: 50 }

@@ -26,14 +26,14 @@ Scope {
         mask: Region {
             Region { item: HudState.show.status ? status.sonar : null }
             Region { item: HudState.show.dock ? corner.row : null }
-            Region { item: HudState.show.launcher ? launcher : null }
+            Region { item: HudState.show.launcher ? launcherHit : null }
             Region { item: HudState.show.updates ? updates : null }
         }
 
         HudVitals {
             visible: HudState.show.vitals
-            x: 4
-            y: 42
+            x: -6
+            y: 32
             screen: root.screen
         }
 
@@ -63,12 +63,13 @@ Scope {
         Item {
             id: launcher
             visible: HudState.show.launcher
+            // 20px of margin all around, for the ghosts
             anchors.right: parent.right
-            anchors.rightMargin: 8
+            anchors.rightMargin: -12
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 24
-            width: 200
-            height: 24
+            anchors.bottomMargin: 4
+            width: 240
+            height: 64
             transform: Tilt { w: launcher.width; h: launcher.height; yaw: -14; pitch: -1; roll: 2.5; focal: 1180 }
 
             layer.enabled: true
@@ -76,9 +77,14 @@ Scope {
             layer.textureSize: Qt.size(width * 2, height * 2)
             layer.effect: DarkHalo {}
 
+            HudGhosts {
+                target: launcherRow
+            }
+
             Row {
+                id: launcherRow
                 anchors.right: parent.right
-                anchors.rightMargin: 2
+                anchors.rightMargin: 22
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 10
                 Text {
@@ -89,6 +95,7 @@ Scope {
                     font { family: HudState.font; pixelSize: 15; bold: true }
                 }
                 Rectangle {
+                    id: chipFrame
                     anchors.verticalCenter: parent.verticalCenter
                     width: chip.implicitWidth + 10
                     height: 18
@@ -115,7 +122,9 @@ Scope {
                 baseColor: HudState.danger
             }
             MouseArea {
+                id: launcherHit
                 anchors.fill: parent
+                anchors.margins: 20
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: LauncherState.toggleMenu()

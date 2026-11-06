@@ -9,6 +9,7 @@ import Quickshell.Services.Notifications
 import Quickshell.Wayland
 import "../../common"
 import "../../common/effects"
+import "../hud"
 
 Scope {
     id: root
@@ -87,7 +88,14 @@ Scope {
                     font { family: HudState.font; pixelSize: 9; letterSpacing: 1 }
                 }
 
+                HudGhosts {
+                    target: shard
+                    center: Qt.point(-root.screen.width / 2, root.screen.height / 2 - 150)
+                    ghost: ContactShard { ghost: true }
+                }
+
                 ContactShard {
+                    id: shard
                     x: 40
                     y: 30
                     picture: root.picture
@@ -120,7 +128,13 @@ Scope {
                     width: 0
                     height: Math.max(42, bodyText.implicitHeight + 18) + tail
 
+                    HudGhosts {
+                        target: bubble
+                        center: Qt.point(-root.screen.width / 2, root.screen.height / 2 - 150)
+                    }
+
                     Shape {
+                        id: bubble
                         anchors.fill: parent
                         antialiasing: true
                         layer.enabled: true

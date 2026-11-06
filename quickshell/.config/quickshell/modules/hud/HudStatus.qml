@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import "../../common"
 import "../bar"
+import "../sonar"
 
 HudStatusFrame {
     id: root
@@ -34,6 +35,16 @@ HudStatusFrame {
         }
     }
 
+    // The tile's frame, without the radar: it would blur into its own ghosts
+    HudGhosts {
+        target: sonarTile
+        opacity: root.growth > 0 ? 0 : 1
+        ghost: SonarOutline {
+            fillColor: HudState.alpha(HudState.wallust, 0.28)
+            strokeColor: HudState.wallust
+        }
+    }
+
     HudPlate {
         anchors.right: parent.right
         anchors.rightMargin: 6
@@ -52,59 +63,70 @@ HudStatusFrame {
     }
 
     HudPlate {
-        y: 228 + root.growHeight * root.growth
-        width: parent.width
-        height: 50
-        layer.effect: DarkHalo {}
+        y: 208 + root.growHeight * root.growth
+        width: parent.width + 20
+        height: 70
 
-        // Just left of the sonar's left edge, the second line indented
-        Row {
-            x: 90
-            y: 2
-            spacing: 8
-            Text {
-                text: "NETWORK STATUS"
-                color: HudState.power
-                font { family: HudState.font; pixelSize: 13; bold: true; letterSpacing: 1 }
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: "\u2191 " + HudState.rate(HudState.txMbps)
-                color: HudState.tech
-                font { family: HudState.font; pixelSize: 10 }
-            }
+        HudGhosts {
+            target: net
         }
-        Row {
-            x: 112
-            y: 22
-            spacing: 6
-            CutShape {
-                anchors.verticalCenter: parent.verticalCenter
-                width: 16
-                height: 17
-                cutBottomLeft: 6
-                fillColor: HudState.power
+
+        // 20px of room above, for the ghosts
+        Item {
+            id: net
+            y: 20
+            width: 330
+            height: 50
+
+            // Just left of the sonar's left edge, the second line indented
+            Row {
+                x: 90
+                y: 2
+                spacing: 8
                 Text {
-                    anchors.centerIn: parent
-                    text: "!"
-                    color: "#00060e"
-                    font { family: HudState.font; pixelSize: 13; bold: true }
+                    text: "NETWORK STATUS"
+                    color: HudState.power
+                    font { family: HudState.font; pixelSize: 13; bold: true; letterSpacing: 1 }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\u2191 " + HudState.rate(HudState.txMbps)
+                    color: HudState.tech
+                    font { family: HudState.font; pixelSize: 10 }
                 }
             }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                // A long SSID must not push the rate out of the plate
-                width: Math.min(implicitWidth, 120)
-                elide: Text.ElideRight
-                text: SonarState.activeSsid !== "" ? "WIFI: " + SonarState.activeSsid.toUpperCase() : "LAN: " + HudState.iface.toUpperCase()
-                color: HudState.power
-                font { family: HudState.font; pixelSize: 12 }
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: "\u2193 " + HudState.rate(HudState.rxMbps)
-                color: HudState.danger
-                font { family: HudState.font; pixelSize: 10 }
+            Row {
+                x: 112
+                y: 22
+                spacing: 6
+                CutShape {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 16
+                    height: 17
+                    cutBottomLeft: 6
+                    fillColor: HudState.power
+                    Text {
+                        anchors.centerIn: parent
+                        text: "!"
+                        color: "#00060e"
+                        font { family: HudState.font; pixelSize: 13; bold: true }
+                    }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    // A long SSID must not push the rate out of the plate
+                    width: Math.min(implicitWidth, 120)
+                    elide: Text.ElideRight
+                    text: SonarState.activeSsid !== "" ? "WIFI: " + SonarState.activeSsid.toUpperCase() : "LAN: " + HudState.iface.toUpperCase()
+                    color: HudState.power
+                    font { family: HudState.font; pixelSize: 12 }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\u2193 " + HudState.rate(HudState.rxMbps)
+                    color: HudState.danger
+                    font { family: HudState.font; pixelSize: 10 }
+                }
             }
         }
     }

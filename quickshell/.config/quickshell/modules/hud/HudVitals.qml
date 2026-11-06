@@ -14,9 +14,9 @@ Item {
     readonly property int wsId: Hyprland.monitorFor(root.screen)?.activeWorkspace?.id ?? 1
     readonly property real memFrac: HudState.memUsedGb / HudState.memTotalGb
 
-    // 10px of margin all around the content, for the glows
-    width: 490
-    height: 116
+    // 20px of margin all around the content, for the glows and the ghosts
+    width: 510
+    height: 136
     transform: Tilt { w: root.width; h: root.height; yaw: 24; pitch: 5; roll: 3; focal: 2100 }
 
     // Flat at twice the size, then tilted as one texture (see HudPlate)
@@ -56,9 +56,15 @@ Item {
         }
     }
 
+    HudGhosts {
+        target: shapes
+    }
+
+    // The shapes, which the ghosts repeat
     Item {
-        x: 10
-        y: 10
+        id: shapes
+        x: 20
+        y: 20
         width: 470
         height: 96
 
@@ -131,22 +137,6 @@ Item {
             }
         }
 
-        // Disk figures and CPU percentage
-        Text {
-            x: 405
-            y: 3
-            text: HudState.diskUsedGb.toFixed(0) + "/" + HudState.diskTotalGb.toFixed(0)
-            color: HudState.tech
-            font { family: HudState.font; pixelSize: 9 }
-        }
-        Text {
-            x: 405
-            y: 15
-            text: Math.round(HudState.cpu * 100) + "%"
-            color: HudState.dangerSoft
-            font { family: HudState.font; pixelSize: 27; bold: true }
-        }
-
         // RAM: a row of chips, lit in proportion
         Row {
             x: 50
@@ -168,13 +158,6 @@ Item {
                     }
                 }
             }
-        }
-        Text {
-            x: 216
-            y: 35
-            text: HudState.memUsedGb.toFixed(1) + " / " + HudState.memTotalGb.toFixed(0) + " GB"
-            color: HudState.mem
-            font { family: HudState.font; pixelSize: 12; bold: true }
         }
 
         // GPU takes the stamina bar: this machine has no battery
@@ -210,8 +193,44 @@ Item {
                 }
             }
         }
+    }
+
+    // The writing, with ghosts of its own
+    HudGhosts {
+        target: writing
+    }
+
+    Item {
+        id: writing
+        x: 20
+        y: 20
+        width: 470
+        height: 96
+
+        // Disk figures and CPU percentage
         Text {
-            anchors.right: gpu.right
+            x: 405
+            y: 3
+            text: HudState.diskUsedGb.toFixed(0) + "/" + HudState.diskTotalGb.toFixed(0)
+            color: HudState.tech
+            font { family: HudState.font; pixelSize: 9 }
+        }
+        Text {
+            x: 405
+            y: 15
+            text: Math.round(HudState.cpu * 100) + "%"
+            color: HudState.dangerSoft
+            font { family: HudState.font; pixelSize: 27; bold: true }
+        }
+        Text {
+            x: 216
+            y: 35
+            text: HudState.memUsedGb.toFixed(1) + " / " + HudState.memTotalGb.toFixed(0) + " GB"
+            color: HudState.mem
+            font { family: HudState.font; pixelSize: 12; bold: true }
+        }
+        Text {
+            x: 422 - width
             y: 68
             text: "GPU " + Math.round(HudState.gpu * 100) + "%  " + HudState.gpuTemp + "\u00b0"
             color: HudState.ok

@@ -161,7 +161,7 @@ Item {
                 opacity: 0.4 - index * 0.2
                 big: banner.big
                 tone: banner.tone
-                fill: "transparent"
+                fill: HudState.alpha(banner.tone, 0.28)
 
                 CutShape {
                     x: 62
@@ -172,6 +172,12 @@ Item {
                     cutBottomRight: banner.big ? 18 : 10
                     inset: 0.5
                     strokeColor: banner.tone
+                }
+                ShaderEffectSource {
+                    width: banner.width
+                    height: banner.height
+                    sourceItem: writing
+                    textureSize: Qt.size(width * 2, height * 2)
                 }
             }
         }
@@ -193,53 +199,60 @@ Item {
             tone: glitch.running ? tint.color : banner.tone
         }
 
-        Text {
-            x: 74
-            y: banner.big ? 6 : 0
-            height: banner.big ? 44 : 26
-            verticalAlignment: Text.AlignVCenter
-            text: "▲"
-            color: "#00060e"
-            font { family: HudState.font; pixelSize: banner.big ? 13 : 9 }
-        }
-        Text {
-            x: banner.big ? 94 : 88
-            y: banner.big ? 6 : 0
-            height: banner.big ? 44 : 26
-            verticalAlignment: Text.AlignVCenter
-            text: banner.title
-            color: "#00060e"
-            transform: Translate { id: titleShift }
-            font { family: HudState.font; pixelSize: banner.big ? 16 : 11; bold: true }
-        }
-        // The stamp at the far end, where its image is installed
-        Image {
-            visible: banner.big && status === Image.Ready
-            x: 352
-            y: 8
-            width: 56
-            height: 40
-            source: root.assets + "updt.png"
-            sourceSize: Qt.size(112, 80)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
+        // The writing, which the ghosts copy
+        Item {
+            id: writing
+            width: banner.width
+            height: banner.height
 
-        Row {
-            x: 66
-            y: banner.big ? 55 : 31
-            spacing: 6
             Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: "◢"
-                color: banner.tone
-                font { family: HudState.font; pixelSize: banner.big ? 12 : 8 }
+                x: 74
+                y: banner.big ? 6 : 0
+                height: banner.big ? 44 : 26
+                verticalAlignment: Text.AlignVCenter
+                text: "▲"
+                color: "#00060e"
+                font { family: HudState.font; pixelSize: banner.big ? 13 : 9 }
             }
             Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: banner.detail
-                color: banner.tone
-                font { family: HudState.font; pixelSize: banner.big ? 12 : 9 }
+                x: banner.big ? 94 : 88
+                y: banner.big ? 6 : 0
+                height: banner.big ? 44 : 26
+                verticalAlignment: Text.AlignVCenter
+                text: banner.title
+                color: "#00060e"
+                transform: Translate { id: titleShift }
+                font { family: HudState.font; pixelSize: banner.big ? 16 : 11; bold: true }
+            }
+            // The stamp at the far end, where its image is installed
+            Image {
+                visible: banner.big && status === Image.Ready
+                x: 352
+                y: 8
+                width: 56
+                height: 40
+                source: root.assets + "updt.png"
+                sourceSize: Qt.size(112, 80)
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+
+            Row {
+                x: 66
+                y: banner.big ? 55 : 31
+                spacing: 6
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "◢"
+                    color: banner.tone
+                    font { family: HudState.font; pixelSize: banner.big ? 12 : 8 }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: banner.detail
+                    color: banner.tone
+                    font { family: HudState.font; pixelSize: banner.big ? 12 : 9 }
+                }
             }
         }
 
