@@ -22,11 +22,11 @@ Item {
 
     readonly property bool wantOpen: AiState.open && AiState.screenName === root.screenName
 
-    // Never larger than the area it lives in. The default height is the
-    // drawer's historic one, until the user resizes it
+    // Never larger than the area it lives in. The default height fills the gap between the HUD's
+    // network status and the Apps Launcher hint, until the user resizes it
     readonly property int panelWidth: Math.round(Math.min(parent.width, AiState.panelW))
     readonly property int panelHeight: Math.round(Math.min(parent.height,
-        AiState.panelH > 0 ? AiState.panelH : parent.height * 0.78))
+        AiState.panelH > 0 ? AiState.panelH : parent.height - 388))
 
     readonly property int minWidth: 360
     readonly property int minHeight: 420

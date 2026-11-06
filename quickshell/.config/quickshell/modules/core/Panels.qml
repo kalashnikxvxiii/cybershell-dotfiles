@@ -99,10 +99,8 @@ Item {
     AiPanel {
         id: aiPanel
         screenName: root.bar.screen.name
-        rightSide: root.dockRight
-        // Docked, it opens sideways from the dock, centred on the AI icon.
-        // AiPanel places itself from these: detached, it ignores them
-        dockedX: root.dockRight ? dock.x - aiPanel.panelWidth - 8 : dock.x + dock.width + 8
-        dockedY: dock.y + dock.aiSlotCenterY - aiPanel.panelHeight / 2
+        rightSide: true
+        dockedX: root.width - aiPanel.panelWidth - 38
+        dockedY: 309
     }
 }
