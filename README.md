@@ -5,11 +5,12 @@ Cyberpunk 2077-themed Wayland desktop environment on CachyOS (Arch-based).
 ## Stack
 
 - **Compositor**: Hyprland
-- **Shell/Bar**: QuickShell (Qt 6 / QML)
+- **Shell/Bar**: QuickShell (Qt 6 / QML) — bar, desktop HUD, dashboard, dock, menu, notifications, lock screen
 - **Terminal**: Kitty + Fish
 - **Theming**: wallust (dynamic palette from wallpaper)
 - **Qt/GTK**: qt6ct (Fusion + wallust palette), Kvantum KvFlat, adw-gtk3-dark
-- **Notifications**: SwayNC
+- **Notifications**: QuickShell (holo-call popups + messages panel); the SwayNC config is kept but the service is disabled
+- **Lock screen**: QuickShell (`WlSessionLock`, PAM with hyprlock's rules); hyprlock stays as the fallback
 - **Launcher**: QuickShell menu (SUPER+SPACE); Wofi for the clipboard, recorder and minimize pickers
 
 ## Install
@@ -40,8 +41,13 @@ This rice builds on ideas and code from:
 - **[Caelestia](https://github.com/caelestia-dots/shell)** (GPL-3.0) — `DashClock`, `DashCalendar`, `DashTabs`, `DashMediaTab`, `DashWeatherMini`, `DashWeatherTab`, `DashboardContent` and the `Colours` singleton are adapted from its code; the `BarConfig` layout and the `Players` MPRIS service follow its patterns
 - **[nierlock](https://github.com/xendak/nierlock)** — `GlitchEffect` is inspired by it; `shaders/glitch.frag.qsb` and `shaders/success.frag.qsb` come from it unchanged
 - **[Cyberpunk-quickshell](https://github.com/AndreaNec/Cyberpunk-quickshell)** by AndreaNec — the SUPER+SPACE menu (`LauncherPanel`, `LauncherEntry`, `LauncherMenus`, `GlitchReveal`), the workspace tile outline (`RamShape`) and the RADIOPORT layout (`DashMediaTab`, `MediaPanel`) are ported from it
+- **[CyberArch-Shell](https://github.com/ARCANGEL0/CyberArch-Shell)** by ARCANGEL0 — the visual style of the desktop HUD (perspective-tilted panels, vitals, Sonar frame, quick slots, update banners), the Ripperdoc look of the CYBERWARE tab (`DashPerfTab`), the lock screen (`modules/lock/`), the Radioport UI (`modules/media/Radioport*`) and the shape of the menu rows; also the ideas behind Street Cred, Kill Mode, holo-call notifications, tilted toasts, the capture banner and recording frame. No code was taken: CyberArch is an AGS/GTK shell published without a license, so every piece was rewritten from scratch in QML for Quickshell, then reworked one by one to fit this shell — its own palette and font system, its existing services (PipeWire, MPRIS, notifications, PAM) and its performance rules
 - **[ilyamiro](https://github.com/ilyamiro)** — Wallpaper picker concept and implementation reference
 - **[cava](https://github.com/karlstav/cava)** (MIT) — the shaders in `cava/.config/cava/shaders/` are cava's own examples
+
+## Assets not included
+
+The sound effects, the `Cyberpunk` cursor theme and the update banner images come from CyberArch-Shell and are not redistributed here. The shell looks for them in `~/.local/share/qs-hud-assets/` (sounds, banner images) and `~/.local/share/icons/` (cursor); without the sounds the shell is simply silent.
 
 ## License
 
