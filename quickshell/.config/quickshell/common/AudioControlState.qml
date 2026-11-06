@@ -140,7 +140,11 @@ QtObject {
 
     // With per-station EQ, the tuned player decides which bands are loaded
     readonly property string _eqStation: Players.active?.identity ?? ""
-    on_EqStationChanged: if (_eqStation !== "") Quickshell.execDetached([_eqScript, "station", _eqStation])
+    // The Radioport's process (media.qml) has its own copy of this singleton and
+    // turns this off: one process switching stations is enough, two would load
+    // the EasyEffects preset twice
+    property bool stationSync: true
+    on_EqStationChanged: if (stationSync && _eqStation !== "") Quickshell.execDetached([_eqScript, "station", _eqStation])
 
     function applyEqCustom() {
         Quickshell.execDetached([_eqScript, "apply"])
@@ -156,6 +160,9 @@ QtObject {
 
     property var _eqFile: FileView {
         path: Quickshell.env("HOME") + "/.cache/qs-audio/eq_state.json"
+        // Changes made by the other process (bar popup vs Radioport) show up here too
+        watchChanges: true
+        onFileChanged: reload()
         onLoaded: {
             root._eqLoadFailCount = 0
             try {

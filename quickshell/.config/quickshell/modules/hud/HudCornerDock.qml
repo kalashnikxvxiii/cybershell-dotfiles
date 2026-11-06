@@ -25,7 +25,7 @@ Item {
             case "audio": AudioControlState.requestToggle(root.screen.name); break
             case "night": Quickshell.execDetached(["sh", "-c", "pgrep hyprsunset && pkill hyprsunset || hyprsunset -t 4500"]); break
             case "notif": NotifState.togglePanel(); break
-            case "media": LauncherState.toggleMedia(); break
+            case "media": LauncherState.mediaPanel("toggle"); break
         }
     }
 

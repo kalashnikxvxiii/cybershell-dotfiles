@@ -12,7 +12,6 @@ import "modules/kill"
 import "modules/notifications"
 import "modules/toasts"
 import "modules/launcher"
-import "modules/media"
 import "modules/wheel"
 import "modules/cheatsheet"
 import "modules/hud"
@@ -73,9 +72,10 @@ ShellRoot {
     }
     IpcHandler {
         target: "mediapanel"
-        function toggle(): void { LauncherState.toggleMedia() }
-        function open(): void { LauncherState.openMedia() }
-        function close(): void { LauncherState.closeMedia() }
+        // Forwarded: the Radioport lives in its own process (media.qml)
+        function toggle(): void { LauncherState.mediaPanel("toggle") }
+        function open(): void { LauncherState.mediaPanel("open") }
+        function close(): void { LauncherState.mediaPanel("close") }
     }
     // Desktop HUD: on/off and above/below the windows (SUPER+ALT+L, then H or J)
     IpcHandler {
@@ -160,10 +160,6 @@ ShellRoot {
             }
 
             LauncherPanel {
-                screen: modelData
-            }
-
-            MediaPanel {
                 screen: modelData
             }
 

@@ -1,6 +1,6 @@
 // MediaPanel.qml — standalone RADIOPORT overlay, as in AndreaNec/Cyberpunk-quickshell
 // (mediaplayer/MediaPanel.qml). Hosts the same component as the dashboard's
-// media tab. Opened from the menu ("Media") or:
+// media tab. Runs in its own process (media.qml). Opened from the menu ("Media") or:
 //   qs ipc call mediapanel toggle | open | close
 import QtQuick
 import Quickshell
@@ -137,7 +137,7 @@ Scope {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 LauncherState.closeMedia();
-                                LauncherState.openMenu();
+                                LauncherState.launcher("open");
                             }
                         }
                     }

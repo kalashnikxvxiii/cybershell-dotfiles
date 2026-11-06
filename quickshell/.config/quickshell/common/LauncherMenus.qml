@@ -286,7 +286,7 @@ Singleton {
                 { id: "power", name: "Power", glyph: "", comment: "Lock, suspend, reboot, power off", children: () => root.power },
                 { id: "network", name: "Network", glyph: "", comment: "Wi-Fi and connections", children: () => root.networks },
                 { id: "bluetooth", name: "Bluetooth", glyph: "", comment: "Adapter and devices", children: () => root.bluetooth },
-                { id: "media", name: "Media", glyph: "󰝚", comment: "open Radioport", run: () => LauncherState.openMedia() },
+                { id: "media", name: "Media", glyph: "󰝚", comment: "open Radioport", run: () => LauncherState.mediaPanel("open") },
                 { id: "terminal", name: "Terminal", glyph: "\uf120", comment: "Open a kitty window", run: sh(["kitty"]) },
                 { id: "keybinds", name: "Keybinds", glyph: "\uf11c", comment: "Cheatsheet and your own binds", children: () => root.keybinds },
                 { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and palette", children: () => [
