@@ -3,11 +3,9 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import CyberWallpaper
 import QtQuick
 import "modules/core"
 import "common"
-import "modules/wallpaper"
 import "modules/sonar"
 import "modules/snip"
 import "modules/kill"
@@ -79,11 +77,6 @@ ShellRoot {
         function open(): void { LauncherState.openMedia() }
         function close(): void { LauncherState.closeMedia() }
     }
-    // Dim behind Zen (SUPER+ALT+B)
-    IpcHandler {
-        target: "contrast-scrim"
-        function toggle(): void { WallpaperState.scrimEnabled = !WallpaperState.scrimEnabled }
-    }
     // Desktop HUD: on/off and above/below the windows (SUPER+ALT+L, then H or J)
     IpcHandler {
         target: "hud"
@@ -124,43 +117,6 @@ ShellRoot {
 
             DrawerState { id: ds }
 
-            // Wallpaper layer (background)
-            PanelWindow {
-                screen: modelData
-                WlrLayershell.layer: WlrLayer.Bottom
-                WlrLayershell.namespace: "cyberwallpaper"
-                anchors { top: true; bottom: true; left: true; right: true }
-                exclusiveZone: -1
-                color: "transparent"
-
-                WallpaperLayer {
-                    anchors.fill: parent
-                    source: WallpaperState.screenPaths[modelData.name] || ""
-                    backdropBlur: true
-                    backdropDarken: 0.15
-                    backdropSaturation: -0.2
-                    blurRadius: 40
-
-                    // Live binding to the singleton's properties - no restart needed
-                    transitionType:         TransitionConfig.transitionType
-                    transitionDuration:     TransitionConfig.transitionDuration
-                    transitionFps:          TransitionConfig.transitionFps
-                    transitionStep:         TransitionConfig.transitionStep
-                    transitionAngle:        TransitionConfig.transitionAngle
-                    transitionPos:          TransitionConfig.transitionPos
-                    transitionBezier:       TransitionConfig.transitionBezier
-                    transitionWave:         TransitionConfig.transitionWave
-                    invertY:                TransitionConfig.invertY
-                }
-            }
-
-            // Own layer surface above the wallpaper and below every window:
-            // keeps text in self-translucent windows (Zen) readable on bright
-            // wallpapers.
-            ContrastScrim {
-                screenObj: modelData
-            }
-
             Exclusions {                
                 screen: modelData
                 barHeight: 24
@@ -169,10 +125,6 @@ ShellRoot {
             Drawers {
                 screen: modelData
                 drawerState: ds
-            }
-
-            WallpaperPicker {
-                screen: modelData
             }
 
             SonarPanel {

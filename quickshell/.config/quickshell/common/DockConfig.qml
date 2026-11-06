@@ -26,7 +26,7 @@ Singleton {
     // from its keybind too, not only from the dock
     readonly property var activeMap: ({
         "ai": AiState.open,
-        "wallpaper": WallpaperState.pickerOpen,
+        "wallpaper": root._wallpaperOpen.text().trim() === "1",
         "sonar": SonarState.open,
         "manga": root._mangaOpen.text().trim() === "1"
     })
@@ -37,22 +37,30 @@ Singleton {
     function activate(id, screenName) {
         switch (id) {
             case "ai": AiState.toggleFrom(screenName); break
-            case "wallpaper": WallpaperState.togglePicker(screenName); break
+            case "wallpaper": root.toggleFile("/tmp/qs-wallpicker-toggle", screenName); break
             case "sonar": SonarState.toggleFrom(screenName, "net"); break
-            case "manga": root._toggleManga(screenName); break
+            case "manga": root.toggleFile("/tmp/qs-manga-toggle", screenName); break
         }
     }
 
-    // The manga panel runs in its own process (manga.qml), so its singleton is
-    // out of reach here: toggle through the file it watches, read the state
-    // from the file it writes. Same payload as the keybind: screen_nanoseconds.
+    // Manga and wallpaper run in their own processes (manga.qml, wallpaper.qml),
+    // so their singletons are out of reach here and must never be referenced
+    // (that would create a second copy answering the same toggles). Toggle
+    // through the file each one watches, read the state from the file it
+    // writes. Same payload as the keybinds: screen_nanoseconds.
     property FileView _mangaOpen: FileView {
         path: Quickshell.env("XDG_RUNTIME_DIR") + "/qs-manga-open"
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
     }
-    function _toggleManga(screenName) {
-        Quickshell.execDetached(["sh", "-c", 'printf "%s_%s" "$1" "$(date +%s%N)" > /tmp/qs-manga-toggle', "sh", screenName])
+    property FileView _wallpaperOpen: FileView {
+        path: Quickshell.env("XDG_RUNTIME_DIR") + "/qs-wallpaper-open"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+    }
+    function toggleFile(file, screenName) {
+        Quickshell.execDetached(["sh", "-c", 'printf "%s_%s" "$1" "$(date +%s%N)" > "$2"', "sh", screenName, file])
     }
 }

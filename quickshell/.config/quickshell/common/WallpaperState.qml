@@ -26,6 +26,15 @@ QtObject {
         pickerOpen = false
     }
 
+    // This singleton lives in its own process (wallpaper.qml): the dock in the
+    // main shell learns the open state from this file. Startup writes "0" too,
+    // so a value left by a crashed instance does not keep the dock slot lit.
+    readonly property string openFile: Quickshell.env("XDG_RUNTIME_DIR") + "/qs-wallpaper-open"
+    function _writeOpen() {
+        Quickshell.execDetached(["sh", "-c", 'printf %s "$1" > "$2"', "sh", root.pickerOpen ? "1" : "0", root.openFile])
+    }
+    onPickerOpenChanged: _writeOpen()
+
     // -- Contrast Scrim ----------------------------------
     // Runtime only: off until the user asks for it
     property bool scrimEnabled: false
@@ -225,7 +234,10 @@ QtObject {
     // ── Ensure toggle file exists before watcher starts ────────────────
     property string _lastToggleContent: ""
 
+    readonly property real _startupMs: Date.now()
+
     Component.onCompleted: {
+        _writeOpen()
         _toggleInitProc.running = true
         _initProc.running = true
         _catalogProc.running = true
@@ -248,7 +260,11 @@ QtObject {
         onFileChanged: reload()
         onLoaded: {
             var content = text().trim()
-            if (content !== "" && content !==root._lastToggleContent) {
+            // The blanking above races the first read, and a crash restart
+            // would reopen the picker from the toggle already handled:
+            // payloads written before startup are stale
+            var sentMs = Number(content.split("_")[1]) / 1e6
+            if (content !== "" && content !== root._lastToggleContent && !(sentMs < root._startupMs)) {
                 root._lastToggleContent = content
                 root.togglePicker(content.split("_")[0])
             }

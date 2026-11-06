@@ -290,7 +290,7 @@ Singleton {
                 { id: "terminal", name: "Terminal", glyph: "\uf120", comment: "Open a kitty window", run: sh(["kitty"]) },
                 { id: "keybinds", name: "Keybinds", glyph: "\uf11c", comment: "Cheatsheet and your own binds", children: () => root.keybinds },
                 { id: "theme", name: "Theme", glyph: "\uf1fc", comment: "Wallpaper and palette", children: () => [
-                    { id: "theme:wallpaper", name: "Wallpaper", glyph: "\uf03e", comment: "Open the wallpaper picker", run: () => WallpaperState.togglePicker(LauncherState.screenName) },
+                    { id: "theme:wallpaper", name: "Wallpaper", glyph: "\uf03e", comment: "Open the wallpaper picker", run: () => DockConfig.toggleFile("/tmp/qs-wallpicker-toggle", LauncherState.screenName) },
                     { id: "theme:cursor", name: "Cursor", glyph: "\uf245", comment: "Over links: " + Theme.cursorHand, children: () => ["hand", "pulse"].map(v => ({
                         id: "theme:cursor:" + v,
                         name: v === "hand" ? "Hand" : "Pulse",
