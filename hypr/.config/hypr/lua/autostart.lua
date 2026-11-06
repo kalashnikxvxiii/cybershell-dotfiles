@@ -24,8 +24,16 @@ hl.on("hyprland.start", function()
     tray_exec("qpwgraph")                                                                              -- easyeffects
     tray_exec("python ~/.local/share/RazerBatteryTray/src/razer_battery_tray.py 'Razer Basilisk V3 Pro 35K Phantom Green Edition (Wireless)'")  -- razer battery tray
     hl.exec_cmd("awww-daemon")                                                                         -- wallpaper daemon (awww)
-    -- Watchdog: qs gives up if its own restart crashes within 10 s (GPU still exhausted); retry every 10 s
-    hl.exec_cmd("while :; do pgrep -x 'quickshell|qs' >/dev/null || quickshell -n >$XDG_RUNTIME_DIR/quickshell.log 2>&1; sleep 10; done")
+    -- Watchdog: qs gives up if its own restart crashes within 10 s (GPU still exhausted); retry every 10 s.
+    -- Only the main shell counts: the panel instances (qs@*.service) and cyberlab all run with -p
+    hl.exec_cmd([[while :; do pgrep -ax 'quickshell|qs' | grep -qv -- ' -p ' || quickshell -n >$XDG_RUNTIME_DIR/quickshell.log 2>&1; sleep 10; done]])
+    -- Panels in their own Quickshell process (systemd/qs@.service). The variables are the ones
+    -- env.lua and nvidia.lua set and the systemd user manager lacks: without them the panel
+    -- would get the default cursor and miss the NVIDIA setup
+    hl.exec_cmd("systemctl --user import-environment XCURSOR_THEME XCURSOR_SIZE HYPRCURSOR_SIZE GTK_THEME"
+        .. " QT_AUTO_SCREEN_SCALE_FACTOR QT_WAYLAND_DISABLE_WINDOWDECORATION QT_LOGGING_RULES"
+        .. " LIBVA_DRIVER_NAME GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME WLR_NO_HARDWARE_CURSORS NVD_BACKEND"
+        .. " && systemctl --user start qs@manga")
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh")                                          -- set initial wallpapers
     -- hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
     -- hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal
