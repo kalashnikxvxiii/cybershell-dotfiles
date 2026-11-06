@@ -24,7 +24,8 @@ hl.on("hyprland.start", function()
     tray_exec("qpwgraph")                                                                              -- easyeffects
     tray_exec("python ~/.local/share/RazerBatteryTray/src/razer_battery_tray.py 'Razer Basilisk V3 Pro 35K Phantom Green Edition (Wireless)'")  -- razer battery tray
     hl.exec_cmd("awww-daemon")                                                                         -- wallpaper daemon (awww)
-    hl.exec_cmd("quickshell >$XDG_RUNTIME_DIR/quickshell.log 2>&1")                                    -- Quickshell
+    -- Watchdog: qs gives up if its own restart crashes within 10 s (GPU still exhausted); retry every 10 s
+    hl.exec_cmd("while :; do pgrep -x 'quickshell|qs' >/dev/null || quickshell -n >$XDG_RUNTIME_DIR/quickshell.log 2>&1; sleep 10; done")
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh")                                          -- set initial wallpapers
     -- hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
     -- hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal
