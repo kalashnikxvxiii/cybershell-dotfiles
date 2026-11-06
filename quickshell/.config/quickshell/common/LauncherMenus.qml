@@ -36,7 +36,7 @@ Singleton {
 
     // ---------- Power ----------
     readonly property var power: [
-        { id: "power:lock", name: "Lock", glyph: "", boost: 15, run: sh(["hyprlock"]) },
+        { id: "power:lock", name: "Lock", glyph: "", boost: 15, run: () => LockState.lock() },
         { id: "power:suspend", name: "Suspend", glyph: "", boost: 15, keywords: "sleep", run: sh(["systemctl", "suspend"]) },
         { id: "power:hibernate", name: "Hibernate", glyph: "\uf2dc", boost: 15, run: sh(["systemctl", "hibernate"]) },
         // Not uwsm: the session ends through Hyprland itself

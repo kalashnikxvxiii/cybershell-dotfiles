@@ -19,6 +19,7 @@ import "modules/media"
 import "modules/wheel"
 import "modules/cheatsheet"
 import "modules/hud"
+import "modules/lock"
 
 ShellRoot {
     // Quick action wheel, shown over the Hyprland menus
@@ -31,6 +32,12 @@ ShellRoot {
     //   qs ipc call toaster success "WALLPAPER" "Applicato" "image"
     // Every parameter is required by `qs ipc call`, so callers that do not care
     // about the icon pass "".
+    Lock {}
+    IpcHandler {
+        target: "lock"
+        function lock(): void { LockState.lock() }
+    }
+
     IpcHandler {
         target: "toaster"
 
