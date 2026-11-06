@@ -62,20 +62,20 @@ Item {
             }
             Text {
                 text: root.gpuName
-                font.family: "Chakra Petch"
+                font.family: Theme.font
                 font.pixelSize: 9
                 color: Colours.textMuted
             }
             Item { Layout.fillWidth: true }
             Text {
                 text: root.gpuPerc.toFixed(1) + "%"
-                font.family: "Chakra Petch"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: root.gpuColor
             }
             Text {
                 text: root.gpuTemp.toFixed(0) + "°C"
-                font.family: "Chakra Petch"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: root.gpuTempColor
             }
@@ -138,7 +138,7 @@ Item {
                     }
                     Text {
                         text: "/ " + root.gpuVramTotalGb.toFixed(1) + " GB"
-                        font.family: "Chakra Petch"; font.pixelSize: 9
+                        font.family: Theme.font; font.pixelSize: 9
                         color: Colours.textSecondary; Layout.alignment: Qt.AlignHCenter
                     }
 
@@ -247,7 +247,7 @@ Item {
                     }
                     Text {
                         text: "/ " + root.gpuPowerLimit.toFixed(0) + " W"
-                        font.family: "Chakra Petch"; font.pixelSize: 9
+                        font.family: Theme.font; font.pixelSize: 9
                         color: Colours.textSecondary; Layout.alignment: Qt.AlignHCenter
                     }
 
@@ -344,7 +344,7 @@ Item {
                     anchors.fill: parent; anchors.margins: 6; spacing: 2
                     Text { text: "GPU CLOCK"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
                     Text { text: root.gpuClockCur + " MHz"; font.family: Theme.font; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
-                    Text { text: "MAX " + root.gpuClockMax; font.family: "Chakra Petch"; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: "MAX " + root.gpuClockMax; font.family: Theme.font; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
                 }
                 CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
             }
@@ -368,7 +368,7 @@ Item {
                     anchors.fill: parent; anchors.margins: 6; spacing: 2
                     Text { text: "MEM CLOCK"; font.family: Theme.font; font.pixelSize: 8; font.letterSpacing: 1.5; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
                     Text { text: root.gpuMemClockCur + " MHz"; font.family: Theme.font; font.pixelSize: 18; font.weight: Font.Bold; color: Colours.accentSecondary; Layout.alignment: Qt.AlignHCenter }
-                    Text { text: "MAX " + root.gpuMemClockMax; font.family: "Chakra Petch"; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
+                    Text { text: "MAX " + root.gpuMemClockMax; font.family: Theme.font; font.pixelSize: 9; color: Colours.textMuted; Layout.alignment: Qt.AlignHCenter }
                 }
                 CutShape { anchors.fill: parent; strokeColor: Colours.neonBorder(0.3); strokeWidth: 1; inset: 0.5 }
             }

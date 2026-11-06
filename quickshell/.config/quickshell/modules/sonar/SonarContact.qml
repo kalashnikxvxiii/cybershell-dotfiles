@@ -82,7 +82,7 @@ Item {
             anchors.rightMargin: row.strength >= 0 ? 8 : 0
             anchors.verticalCenter: parent.verticalCenter
             text: row.meta
-            font.family: "Chakra Petch"
+            font.family: Theme.font
             font.pixelSize: 9
             color: Colours.textMuted
         }

@@ -186,7 +186,7 @@ FocusScope {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: root.netView ? root.netStatusText() : root.btStatusText()
-            font.family: "Chakra Petch"
+            font.family: Theme.font
             font.pixelSize: 9
             color: Colours.textMuted
         }
@@ -260,7 +260,7 @@ FocusScope {
         opacity: SonarState.lastError !== "" ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 180 } }
         text: SonarState.lastError
-        font.family: "Chakra Petch"
+        font.family: Theme.font
         font.pixelSize: 9
         color: Colours.accentDanger
     }
@@ -469,7 +469,7 @@ FocusScope {
             anchors.rightMargin: 8
             verticalAlignment: TextInput.AlignVCenter
             echoMode: TextInput.Password
-            font.family: "Chakra Petch"
+            font.family: Theme.font
             font.pixelSize: 10
             color: Colours.textPrimary
             selectByMouse: true

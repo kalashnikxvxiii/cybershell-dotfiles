@@ -49,7 +49,7 @@ Item {
             Item { Layout.fillWidth: true }
             Text {
                 text: root.cpuPerc.toFixed(1) + "%"
-                font.family: "Chakra Petch"
+                font.family: Theme.font
                 font.pixelSize: 10
                 color: root.tempColor
             }

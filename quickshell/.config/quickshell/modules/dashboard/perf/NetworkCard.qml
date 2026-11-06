@@ -269,7 +269,7 @@ Item {
         anchors.rightMargin: 10
         anchors.topMargin: 6
         text: card.netStatus === "wifi" ? card.netSsid : card.netStatus.toUpperCase()
-        font.family: "Chakra Petch"
+        font.family: Theme.font
         font.pixelSize: 10
         color: card.online ? Colours.accentOk : Colours.accentDanger
     }
@@ -282,7 +282,7 @@ Item {
         anchors.topMargin: 20
         visible: card.netSignal !== ""
         text: card.netSignal + " dBm"
-        font.family: "Chakra Petch"
+        font.family: Theme.font
         font.pixelSize: 9
         color: Colours.textMuted
     }
@@ -343,14 +343,14 @@ Item {
             Text {
                 visible: !card.hasFigure
                 text: "↓ " + card.provider.formatBytes(card.netRxBps)
-                font.family: "Chakra Petch"
+                font.family: Theme.font
                 font.pixelSize: 12
                 color: Colours.accentSecondary
             }
             Text {
                 visible: !card.hasFigure
                 text: "↑ " + card.provider.formatBytes(card.netTxBps)
-                font.family: "Chakra Petch"
+                font.family: Theme.font
                 font.pixelSize: 12
                 color: Colours.accentPrimary
             }
@@ -379,7 +379,7 @@ Item {
                 Text {
                     id: figure
                     text: card.phaseValue
-                    font.family: "Chakra Petch"
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.bold: true
                     color: card.provider.speedPhase === "upload" ? Colours.accentPrimary
@@ -613,7 +613,7 @@ Item {
         Text {
             id: valueText
             text: detail.shown
-            font.family: "Chakra Petch"
+            font.family: Theme.font
             font.pixelSize: 10
             color: parent.tint
         }
@@ -698,7 +698,7 @@ Item {
         text: card.provider.speedError !== ""
               ? card.provider.speedError.toUpperCase()
               : (card.whenText() ? "TESTED " + card.whenText() : "")
-        font.family: "Chakra Petch"
+        font.family: Theme.font
         font.pixelSize: 9
         color: card.provider.speedError !== "" ? Colours.accentDanger : Colours.textMuted
     }
