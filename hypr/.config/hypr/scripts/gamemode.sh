@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
-# gamemode.sh — toggle effetti compositor per gaming
+# gamemode.sh [on|off] — toggle effetti compositor per gaming (senza argomento: toggle)
 source "$(dirname "$0")/hyprctl-lua-compat.sh"
+THEMER="$(dirname "$0")/wallpaper-themer.sh"
+
+# gamemoded outlives Hyprland restarts and keeps the old signature in its env
+export HYPRLAND_INSTANCE_SIGNATURE="$(ls -t "/run/user/$(id -u)/hypr" | head -1)"
 
 # In Lua mode `getoption animations:enabled` ritorna `bool: true/false`
 # (in HyprLang era `int: 1/0`). Confronto con "true" per gestire entrambi.
 GAMEMODE=$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')
 
-if [ "$GAMEMODE" = "true" ] || [ "$GAMEMODE" = 1 ]; then
+case "$1" in
+    on)  TURN_ON=1 ;;
+    off) TURN_ON=0 ;;
+    *)   { [ "$GAMEMODE" = "true" ] || [ "$GAMEMODE" = 1 ]; } && TURN_ON=1 || TURN_ON=0 ;;
+esac
+
+if [ "$TURN_ON" = 1 ]; then
+    # First, before the game allocates: the engines hold ~1.4 GB of VRAM
+    "$THEMER" wpe-pause
     he 'hl.config({
         animations  = { enabled = false },
         decoration  = {
@@ -48,5 +60,6 @@ else
             borders_plus_plus = {add_borders = 2 },
         },
     })'
+    "$THEMER" wpe-resume
     hyprctl notify 1 4000 "rgb(ea00d9)" "  GAMEMODE OFF"
 fi

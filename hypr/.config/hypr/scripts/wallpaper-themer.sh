@@ -792,9 +792,80 @@ restore_screen() {
     start_screen "$screen" "$entry"
 }
 
+# ---------------------------------------------------------------------------
+# Game pause: free the engines' VRAM while a game runs (gamemode.sh on/off)
+# ---------------------------------------------------------------------------
+
+# Runtime dir, not STATE_DIR: a pause must not survive the session it was made in
+PAUSE_DIR="/run/user/$(id -u)/wpe-pause"
+PAUSE_FLAG="$PAUSE_DIR/active"
+
+# acquire_lock gives up at once; a pause that silently did nothing would leave
+# the engines holding VRAM under the game, so wait for the change in flight.
+wait_lock() {
+    local i
+    for i in $(seq 1 50); do
+        acquire_lock && return 0
+        sleep 0.1
+    done
+    return 1
+}
+
+wpe_pause() {
+    # Flag first: a playlist tick starting after this line launches no engine
+    mkdir -p "$PAUSE_DIR" && touch "$PAUSE_FLAG"
+    local locked=0
+    wait_lock && { locked=1; trap release_lock EXIT; }
+    local f s entry preview
+    for f in "$STATE_DIR"/current_*; do
+        [ -f "$f" ] || continue
+        s="${f##*/current_}"
+        entry=$(get_current_wp "$s")
+        is_wpe "$entry" || continue
+        echo "$entry" > "$PAUSE_DIR/screen_${s}"
+        kill_wpe_on_screen "$s"
+        # Still frame instead of whatever awww held before the engine
+        preview=$(get_wpe_preview "$entry")
+        [ -n "$preview" ] && awww img "$preview" --outputs "$s"
+    done
+    [ "$locked" = 1 ] && { release_lock; trap - EXIT; }
+    return 0
+}
+
+wpe_resume() {
+    local locked=0
+    wait_lock && { locked=1; trap release_lock EXIT; }
+    rm -f "$PAUSE_FLAG"
+    local f s entry
+    for f in "$PAUSE_DIR"/screen_*; do
+        [ -f "$f" ] || continue
+        s="${f##*/screen_}"
+        entry=$(cat "$f")
+        rm -f "$f"
+        # Wallpaper changed by hand during the game: that choice wins
+        [ "$(get_current_wp "$s")" = "$entry" ] && is_wpe "$entry" || continue
+        # Rewriting current_ makes ContrastScrim restack above the new engine
+        save_state "$s" "$entry"
+        start_wpe_direct "$s" "$entry"
+    done
+    [ "$locked" = 1 ] && { release_lock; trap - EXIT; }
+    return 0
+}
+
 # Usage: Playlist_apply <screen1>:<path1> [<screen2>:<path2> ...]
 playlist_apply() {
     [ $# -eq 0 ] && return 1
+
+    # Game pause: a screen whose engine is paused stays frozen until wpe-resume
+    if [ -f "$PAUSE_FLAG" ]; then
+        local keep=() a
+        for a in "$@"; do
+            [ -f "$PAUSE_DIR/screen_${a%%:*}" ] || keep+=("$a")
+        done
+        set -- "${keep[@]}"
+        [ $# -eq 0 ] && return 0
+    fi
+
     acquire_lock || return
     trap release_lock EXIT
 
@@ -827,9 +898,14 @@ playlist_apply() {
         if [ -n "$s" ] && [ -n "$p" ]; then
             (
                 save_state "$s" "$p"
-                if is_wpe "$p"; then
+                local preview
+                if is_wpe "$p" && [ -f "$PAUSE_FLAG" ]; then
+                    # Game running: still frame now, engine on wpe-resume
+                    echo "$p" > "$PAUSE_DIR/screen_${s}"
+                    preview=$(get_wpe_preview "$p")
+                    [ -n "$preview" ] && awww img "$preview" --outputs "$s"
+                elif is_wpe "$p"; then
                     start_wpe_direct "$s" "$p"
-                    local preview
                     preview=$(get_wpe_preview "$p")
                     [ -n "$preview" ] && awww img "$preview" --outputs "$s"
                 else
@@ -1027,6 +1103,8 @@ case "${1:-restore}" in
     restore-screen) restore_screen "$2" "$3" ;;
     adopt-wpe)      adopt_wpe_preview "$2" "$3" ;;
     playlist-apply) shift; playlist_apply "$@" ;;
+    wpe-pause)      wpe_pause ;;
+    wpe-resume)     wpe_resume ;;
     preview-audio)  apply_audio_for_screen_async "$2" "$3" "$4" "$(get_audio_volume)" ;;
     *)              change_smart ;;
 esac
