@@ -79,6 +79,8 @@ hl.config({
             gaps_out            = 8,
             bg_col              = "rgb(00060e)",
             workspace_method    = "center current",
+            -- "auto" apre la scrolling overview (righe vuote) sulle ws con layout scrolling
+            overview_mode       = "grid",
             skip_empty          = false,
             -- Drag & drop ws
             drag_drop_enable    = true,

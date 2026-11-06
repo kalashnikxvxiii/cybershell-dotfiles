@@ -286,7 +286,7 @@ hl.config({
         focus_on_activate           = false,
         enable_swallow              = true,
         swallow_regex               = "^(kitty)$",
-        initial_workspace_tracking  = 2,
+        initial_workspace_tracking  = 1,
     },
 
     -- vfr moved from misc: on debug: starting from Hyprland 0.55
