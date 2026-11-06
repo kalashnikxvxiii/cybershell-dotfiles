@@ -156,6 +156,12 @@ Item {
     // Polynomial smooth maximum. A plain max() would leave a crease where two
     // profiles cross; this rounds the junction over - it is the whole merge
     function smoothMax(a, b, k) {
+        // The blend lifts the result by up to k/4 even where both inputs are 0;
+        // chained over two pinned lobes that lift crossed the 3px baseline and
+        // drew a hairline along the whole edge. Capping k by the smaller input
+        // keeps the weld between lobes and leaves empty stretches at 0
+        k = Math.min(k, a, b)
+        if (k <= 0) return Math.max(a, b)
         const h = Math.max(0, Math.min(1, 0.5 + 0.5 * (a - b) / k))
         return a * h + b * (1 - h) + k * h * (1 - h)
     }
