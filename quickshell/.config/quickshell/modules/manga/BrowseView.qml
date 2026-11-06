@@ -504,7 +504,7 @@ Item {
                 Image {
                     id: cover
                     anchors.fill: parent
-                    source: card.mcover
+                    source: MangaService.coverSource(card.mcover)
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     sourceSize.width: 256

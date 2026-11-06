@@ -105,6 +105,57 @@ Singleton {
         return root.coverBase + "/" + mangaId + "/" + fileName + (thumb ? ".256.jpg" : ".512.jpg")
     }
 
+    // Image fetches with Qt's "Mozilla/5.0" UA, which uploads.mangadex.org now
+    // redirects to a browser challenge page; our own UA gets the JPEG. QML cannot
+    // set Image's UA, so MangaDex covers go through curl into a local cache.
+    // shortcut: cover cache is never pruned (~30 KB each), add to the pruner if it grows.
+    property var _covers: ({})      // remote url -> local file:// url
+    property var _coverQueue: []
+    readonly property string _coverRoot:
+        (Quickshell.env("HOME") || "") + "/.cache/quickshell/manga/covers/"
+
+    function coverSource(url) {
+        if (!url || url.indexOf(root.coverBase + "/") !== 0) return url || ""
+        var local = root._covers[url]
+        if (local !== undefined) return local
+        if (root._coverQueue.indexOf(url) < 0) {
+            root._coverQueue.push(url)
+            Qt.callLater(root._flushCovers)
+        }
+        return ""
+    }
+
+    function _coverFile(url) {
+        // "<mangaId>/<file>.256.jpg" -> "<mangaId>_<file>.256.jpg"
+        return root._coverRoot + url.substring(root.coverBase.length + 1).split("/").join("_")
+    }
+
+    function _flushCovers() {
+        if (coverProc.running || root._coverQueue.length === 0) return
+        var batch = root._coverQueue
+        root._coverQueue = []
+        var args = ["bash", "-c",
+            'ua=$1; shift; a=(); while [ $# -gt 0 ]; do [ -s "$1" ] || a+=(-o "$1" "$2"); shift 2; done; '
+            + '[ ${#a[@]} -eq 0 ] || curl -sf --proto =http,https --max-time 60 -A "$ua" -Z --parallel-max 6 --create-dirs "${a[@]}"; true',
+            "_", root.ua]
+        for (var i = 0; i < batch.length; i++) args.push(root._coverFile(batch[i]), batch[i])
+        coverProc.batch = batch
+        coverProc.command = args
+        coverProc.running = true
+    }
+
+    property var _coverProc: Process {
+        id: coverProc
+        property var batch: []
+        running: false
+        onExited: {
+            var m = Object.assign({}, root._covers)
+            for (var i = 0; i < batch.length; i++) m[batch[i]] = "file://" + root._coverFile(batch[i])
+            root._covers = m
+            Qt.callLater(root._flushCovers)
+        }
+    }
+
     // -- Parsing ---------------------------------------
     function _pickTitle(t, alts) {
         if (!t) return "—"

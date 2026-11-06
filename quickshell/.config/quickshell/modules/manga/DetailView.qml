@@ -199,7 +199,7 @@ Item {
             anchors.left: parent.left
             width: 84
             height: 120
-            source: root.manga ? (root.manga.cover || "") : ""
+            source: MangaService.coverSource(root.manga ? root.manga.cover : "")
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             sourceSize.width: 256

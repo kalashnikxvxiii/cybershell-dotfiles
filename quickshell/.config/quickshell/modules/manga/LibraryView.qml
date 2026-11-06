@@ -88,8 +88,8 @@ Item {
                 height: 64
                 // Entries written before sources existed only kept the
                 // MangaDex filename, so the url is rebuilt for those.
-                source: row.modelData.cover
-                        || MangaService.coverUrl(row.modelData.id, row.modelData.coverFile, true)
+                source: MangaService.coverSource(row.modelData.cover
+                        || MangaService.coverUrl(row.modelData.id, row.modelData.coverFile, true))
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 sourceSize.width: 256
