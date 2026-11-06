@@ -33,7 +33,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("systemctl --user import-environment XCURSOR_THEME XCURSOR_SIZE HYPRCURSOR_SIZE GTK_THEME"
         .. " QT_AUTO_SCREEN_SCALE_FACTOR QT_WAYLAND_DISABLE_WINDOWDECORATION QT_LOGGING_RULES"
         .. " LIBVA_DRIVER_NAME GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME WLR_NO_HARDWARE_CURSORS NVD_BACKEND"
-        .. " && systemctl --user start qs@manga")
+        .. " && systemctl --user start qs@wallpaper qs@manga")
     hl.exec_cmd("~/.config/hypr/scripts/wallpaper-themer.sh")                                          -- set initial wallpapers
     -- hl.exec_cmd("wl-paste --watch cliphist store")                                                     -- clipboard history daemon
     -- hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")    -- fix Qt theme in portal

@@ -135,6 +135,15 @@ hl.layer_rule({
     blur  = true,
 })
 
+-- Quickshell wallpaper plugin: below linux-wallpaperengine and the contrast scrim,
+-- which share the Bottom layer. It runs in its own process (qs@wallpaper), so a
+-- restart would otherwise map it last, on top of them
+hl.layer_rule({
+    name  = "cyberwallpaper-order",
+    match = { namespace = "cyberwallpaper" },
+    order = 1,
+})
+
 hl.layer_rule({
     name      = "wpe-animation",
     match     = { namespace = "linux-wallpaperengine" },
